@@ -1,0 +1,119 @@
+[
+  {
+    "id": "normal",
+    "name": "Normal Plan",
+    "category": "Normal",
+    "duration": "Monthly / Flexible",
+    "price": null,
+    "price_display": "Price to be confirmed",
+    "billing_period": "Per confirmation",
+    "cleaning_frequency": "Custom schedule on enquiry",
+    "included_services": [
+      "Dust Removal",
+      "Exterior Cleaning",
+      "Glass Cleaning",
+      "Tyre Cleaning"
+    ],
+    "popular": false,
+    "status": "Active",
+    "button_label": "Select Normal Plan"
+  },
+  {
+    "id": "premium",
+    "name": "Premium Plan",
+    "category": "Premium",
+    "duration": "Monthly / Comprehensive",
+    "price": null,
+    "price_display": "Price to be confirmed",
+    "billing_period": "Per confirmation",
+    "cleaning_frequency": "Enhanced schedule with detailing care",
+    "included_services": [
+      "Dust Removal",
+      "Exterior Cleaning",
+      "Glass Cleaning",
+      "Tyre Cleaning",
+      "Priority Morning Slot Allocation"
+    ],
+    "popular": true,
+    "status": "Active",
+    "button_label": "Select Premium Plan"
+  },
+  {
+    "id": "15-day",
+    "name": "15-Day Plan",
+    "category": "Normal",
+    "duration": "15 days",
+    "price": null,
+    "price_display": "Price to be confirmed",
+    "billing_period": "15 days",
+    "cleaning_frequency": "Scheduled cleaning across 15 days",
+    "included_services": [
+      "Dust Removal",
+      "Exterior Cleaning",
+      "Glass Cleaning",
+      "Tyre Cleaning"
+    ],
+    "popular": false,
+    "status": "Active",
+    "button_label": "Select 15-Day Plan"
+  },
+  {
+    "id": "monthly",
+    "name": "Monthly Plan",
+    "category": "Normal",
+    "duration": "1 month",
+    "price": null,
+    "price_display": "Price to be confirmed",
+    "billing_period": "Monthly",
+    "cleaning_frequency": "Regular morning cycle throughout the month",
+    "included_services": [
+      "Dust Removal",
+      "Exterior Cleaning",
+      "Glass Cleaning",
+      "Tyre Cleaning"
+    ],
+    "popular": true,
+    "status": "Active",
+    "button_label": "Select Monthly Plan"
+  },
+  {
+    "id": "quarterly",
+    "name": "Quarterly Plan",
+    "category": "Premium",
+    "duration": "3 months",
+    "price": null,
+    "price_display": "Price to be confirmed",
+    "billing_period": "Quarterly",
+    "cleaning_frequency": "Continuous routine cleaning for 90 days",
+    "included_services": [
+      "Dust Removal",
+      "Exterior Cleaning",
+      "Glass Cleaning",
+      "Tyre Cleaning",
+      "Dedicated Spot Inspection"
+    ],
+    "popular": false,
+    "status": "Active",
+    "button_label": "Select Quarterly Plan"
+  },
+  {
+    "id": "half-yearly",
+    "name": "Half-Yearly Plan",
+    "category": "Premium",
+    "duration": "6 months",
+    "price": null,
+    "price_display": "Price to be confirmed",
+    "billing_period": "Half-yearly",
+    "cleaning_frequency": "Long-term doorstep vehicle maintenance",
+    "included_services": [
+      "Dust Removal",
+      "Exterior Cleaning",
+      "Glass Cleaning",
+      "Tyre Cleaning",
+      "Priority Support & Scheduling"
+    ],
+    "popular": false,
+    "status": "Active",
+    "button_label": "Select Half-Yearly Plan"
+  }
+]
