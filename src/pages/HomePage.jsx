@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Sparkles, Calendar, ArrowRight, ShieldCheck, Clock, MessageSquare, CheckCircle2, ChevronDown, ChevronUp, MapPin, Phone, Car } from 'lucide-react';
-import { BUSINESS_INFO, STANDARD_SERVICES, OPTIONAL_ADDONS, HOW_IT_WORKS, TRUST_POINTS, FAQS } from '../data/websiteData';
+import { BUSINESS_INFO, STANDARD_SERVICES, OPTIONAL_ADDONS, HOW_IT_WORKS, TRUST_POINTS, FAQS, SUBSCRIPTION_PLANS } from '../data/websiteData';
 import { useBooking } from '../context/BookingContext';
 import ServiceCard from '../components/ServiceCard';
 import SubscriptionCard from '../components/SubscriptionCard';
@@ -297,7 +297,7 @@ export default function HomePage() {
 
         {/* 3 Featured Plans Preview */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
-          {plans.slice(0, 3).map((plan) => (
+          {(plans && plans.length > 0 ? plans : SUBSCRIPTION_PLANS).slice(0, 3).map((plan) => (
             <SubscriptionCard
               key={plan.id}
               plan={plan}

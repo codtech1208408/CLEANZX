@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Sparkles, Check, X, Shield, Clock, Calendar, ArrowRight, HelpCircle, Layers, Filter } from 'lucide-react';
 import { useBooking } from '../context/BookingContext';
-import { OPTIONAL_ADDONS, BUSINESS_INFO } from '../data/websiteData';
+import { OPTIONAL_ADDONS, BUSINESS_INFO, SUBSCRIPTION_PLANS } from '../data/websiteData';
 import SubscriptionCard from '../components/SubscriptionCard';
 import BookingForm from '../components/BookingForm';
 
@@ -9,7 +9,8 @@ export default function PlansPage() {
   const { plans, selectPlanAndScroll, selectedPlan } = useBooking();
   const [categoryFilter, setCategoryFilter] = useState('ALL'); // 'ALL' | 'Normal' | 'Premium'
 
-  const filteredPlans = plans.filter((plan) => {
+  const activePlans = (plans && plans.length > 0) ? plans : SUBSCRIPTION_PLANS;
+  const filteredPlans = activePlans.filter((plan) => {
     if (categoryFilter === 'ALL') return true;
     return plan.category === categoryFilter;
   });

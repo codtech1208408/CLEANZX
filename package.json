@@ -26,6 +26,7 @@
     "@vitejs/plugin-react": "^4.3.4",
     "oxlint": "^1.81.0",
     "tailwindcss": "^4.3.3",
+    "vercel": "^63.1.2",
     "vite": "^6.2.0"
   }
 }
