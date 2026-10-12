@@ -36,21 +36,15 @@ export default function Navbar() {
   return (
     <>
       {/* Fixed Header: stays pinned at top when scrolling down on desktop & mobile */}
-      <header className="fixed top-0 left-0 right-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-slate-200 py-3.5 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+      <header className="fixed top-0 left-0 right-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-slate-200 py-2 sm:py-2.5 shadow-sm">
+      <div className="max-w-7xl mx-auto px-2.5 sm:px-4 lg:px-6 flex items-center justify-between">
         {/* Brand Logo */}
-        <Link to="/" className="flex items-center gap-2 group">
-          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#1677FF] to-[#00A3FF] flex items-center justify-center font-black text-white shadow-md shadow-[#00A3FF]/30 group-hover:scale-105 transition-transform">
-            <Sparkles className="w-5 h-5 text-white" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-2xl font-extrabold tracking-wider text-slate-950 font-heading">
-              CLEAN<span className="text-[#00A3FF]">ZX</span>
-            </span>
-            <span className="text-[9px] tracking-widest uppercase text-slate-500 font-semibold -mt-1">
-              Doorstep Car Care
-            </span>
-          </div>
+        <Link to="/" className="inline-flex items-center group -ml-1 sm:-ml-2" aria-label="CLEANZX Home">
+          <img
+            src="/images/logo-light.png"
+            alt="CLEANZX - Car Cleaning, Made Simple"
+            className="h-12 sm:h-14 md:h-16 w-auto max-w-[190px] sm:max-w-[230px] md:max-w-[260px] object-contain group-hover:opacity-90 group-hover:scale-[1.02] transition-all duration-200"
+          />
         </Link>
 
         {/* Desktop Navigation Links */}
@@ -155,7 +149,7 @@ export default function Navbar() {
       )}
       </header>
       {/* Spacer to preserve document layout under fixed header */}
-      <div className="h-[69px] w-full shrink-0 pointer-events-none" aria-hidden="true" />
+      <div className="h-[84px] sm:h-[96px] md:h-[102px] w-full shrink-0 pointer-events-none" aria-hidden="true" />
     </>
   );
 }

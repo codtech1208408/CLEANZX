@@ -19,13 +19,12 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
           {/* Brand Col */}
           <div className="space-y-4">
-            <Link to="/" className="inline-flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#1677FF] to-[#00A3FF] flex items-center justify-center font-black text-white">
-                <Sparkles className="w-4 h-4 text-white" />
-              </div>
-              <span className="text-2xl font-extrabold tracking-wider text-white font-heading">
-                CLEAN<span className="text-[#00A3FF]">ZX</span>
-              </span>
+            <Link to="/" className="inline-block group" aria-label="CLEANZX Home">
+              <img
+                src="/images/logo-dark.png"
+                alt="CLEANZX Doorstep Car Care"
+                className="h-16 sm:h-20 w-auto object-contain group-hover:opacity-90 transition-opacity"
+              />
             </Link>
             <p className="text-sm text-[#AAB4C3] leading-relaxed">
               {BUSINESS_INFO.tagline} Professional morning vehicle care specifically designed for apartment car owners and working professionals in Hyderabad.
