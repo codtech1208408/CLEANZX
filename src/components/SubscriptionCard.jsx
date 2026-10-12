@@ -18,7 +18,6 @@ export default function SubscriptionCard({ plan, onSelect, featured = false }) {
 
   return (
     <div
-      data-aos="fade-up"
       className={`rounded-2xl relative flex flex-col justify-between transition-all duration-300 p-6 sm:p-7 ${
         isHighlighted
           ? 'bg-gradient-to-b from-blue-50/60 to-white border-2 border-[#1677FF] shadow-xl shadow-blue-100'

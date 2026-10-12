@@ -23,11 +23,12 @@ export const BookingProvider = ({ children }) => {
     const checkBackend = async () => {
       try {
         const res = await fetch('/api/health');
-        if (res.ok) {
+        const isJson = res.ok && res.headers.get('content-type')?.includes('application/json');
+        if (isJson) {
           if (isMounted) setBackendAvailable(true);
           // Fetch live plans if available
           const plansRes = await fetch('/api/plans');
-          if (plansRes.ok) {
+          if (plansRes.ok && plansRes.headers.get('content-type')?.includes('application/json')) {
             const data = await plansRes.json();
             if (data.success && Array.isArray(data.data) && data.data.length > 0) {
               if (isMounted) setPlans(data.data);
@@ -35,7 +36,7 @@ export const BookingProvider = ({ children }) => {
           }
           // Fetch live enquiries
           const enqRes = await fetch('/api/enquiries');
-          if (enqRes.ok) {
+          if (enqRes.ok && enqRes.headers.get('content-type')?.includes('application/json')) {
             const enqData = await enqRes.json();
             if (enqData.success && Array.isArray(enqData.data)) {
               if (isMounted) setEnquiries(enqData.data);

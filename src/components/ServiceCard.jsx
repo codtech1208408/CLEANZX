@@ -23,7 +23,6 @@ export default function ServiceCard({ service, onSelect }) {
 
   return (
     <div
-      data-aos="fade-up"
       className="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-md hover:shadow-xl hover:border-[#00A3FF]/60 flex flex-col group transition-all duration-300"
     >
       {/* Visual Image Header */}

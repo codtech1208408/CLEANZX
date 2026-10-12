@@ -22,9 +22,7 @@ export default function App() {
       duration: 650,
       easing: 'ease-out-cubic',
       once: true,
-      offset: 30,
-      disableMutationObserver: false,
-      disable: () => window.innerWidth < 768,
+      offset: 20,
     });
   }, []);
 

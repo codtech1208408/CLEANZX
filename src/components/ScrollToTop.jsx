@@ -14,6 +14,13 @@ export default function ScrollToTop() {
       }
     }
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    try {
+      if (typeof window !== 'undefined' && window.AOS) {
+        window.AOS.refresh();
+      }
+    } catch (e) {
+      // ignore
+    }
   }, [pathname, hash]);
 
   return null;

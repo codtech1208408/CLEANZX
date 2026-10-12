@@ -83,6 +83,16 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 12px 35px 0px rgba(0, 163, 255, 0.4);
 }
 
+/* Mobile accessibility & visibility guarantee: Always show content immediately */
+@media (max-width: 768px) {
+  [data-aos] {
+    transition-property: none !important;
+    transform: none !important;
+    animation: none !important;
+    opacity: 1 !important;
+  }
+}
+
 /* Reduced motion accessibility */
 @media (prefers-reduced-motion: reduce) {
   [data-aos] {
