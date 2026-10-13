@@ -62,11 +62,11 @@ export default function HomePage() {
 
   const [currentBanner, setCurrentBanner] = useState(0);
 
-  // Auto-scroll automatically every 1 second without pausing
+  // Auto-scroll automatically every 4 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentBanner((prev) => (prev + 1) % banners.length);
-    }, 1000);
+    }, 4000);
     return () => clearInterval(interval);
   }, [banners.length]);
 
@@ -150,12 +150,14 @@ export default function HomePage() {
             {banners.map((banner, idx) => {
               const isActive = idx === currentBanner;
               return (
-                <div
+                <button
                   key={banner.id}
-                  className={`h-1 sm:h-2 rounded-full transition-all duration-300 ${
+                  onClick={() => setCurrentBanner(idx)}
+                  aria-label={`Go to slide ${idx + 1}`}
+                  className={`h-1.5 sm:h-2 rounded-full transition-all duration-300 cursor-pointer ${
                     isActive
-                      ? 'w-5 sm:w-8 bg-[#00A3FF] shadow-md shadow-[#00A3FF]/50'
-                      : 'w-1 sm:w-2 bg-white/30'
+                      ? 'w-6 sm:w-8 bg-[#00A3FF] shadow-md shadow-[#00A3FF]/50'
+                      : 'w-2 sm:w-2.5 bg-white/40 hover:bg-white/70'
                   }`}
                 />
               );
