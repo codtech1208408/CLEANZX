@@ -12,11 +12,11 @@ export default function HomePage() {
   const { plans, selectPlanAndScroll } = useBooking();
   const [openFaq, setOpenFaq] = useState(0);
 
-  // 4 Banners with distinct automotive focus & imagery
+  // 4 Banners with user provided automotive detailing imagery
   const banners = [
     {
       id: 1,
-      image: "/images/hero-car.jpg",
+      image: "/images/banner-1.png",
       badge: "Serving Mehdipatnam & Hyderabad Residential Apartments",
       titleLine1: "Premium Car Cleaning.",
       titleLine2: "Right at Your Doorstep.",
@@ -27,7 +27,7 @@ export default function HomePage() {
     },
     {
       id: 2,
-      image: "/images/exterior-wash.jpg",
+      image: "/images/banner-2.jpg",
       badge: "Apartment-Safe Microfiber Detailing",
       titleLine1: "Scratch-Free Exterior Wash.",
       titleLine2: "Pure Showroom Shine.",
@@ -38,22 +38,22 @@ export default function HomePage() {
     },
     {
       id: 3,
-      image: "/images/interior-vacuum.jpg",
-      badge: "Cabin Detailing & Deep Care",
-      titleLine1: "Spotless Interior Vacuuming.",
-      titleLine2: "Fresh Morning Cabin.",
-      subtitle: "Thorough seat cleaning, floor mat extraction, and dashboard conditioning before you head out for your daily commute.",
-      primaryCtaText: "Explore Add-on Detailing",
-      primaryCtaLink: "/services#addons",
+      image: "/images/banner-3.png",
+      badge: "High-Clarity Glass & Windscreen Polish",
+      titleLine1: "Crystal-Clear Windscreen.",
+      titleLine2: "Streak-Free Glass Polish.",
+      subtitle: "Streak-free automotive glass polishing and high-clarity mirror treatment ensuring a pristine view before every drive.",
+      primaryCtaText: "Explore Detailing Services",
+      primaryCtaLink: "/services",
       secondaryCtaText: "Book Your Cleaning",
     },
     {
       id: 4,
-      image: "/images/glass-cleaning.jpg",
-      badge: "High-Clarity Glass & Tyre Dressing",
-      titleLine1: "Crystal-Clear Windscreen.",
-      titleLine2: "Impeccable Tyre Gloss.",
-      subtitle: "Streak-free automotive glass polishing and rich tyre dressing for an immaculate, road-ready presentation every morning.",
+      image: "/images/banner-4.jpg",
+      badge: "Deep Tyre & Alloy Wheel Cleaning",
+      titleLine1: "Impeccable Tyre Gloss.",
+      titleLine2: "Deep Wheel Care.",
+      subtitle: "Thorough visible wheel cleaning and deep tyre dressing to keep your vehicle looking sharp before your daily commute.",
       primaryCtaText: "Compare All 8 Subscription Plans",
       primaryCtaLink: "/plans",
       secondaryCtaText: "Book Your Cleaning",
