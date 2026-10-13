@@ -1,53 +1,24 @@
 [
   {
-    "id": "normal",
-    "name": "Normal Plan",
-    "category": "Normal",
-    "duration": "Monthly / Flexible",
-    "price": null,
-    "price_display": "Price to be confirmed",
-    "billing_period": "Per confirmation",
-    "cleaning_frequency": "Custom schedule on enquiry",
-    "included_services": [
-      "Dust Removal",
-      "Exterior Cleaning",
-      "Glass Cleaning",
-      "Tyre Cleaning"
-    ],
-    "popular": false,
-    "status": "Active",
-    "button_label": "Select Normal Plan"
-  },
-  {
-    "id": "premium",
-    "name": "Premium Plan",
-    "category": "Premium",
-    "duration": "Monthly / Comprehensive",
-    "price": null,
-    "price_display": "Price to be confirmed",
-    "billing_period": "Per confirmation",
-    "cleaning_frequency": "Enhanced schedule with detailing care",
-    "included_services": [
-      "Dust Removal",
-      "Exterior Cleaning",
-      "Glass Cleaning",
-      "Tyre Cleaning",
-      "Priority Morning Slot Allocation"
-    ],
-    "popular": true,
-    "status": "Active",
-    "button_label": "Select Premium Plan"
-  },
-  {
-    "id": "15-day",
-    "name": "15-Day Plan",
+    "id": "normal-15-day",
+    "name": "15-Day Normal Plan",
+    "displayName": "15-Day Plan",
     "category": "Normal",
     "duration": "15 days",
     "price": null,
     "price_display": "Price to be confirmed",
+    "priceDisplay": "Price to be confirmed",
     "billing_period": "15 days",
-    "cleaning_frequency": "Scheduled cleaning across 15 days",
+    "billingPeriod": "15 days",
+    "cleaning_frequency": "Scheduled morning service cycles across 15 days",
+    "cleaningFrequency": "Scheduled morning service cycles across 15 days",
     "included_services": [
+      "Dust Removal",
+      "Exterior Cleaning",
+      "Glass Cleaning",
+      "Tyre Cleaning"
+    ],
+    "includedServices": [
       "Dust Removal",
       "Exterior Cleaning",
       "Glass Cleaning",
@@ -55,18 +26,30 @@
     ],
     "popular": false,
     "status": "Active",
-    "button_label": "Select 15-Day Plan"
+    "highlight": "Essential 15-day trial upkeep for apartment car owners",
+    "button_label": "Select 15-Day Normal Plan",
+    "buttonLabel": "Select 15-Day Normal Plan"
   },
   {
-    "id": "monthly",
-    "name": "Monthly Plan",
+    "id": "normal-monthly",
+    "name": "Monthly Normal Plan",
+    "displayName": "Monthly Plan",
     "category": "Normal",
     "duration": "1 month",
     "price": null,
     "price_display": "Price to be confirmed",
+    "priceDisplay": "Price to be confirmed",
     "billing_period": "Monthly",
-    "cleaning_frequency": "Regular morning cycle throughout the month",
+    "billingPeriod": "Monthly",
+    "cleaning_frequency": "Regular morning cycle throughout 30 days",
+    "cleaningFrequency": "Regular morning cycle throughout 30 days",
     "included_services": [
+      "Dust Removal",
+      "Exterior Cleaning",
+      "Glass Cleaning",
+      "Tyre Cleaning"
+    ],
+    "includedServices": [
       "Dust Removal",
       "Exterior Cleaning",
       "Glass Cleaning",
@@ -74,46 +57,210 @@
     ],
     "popular": true,
     "status": "Active",
-    "button_label": "Select Monthly Plan"
+    "highlight": "Steady month-long car care before your daily drive",
+    "button_label": "Select Monthly Normal Plan",
+    "buttonLabel": "Select Monthly Normal Plan"
   },
   {
-    "id": "quarterly",
-    "name": "Quarterly Plan",
-    "category": "Premium",
+    "id": "normal-quarterly",
+    "name": "Quarterly Normal Plan",
+    "displayName": "Quarterly Plan",
+    "category": "Normal",
     "duration": "3 months",
     "price": null,
     "price_display": "Price to be confirmed",
+    "priceDisplay": "Price to be confirmed",
     "billing_period": "Quarterly",
+    "billingPeriod": "Quarterly",
     "cleaning_frequency": "Continuous routine cleaning for 90 days",
+    "cleaningFrequency": "Continuous routine cleaning for 90 days",
+    "included_services": [
+      "Dust Removal",
+      "Exterior Cleaning",
+      "Glass Cleaning",
+      "Tyre Cleaning"
+    ],
+    "includedServices": [
+      "Dust Removal",
+      "Exterior Cleaning",
+      "Glass Cleaning",
+      "Tyre Cleaning"
+    ],
+    "popular": false,
+    "status": "Active",
+    "highlight": "Convenient 3-month uninterrupted routine maintenance",
+    "button_label": "Select Quarterly Normal Plan",
+    "buttonLabel": "Select Quarterly Normal Plan"
+  },
+  {
+    "id": "normal-half-yearly",
+    "name": "Half-Yearly Normal Plan",
+    "displayName": "Half-Yearly Plan",
+    "category": "Normal",
+    "duration": "6 months",
+    "price": null,
+    "price_display": "Price to be confirmed",
+    "priceDisplay": "Price to be confirmed",
+    "billing_period": "Half-yearly",
+    "billingPeriod": "Half-yearly",
+    "cleaning_frequency": "Long-term doorstep vehicle maintenance for 180 days",
+    "cleaningFrequency": "Long-term doorstep vehicle maintenance for 180 days",
+    "included_services": [
+      "Dust Removal",
+      "Exterior Cleaning",
+      "Glass Cleaning",
+      "Tyre Cleaning"
+    ],
+    "includedServices": [
+      "Dust Removal",
+      "Exterior Cleaning",
+      "Glass Cleaning",
+      "Tyre Cleaning"
+    ],
+    "popular": false,
+    "status": "Active",
+    "highlight": "Hassle-free 6-month consistent routine for apartment cars",
+    "button_label": "Select Half-Yearly Normal Plan",
+    "buttonLabel": "Select Half-Yearly Normal Plan"
+  },
+  {
+    "id": "premium-15-day",
+    "name": "15-Day Premium Plan",
+    "displayName": "15-Day Plan",
+    "category": "Premium",
+    "duration": "15 days",
+    "price": null,
+    "price_display": "Price to be confirmed",
+    "priceDisplay": "Price to be confirmed",
+    "billing_period": "15 days",
+    "billingPeriod": "15 days",
+    "cleaning_frequency": "Priority morning service cycles across 15 days",
+    "cleaningFrequency": "Priority morning service cycles across 15 days",
     "included_services": [
       "Dust Removal",
       "Exterior Cleaning",
       "Glass Cleaning",
       "Tyre Cleaning",
+      "Priority Morning Slot Allocation",
+      "Dedicated Spot Inspection"
+    ],
+    "includedServices": [
+      "Dust Removal",
+      "Exterior Cleaning",
+      "Glass Cleaning",
+      "Tyre Cleaning",
+      "Priority Morning Slot Allocation",
       "Dedicated Spot Inspection"
     ],
     "popular": false,
     "status": "Active",
-    "button_label": "Select Quarterly Plan"
+    "highlight": "Intensive 15-day detailing trial with priority morning care",
+    "button_label": "Select 15-Day Premium Plan",
+    "buttonLabel": "Select 15-Day Premium Plan"
   },
   {
-    "id": "half-yearly",
-    "name": "Half-Yearly Plan",
+    "id": "premium-monthly",
+    "name": "Monthly Premium Plan",
+    "displayName": "Monthly Plan",
     "category": "Premium",
-    "duration": "6 months",
+    "duration": "1 month",
     "price": null,
     "price_display": "Price to be confirmed",
-    "billing_period": "Half-yearly",
-    "cleaning_frequency": "Long-term doorstep vehicle maintenance",
+    "priceDisplay": "Price to be confirmed",
+    "billing_period": "Monthly",
+    "billingPeriod": "Monthly",
+    "cleaning_frequency": "Enhanced morning cycle with priority slot care for 30 days",
+    "cleaningFrequency": "Enhanced morning cycle with priority slot care for 30 days",
     "included_services": [
       "Dust Removal",
       "Exterior Cleaning",
       "Glass Cleaning",
       "Tyre Cleaning",
-      "Priority Support & Scheduling"
+      "Priority Morning Slot Allocation",
+      "Dedicated Spot Inspection"
+    ],
+    "includedServices": [
+      "Dust Removal",
+      "Exterior Cleaning",
+      "Glass Cleaning",
+      "Tyre Cleaning",
+      "Priority Morning Slot Allocation",
+      "Dedicated Spot Inspection"
+    ],
+    "popular": true,
+    "status": "Active",
+    "highlight": "Our most popular comprehensive monthly doorstep car care",
+    "button_label": "Select Monthly Premium Plan",
+    "buttonLabel": "Select Monthly Premium Plan"
+  },
+  {
+    "id": "premium-quarterly",
+    "name": "Quarterly Premium Plan",
+    "displayName": "Quarterly Plan",
+    "category": "Premium",
+    "duration": "3 months",
+    "price": null,
+    "price_display": "Price to be confirmed",
+    "priceDisplay": "Price to be confirmed",
+    "billing_period": "Quarterly",
+    "billingPeriod": "Quarterly",
+    "cleaning_frequency": "Continuous priority cleaning & detailing assessment for 90 days",
+    "cleaningFrequency": "Continuous priority cleaning & detailing assessment for 90 days",
+    "included_services": [
+      "Dust Removal",
+      "Exterior Cleaning",
+      "Glass Cleaning",
+      "Tyre Cleaning",
+      "Priority Slot Scheduling",
+      "Quarterly Detailing Assessment"
+    ],
+    "includedServices": [
+      "Dust Removal",
+      "Exterior Cleaning",
+      "Glass Cleaning",
+      "Tyre Cleaning",
+      "Priority Slot Scheduling",
+      "Quarterly Detailing Assessment"
     ],
     "popular": false,
     "status": "Active",
-    "button_label": "Select Half-Yearly Plan"
+    "highlight": "Quarterly comprehensive care with dedicated spot checks",
+    "button_label": "Select Quarterly Premium Plan",
+    "buttonLabel": "Select Quarterly Premium Plan"
+  },
+  {
+    "id": "premium-half-yearly",
+    "name": "Half-Yearly Premium Plan",
+    "displayName": "Half-Yearly Plan",
+    "category": "Premium",
+    "duration": "6 months",
+    "price": null,
+    "price_display": "Price to be confirmed",
+    "priceDisplay": "Price to be confirmed",
+    "billing_period": "Half-yearly",
+    "billingPeriod": "Half-yearly",
+    "cleaning_frequency": "Maximum priority long-term doorstep care for 180 days",
+    "cleaningFrequency": "Maximum priority long-term doorstep care for 180 days",
+    "included_services": [
+      "Dust Removal",
+      "Exterior Cleaning",
+      "Glass Cleaning",
+      "Tyre Cleaning",
+      "Priority Slot Scheduling",
+      "Extended Service Support"
+    ],
+    "includedServices": [
+      "Dust Removal",
+      "Exterior Cleaning",
+      "Glass Cleaning",
+      "Tyre Cleaning",
+      "Priority Slot Scheduling",
+      "Extended Service Support"
+    ],
+    "popular": false,
+    "status": "Active",
+    "highlight": "Complete 6-month peace of mind with premium priority service",
+    "button_label": "Select Half-Yearly Premium Plan",
+    "buttonLabel": "Select Half-Yearly Premium Plan"
   }
 ]

@@ -86,7 +86,7 @@ export default function ServicesPage() {
               </div>
               <h3 className="text-lg font-bold text-slate-900 font-heading">Apartment Safe & Water Conscious</h3>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                Designed to comply with apartment society rules across Hyderabad. No excessive water pooling or splashing onto neighbouring vehicles.
+                Designed to comply with apartment society rules in Mehdipatnam. No excessive water pooling or splashing onto neighbouring vehicles.
               </p>
             </div>
 

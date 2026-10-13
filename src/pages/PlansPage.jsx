@@ -51,7 +51,7 @@ export default function PlansPage() {
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            All 6 Plans
+            All Plans (8)
           </button>
           <button
             onClick={() => setCategoryFilter('Normal')}
@@ -61,7 +61,7 @@ export default function PlansPage() {
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            Normal Category
+            Normal Category (4)
           </button>
           <button
             onClick={() => setCategoryFilter('Premium')}
@@ -71,14 +71,14 @@ export default function PlansPage() {
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            Premium Category
+            Premium Category (4)
           </button>
         </div>
       </section>
 
-      {/* 2. PLANS CARD GRID (ALL 6 PLANS) */}
+      {/* 2. PLANS CARD GRID (ALL 8 PLANS ACROSS NORMAL & PREMIUM) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {filteredPlans.map((plan) => (
             <SubscriptionCard
               key={plan.id}
@@ -90,7 +90,7 @@ export default function PlansPage() {
 
         <div className="mt-8 p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 text-center max-w-3xl mx-auto">
           <p>
-            * Pricing Policy: All subscription prices are confirmed upon review of your vehicle model and apartment location across Hyderabad to ensure accurate pricing with no surprises.
+            * Pricing Policy: All subscription prices are confirmed upon review of your vehicle model and apartment location in Mehdipatnam/Hyderabad to ensure accurate pricing with no surprises.
           </p>
         </div>
       </section>
@@ -106,7 +106,7 @@ export default function PlansPage() {
               Plan Comparison Table
             </h2>
             <p className="text-xs sm:text-sm text-slate-600 mt-2">
-              Compare inclusions between the Normal service tiers and comprehensive Premium packages.
+              Compare inclusions between the Normal service tiers and comprehensive Premium packages across all 4 duration options (15 Days, Monthly, Quarterly, and Half-Yearly).
             </p>
           </div>
 
@@ -144,10 +144,10 @@ export default function PlansPage() {
                 <tr>
                   <td className="py-4 px-4 text-slate-600">Available Durations</td>
                   <td className="py-4 px-4 text-center text-slate-900 font-semibold">
-                    15 Days, Monthly, Custom
+                    15 Days, Monthly, Quarterly (3 Mo), Half-Yearly (6 Mo)
                   </td>
                   <td className="py-4 px-4 text-center text-[#1677FF] font-semibold bg-blue-50/30">
-                    Monthly, 3 Months, 6 Months
+                    15 Days, Monthly, Quarterly (3 Mo), Half-Yearly (6 Mo)
                   </td>
                 </tr>
                 <tr>
@@ -178,7 +178,7 @@ export default function PlansPage() {
               </p>
             </div>
             <button
-              onClick={() => selectPlanAndScroll(selectedPlan || 'Normal Plan')}
+              onClick={() => selectPlanAndScroll(selectedPlan || 'Monthly Normal Plan')}
               className="px-5 py-2.5 rounded-full bg-[#1677FF] hover:bg-[#00A3FF] text-white text-xs font-semibold self-start md:self-auto transition-colors cursor-pointer shadow-md"
             >
               Configure in Booking Form
@@ -204,7 +204,7 @@ export default function PlansPage() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <BookingForm
           title="Complete Your Plan Enquiry"
-          subtitle={`Submit your vehicle details below. Selected plan: ${selectedPlan || 'Normal Plan'}`}
+          subtitle={`Submit your vehicle details below. Selected plan: ${selectedPlan || 'Monthly Normal Plan'}`}
         />
       </section>
     </div>

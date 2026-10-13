@@ -14,7 +14,7 @@ export default function BookingForm({ initialPlan = null, title, subtitle }) {
     flat_number: '',
     car_model: '',
     vehicle_registration_number: '',
-    preferred_plan: initialPlan || selectedPlan || 'Normal Plan',
+    preferred_plan: initialPlan || selectedPlan || 'Monthly Normal Plan',
     preferred_start_date: '',
     preferred_time: '',
     additional_message: ''
@@ -28,7 +28,13 @@ export default function BookingForm({ initialPlan = null, title, subtitle }) {
   // Sync when selectedPlan from context changes
   useEffect(() => {
     if (selectedPlan) {
-      setFormData(prev => ({ ...prev, preferred_plan: selectedPlan }));
+      let normalized = selectedPlan;
+      if (selectedPlan === 'Normal Plan' || selectedPlan === 'Monthly Plan') normalized = 'Monthly Normal Plan';
+      else if (selectedPlan === 'Premium Plan') normalized = 'Monthly Premium Plan';
+      else if (selectedPlan === '15-Day Plan') normalized = '15-Day Normal Plan';
+      else if (selectedPlan === 'Quarterly Plan') normalized = 'Quarterly Premium Plan';
+      else if (selectedPlan === 'Half-Yearly Plan') normalized = 'Half-Yearly Premium Plan';
+      setFormData(prev => ({ ...prev, preferred_plan: normalized }));
     }
   }, [selectedPlan]);
 
@@ -347,7 +353,7 @@ export default function BookingForm({ initialPlan = null, title, subtitle }) {
                     required
                     value={formData.apartment}
                     onChange={handleChange}
-                    placeholder="e.g. Skyline Towers, Hyderabad"
+                    placeholder="e.g. Skyline Towers, Mehdipatnam"
                     className={`w-full px-4 py-3 rounded-xl bg-slate-50 border text-slate-900 text-sm placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#1677FF] transition-all ${
                       errors.apartment ? 'border-red-500 form-input-error' : 'border-slate-200 focus:border-[#1677FF]'
                     }`}
@@ -461,14 +467,20 @@ export default function BookingForm({ initialPlan = null, title, subtitle }) {
                     required
                     value={formData.preferred_plan}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#1677FF] transition-all cursor-pointer"
+                    className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#1677FF] transition-all cursor-pointer font-medium"
                   >
-                    <option value="Normal Plan">Normal Plan</option>
-                    <option value="Premium Plan">Premium Plan</option>
-                    <option value="15-Day Plan">15-Day Plan (15 Days)</option>
-                    <option value="Monthly Plan">Monthly Plan (1 Month)</option>
-                    <option value="Quarterly Plan">Quarterly Plan (3 Months)</option>
-                    <option value="Half-Yearly Plan">Half-Yearly Plan (6 Months)</option>
+                    <optgroup label="Normal Category">
+                      <option value="15-Day Normal Plan">15-Day Normal Plan (15 Days)</option>
+                      <option value="Monthly Normal Plan">Monthly Normal Plan (1 Month)</option>
+                      <option value="Quarterly Normal Plan">Quarterly Normal Plan (3 Months)</option>
+                      <option value="Half-Yearly Normal Plan">Half-Yearly Normal Plan (6 Months)</option>
+                    </optgroup>
+                    <optgroup label="Premium Category">
+                      <option value="15-Day Premium Plan">15-Day Premium Plan (15 Days)</option>
+                      <option value="Monthly Premium Plan">Monthly Premium Plan (1 Month)</option>
+                      <option value="Quarterly Premium Plan">Quarterly Premium Plan (3 Months)</option>
+                      <option value="Half-Yearly Premium Plan">Half-Yearly Premium Plan (6 Months)</option>
+                    </optgroup>
                   </select>
                   {errors.preferred_plan && (
                     <p className="text-red-500 text-xs mt-1">{errors.preferred_plan}</p>

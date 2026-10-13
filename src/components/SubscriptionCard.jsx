@@ -5,7 +5,7 @@ import { useBooking } from '../context/BookingContext';
 export default function SubscriptionCard({ plan, onSelect, featured = false }) {
   const { selectedPlan, selectPlanAndScroll } = useBooking();
 
-  const isSelected = selectedPlan === plan.name;
+  const isSelected = selectedPlan === plan.name || selectedPlan === plan.displayName || selectedPlan === plan.id;
   const isHighlighted = featured || plan.popular;
 
   const handleSelect = () => {
@@ -15,6 +15,12 @@ export default function SubscriptionCard({ plan, onSelect, featured = false }) {
       selectPlanAndScroll(plan.name);
     }
   };
+
+  const inclusions = plan.includedServices || plan.included_services || [];
+  const cleaningFreq = plan.cleaningFrequency || plan.cleaning_frequency || 'Configured upon vehicle confirmation';
+  const durationText = plan.duration || plan.billingPeriod || plan.billing_period || '1 month';
+  const priceDisp = plan.priceDisplay || plan.price_display || 'Price to be confirmed';
+  const cardTitle = plan.displayName || plan.name;
 
   return (
     <div
@@ -46,7 +52,7 @@ export default function SubscriptionCard({ plan, onSelect, featured = false }) {
       {/* Plan Header */}
       <div>
         <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 font-heading">
-          {plan.name}
+          {cardTitle}
         </h3>
         {plan.highlight && (
           <p className="text-xs text-slate-600 mt-1 line-clamp-2">
@@ -63,13 +69,13 @@ export default function SubscriptionCard({ plan, onSelect, featured = false }) {
                   ₹{Number(plan.price).toLocaleString('en-IN')}
                 </span>
                 <span className="text-xs text-slate-500">
-                  / {plan.billingPeriod || plan.duration}
+                  / {plan.billingPeriod || plan.billing_period || plan.duration}
                 </span>
               </>
             ) : (
               <div className="flex flex-col">
                 <span className="text-xl sm:text-2xl font-bold text-slate-900 font-heading">
-                  Price to be confirmed
+                  {priceDisp}
                 </span>
                 <span className="text-[11px] text-[#1677FF] font-semibold mt-0.5">
                   Tailored by car segment & society
@@ -82,7 +88,7 @@ export default function SubscriptionCard({ plan, onSelect, featured = false }) {
           <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-slate-600">
             <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-200">
               <Calendar className="w-3.5 h-3.5 text-[#1677FF] shrink-0" />
-              <span className="truncate">Duration: <strong className="text-slate-900">{plan.duration}</strong></span>
+              <span className="truncate">Duration: <strong className="text-slate-900">{durationText}</strong></span>
             </div>
             <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-200">
               <Clock className="w-3.5 h-3.5 text-[#1677FF] shrink-0" />
@@ -97,7 +103,7 @@ export default function SubscriptionCard({ plan, onSelect, featured = false }) {
             Cleaning Frequency:
           </p>
           <p className="text-slate-900 font-medium text-xs">
-            {plan.cleaningFrequency || 'Configured upon vehicle confirmation'}
+            {cleaningFreq}
           </p>
         </div>
 
@@ -107,7 +113,7 @@ export default function SubscriptionCard({ plan, onSelect, featured = false }) {
             Included in this plan:
           </p>
           <ul className="space-y-2 text-xs text-slate-600">
-            {plan.includedServices && plan.includedServices.map((service, index) => (
+            {inclusions.map((service, index) => (
               <li key={index} className="flex items-start gap-2">
                 <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
                 <span className="text-slate-800">{service}</span>
@@ -129,7 +135,7 @@ export default function SubscriptionCard({ plan, onSelect, featured = false }) {
               : 'bg-slate-100 hover:bg-[#1677FF] border border-slate-200 hover:border-[#1677FF] text-slate-800 hover:text-white'
           }`}
         >
-          <span>{isSelected ? `Selected: ${plan.name}` : (plan.buttonLabel || `Select ${plan.name}`)}</span>
+          <span>{isSelected ? `Selected: ${plan.name}` : (plan.buttonLabel || plan.button_label || `Select ${plan.name}`)}</span>
           <ArrowRight className="w-3.5 h-3.5" />
         </button>
       </div>

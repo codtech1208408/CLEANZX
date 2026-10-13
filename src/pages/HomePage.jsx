@@ -17,7 +17,7 @@ export default function HomePage() {
     {
       id: 1,
       image: "/images/hero-car.jpg",
-      badge: "Serving All Across Hyderabad",
+      badge: "Serving Mehdipatnam & Hyderabad Residential Apartments",
       titleLine1: "Premium Car Cleaning.",
       titleLine2: "Right at Your Doorstep.",
       subtitle: "Keep your car spotless without leaving home. Discover convenient doorstep car cleaning and flexible subscription plans from CLEANZX in Hyderabad.",
@@ -54,7 +54,7 @@ export default function HomePage() {
       titleLine1: "Crystal-Clear Windscreen.",
       titleLine2: "Impeccable Tyre Gloss.",
       subtitle: "Streak-free automotive glass polishing and rich tyre dressing for an immaculate, road-ready presentation every morning.",
-      primaryCtaText: "Compare 6 Subscription Plans",
+      primaryCtaText: "Compare All 8 Subscription Plans",
       primaryCtaLink: "/plans",
       secondaryCtaText: "Book Your Cleaning",
     }
@@ -172,7 +172,8 @@ export default function HomePage() {
             </div>
             <div className="bg-slate-900/90 p-3 sm:p-4 rounded-xl border border-slate-800 backdrop-blur-md shadow-md sm:shadow-lg shadow-black/50">
               <p className="text-[10px] sm:text-xs text-slate-400">Location</p>
-              <p className="text-xs sm:text-sm font-bold text-white mt-1">Across Hyderabad</p>
+              <p className="text-xs sm:text-sm font-bold text-white mt-1">Mehdipatnam, HYD</p>
+              <p className="text-[10px] sm:text-xs text-[#00A3FF] font-medium mt-1">Serving All Across Hyderabad</p>
             </div>
             <div className="bg-slate-900/90 p-3 sm:p-4 rounded-xl border border-slate-800 backdrop-blur-md shadow-md sm:shadow-lg shadow-black/50">
               <p className="text-[10px] sm:text-xs text-slate-400">Direct WhatsApp</p>
@@ -297,15 +298,24 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* 3 Featured Plans Preview */}
+        {/* Featured Plans Preview */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
-          {(plans && plans.length > 0 ? plans : SUBSCRIPTION_PLANS).slice(0, 3).map((plan) => (
-            <SubscriptionCard
-              key={plan.id}
-              plan={plan}
-              onSelect={() => selectPlanAndScroll(plan.name)}
-            />
-          ))}
+          {(() => {
+            const list = plans && plans.length > 0 ? plans : SUBSCRIPTION_PLANS;
+            const featuredList = [
+              list.find(p => p.id === 'normal-15-day'),
+              list.find(p => p.id === 'normal-monthly'),
+              list.find(p => p.id === 'premium-monthly')
+            ].filter(Boolean);
+            const displayList = featuredList.length >= 3 ? featuredList : list.slice(0, 3);
+            return displayList.map((plan) => (
+              <SubscriptionCard
+                key={plan.id}
+                plan={plan}
+                onSelect={() => selectPlanAndScroll(plan.name)}
+              />
+            ));
+          })()}
         </div>
 
         <div className="mt-10 text-center">
@@ -313,7 +323,7 @@ export default function HomePage() {
             to="/plans"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-900 font-semibold text-sm transition-all shadow-sm"
           >
-            <span>Compare All 6 Subscription Plans & Inclusions</span>
+            <span>Compare All 8 Subscription Plans & Inclusions</span>
             <ArrowRight className="w-4 h-4 text-[#1677FF]" />
           </Link>
         </div>
@@ -377,7 +387,7 @@ export default function HomePage() {
               Car Detailing Built Around Your Daily Routine
             </h2>
             <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
-              Living in an apartment or managing a tight work schedule leaves little time to visit wash stations. CLEANZX brings systematic, doorstep vehicle upkeep straight to your designated parking stall, serving all across Hyderabad.
+              Living in an apartment or managing a tight work schedule leaves little time to visit wash stations. CLEANZX brings systematic, doorstep vehicle upkeep straight to your designated parking stall in Mehdipatnam.
             </p>
 
             <div className="space-y-4 pt-2">

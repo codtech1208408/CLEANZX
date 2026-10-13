@@ -4,7 +4,7 @@ import { SUBSCRIPTION_PLANS } from '../data/websiteData';
 const BookingContext = createContext();
 
 export const BookingProvider = ({ children }) => {
-  const [selectedPlan, setSelectedPlan] = useState('Normal Plan');
+  const [selectedPlan, setSelectedPlan] = useState('Monthly Normal Plan');
   const [selectedAddons, setSelectedAddons] = useState([]);
   const [plans, setPlans] = useState(SUBSCRIPTION_PLANS);
   const [backendAvailable, setBackendAvailable] = useState(null); // null = checking, true/false

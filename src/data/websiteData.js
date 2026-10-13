@@ -8,12 +8,12 @@ export const BUSINESS_INFO = {
   whatsapp: "9642734252",
   whatsappUrl: "https://wa.me/919642734252",
   location: {
-    area: "Hyderabad",
+    area: "Mehdipatnam",
     city: "Hyderabad",
     state: "Telangana",
     country: "India",
-    displayText: "Hyderabad, Telangana, India",
-    landmark: "Serving all across Hyderabad"
+    displayText: "Mehdipatnam, Hyderabad, Telangana, India",
+    landmark: "Serving Mehdipatnam & residential apartments across Hyderabad"
   },
   operatingHours: {
     start: "06:00 AM",
@@ -132,51 +132,11 @@ export const OPTIONAL_ADDONS = [
 ];
 
 export const SUBSCRIPTION_PLANS = [
+  // --- NORMAL CATEGORY ---
   {
-    id: "normal",
-    name: "Normal Plan",
-    category: "Normal",
-    duration: "Flexible / Monthly",
-    price: null,
-    priceDisplay: "Price to be confirmed",
-    billingPeriod: "Enquiry-based",
-    cleaningFrequency: "Standard recurring schedule on confirmation",
-    includedServices: [
-      "Dust Removal",
-      "Exterior Cleaning",
-      "Glass Cleaning",
-      "Tyre Cleaning"
-    ],
-    popular: false,
-    highlight: "Essential doorstep maintenance for daily drivers",
-    statusBadge: "Enquiry-Only State",
-    buttonLabel: "Select Normal Plan"
-  },
-  {
-    id: "premium",
-    name: "Premium Plan",
-    category: "Premium",
-    duration: "Flexible / Comprehensive",
-    price: null,
-    priceDisplay: "Price to be confirmed",
-    billingPeriod: "Enquiry-based",
-    cleaningFrequency: "Enhanced recurring schedule with priority care",
-    includedServices: [
-      "Dust Removal",
-      "Exterior Cleaning",
-      "Glass Cleaning",
-      "Tyre Cleaning",
-      "Priority Morning Slot Allocation",
-      "Dedicated Spot Inspection"
-    ],
-    popular: true,
-    highlight: "Our most popular comprehensive doorstep car care option",
-    statusBadge: "Enquiry-Only State",
-    buttonLabel: "Select Premium Plan"
-  },
-  {
-    id: "15-day",
-    name: "15-Day Plan",
+    id: "normal-15-day",
+    name: "15-Day Normal Plan",
+    displayName: "15-Day Plan",
     category: "Normal",
     duration: "15 days",
     price: null,
@@ -190,13 +150,14 @@ export const SUBSCRIPTION_PLANS = [
       "Tyre Cleaning"
     ],
     popular: false,
-    highlight: "Ideal trial option for apartment car owners",
+    highlight: "Essential 15-day trial upkeep for apartment car owners",
     statusBadge: "Enquiry-Only State",
-    buttonLabel: "Select 15-Day Plan"
+    buttonLabel: "Select 15-Day Normal Plan"
   },
   {
-    id: "monthly",
-    name: "Monthly Plan",
+    id: "normal-monthly",
+    name: "Monthly Normal Plan",
+    displayName: "Monthly Plan",
     category: "Normal",
     duration: "1 month",
     price: null,
@@ -210,14 +171,15 @@ export const SUBSCRIPTION_PLANS = [
       "Tyre Cleaning"
     ],
     popular: true,
-    highlight: "Steady month-long car care before your morning drive",
+    highlight: "Steady month-long car care before your daily drive",
     statusBadge: "Enquiry-Only State",
-    buttonLabel: "Select Monthly Plan"
+    buttonLabel: "Select Monthly Normal Plan"
   },
   {
-    id: "quarterly",
-    name: "Quarterly Plan",
-    category: "Premium",
+    id: "normal-quarterly",
+    name: "Quarterly Normal Plan",
+    displayName: "Quarterly Plan",
+    category: "Normal",
     duration: "3 months",
     price: null,
     priceDisplay: "Price to be confirmed",
@@ -227,19 +189,18 @@ export const SUBSCRIPTION_PLANS = [
       "Dust Removal",
       "Exterior Cleaning",
       "Glass Cleaning",
-      "Tyre Cleaning",
-      "Priority Slot Scheduling",
-      "Quarterly Detailing Assessment"
+      "Tyre Cleaning"
     ],
     popular: false,
-    highlight: "Convenient 3-month uninterrupted routine",
+    highlight: "Convenient 3-month uninterrupted routine maintenance",
     statusBadge: "Enquiry-Only State",
-    buttonLabel: "Select Quarterly Plan"
+    buttonLabel: "Select Quarterly Normal Plan"
   },
   {
-    id: "half-yearly",
-    name: "Half-Yearly Plan",
-    category: "Premium",
+    id: "normal-half-yearly",
+    name: "Half-Yearly Normal Plan",
+    displayName: "Half-Yearly Plan",
+    category: "Normal",
     duration: "6 months",
     price: null,
     priceDisplay: "Price to be confirmed",
@@ -249,14 +210,106 @@ export const SUBSCRIPTION_PLANS = [
       "Dust Removal",
       "Exterior Cleaning",
       "Glass Cleaning",
+      "Tyre Cleaning"
+    ],
+    popular: false,
+    highlight: "Hassle-free 6-month consistent routine for apartment cars",
+    statusBadge: "Enquiry-Only State",
+    buttonLabel: "Select Half-Yearly Normal Plan"
+  },
+
+  // --- PREMIUM CATEGORY ---
+  {
+    id: "premium-15-day",
+    name: "15-Day Premium Plan",
+    displayName: "15-Day Plan",
+    category: "Premium",
+    duration: "15 days",
+    price: null,
+    priceDisplay: "Price to be confirmed",
+    billingPeriod: "15 days",
+    cleaningFrequency: "Priority morning service cycles across 15 days",
+    includedServices: [
+      "Dust Removal",
+      "Exterior Cleaning",
+      "Glass Cleaning",
+      "Tyre Cleaning",
+      "Priority Morning Slot Allocation",
+      "Dedicated Spot Inspection"
+    ],
+    popular: false,
+    highlight: "Intensive 15-day detailing trial with priority morning care",
+    statusBadge: "Enquiry-Only State",
+    buttonLabel: "Select 15-Day Premium Plan"
+  },
+  {
+    id: "premium-monthly",
+    name: "Monthly Premium Plan",
+    displayName: "Monthly Plan",
+    category: "Premium",
+    duration: "1 month",
+    price: null,
+    priceDisplay: "Price to be confirmed",
+    billingPeriod: "Monthly",
+    cleaningFrequency: "Enhanced morning cycle with priority slot care for 30 days",
+    includedServices: [
+      "Dust Removal",
+      "Exterior Cleaning",
+      "Glass Cleaning",
+      "Tyre Cleaning",
+      "Priority Morning Slot Allocation",
+      "Dedicated Spot Inspection"
+    ],
+    popular: true,
+    highlight: "Our most popular comprehensive monthly doorstep car care",
+    statusBadge: "Enquiry-Only State",
+    buttonLabel: "Select Monthly Premium Plan"
+  },
+  {
+    id: "premium-quarterly",
+    name: "Quarterly Premium Plan",
+    displayName: "Quarterly Plan",
+    category: "Premium",
+    duration: "3 months",
+    price: null,
+    priceDisplay: "Price to be confirmed",
+    billingPeriod: "Quarterly",
+    cleaningFrequency: "Continuous priority cleaning & detailing assessment for 90 days",
+    includedServices: [
+      "Dust Removal",
+      "Exterior Cleaning",
+      "Glass Cleaning",
+      "Tyre Cleaning",
+      "Priority Slot Scheduling",
+      "Quarterly Detailing Assessment"
+    ],
+    popular: false,
+    highlight: "Quarterly comprehensive care with dedicated spot checks",
+    statusBadge: "Enquiry-Only State",
+    buttonLabel: "Select Quarterly Premium Plan"
+  },
+  {
+    id: "premium-half-yearly",
+    name: "Half-Yearly Premium Plan",
+    displayName: "Half-Yearly Plan",
+    category: "Premium",
+    duration: "6 months",
+    price: null,
+    priceDisplay: "Price to be confirmed",
+    billingPeriod: "Half-yearly",
+    cleaningFrequency: "Maximum priority long-term doorstep care for 180 days",
+    includedServices: [
+      "Dust Removal",
+      "Exterior Cleaning",
+      "Glass Cleaning",
       "Tyre Cleaning",
       "Priority Slot Scheduling",
       "Extended Service Support"
     ],
     popular: false,
-    highlight: "Maximum long-term peace of mind for vehicle owners",
+    highlight: "Complete 6-month peace of mind with premium priority service",
     statusBadge: "Enquiry-Only State",
-    buttonLabel: "Select Half-Yearly Plan"
+    buttonLabel: "Select Half-Yearly Premium Plan"
   }
 ];
 
@@ -309,7 +362,7 @@ export const TRUST_POINTS = [
 export const FAQS = [
   {
     question: "How does the doorstep car cleaning service work in apartments?",
-    answer: "Our technicians arrive directly at your residential apartment parking across Hyderabad during our morning operating hours (06:00 AM - 11:30 AM). We perform the cleaning right at your allotted parking bay using eco-friendly, apartment-safe methods that do not create puddles or disrupt neighbours."
+    answer: "Our technicians arrive directly at your residential apartment parking in Mehdipatnam or Hyderabad during our morning operating hours (06:00 AM - 11:30 AM). We perform the cleaning right at your allotted parking bay using eco-friendly, apartment-safe methods that do not create puddles or disrupt neighbours."
   },
   {
     question: "What are your operating hours?",
@@ -329,7 +382,7 @@ export const FAQS = [
   },
   {
     question: "Which areas in Hyderabad do you cover?",
-    answer: "We serve residential apartments and gated societies all across Hyderabad. Submit your apartment details to confirm coverage for your society."
+    answer: "We are based in Mehdipatnam, Hyderabad, Telangana, and cater to residential apartments and societies in Mehdipatnam and neighbouring areas. Submit your apartment details to confirm coverage for your society."
   }
 ];
 
