@@ -78,9 +78,9 @@ export default function HomePage() {
   };
 
   return (
-    <div className="bg-white text-slate-900 space-y-8 sm:space-y-24 lg:space-y-32 w-full max-w-full overflow-x-hidden">
+    <div className="bg-white text-slate-900 space-y-16 sm:space-y-24 lg:space-y-32 w-full max-w-full overflow-x-hidden">
       {/* 1. HERO SECTION WITH 4 AUTO-ROTATING BANNERS */}
-      <section className="relative sm:min-h-[85vh] lg:min-h-[90vh] flex items-center justify-center overflow-hidden pt-3 sm:pt-8 pb-3 sm:pb-20 bg-slate-950">
+      <section className="relative min-h-[92vh] sm:min-h-[85vh] lg:min-h-[90vh] flex items-center justify-center overflow-hidden pt-8 sm:pt-14 pb-12 sm:pb-20 bg-slate-950">
         {/* Carousel Background Images (Smooth Crossfade) */}
         {banners.map((banner, index) => {
           const isActive = index === currentBanner;
@@ -104,15 +104,15 @@ export default function HomePage() {
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[260px] sm:w-[500px] h-[160px] sm:h-[300px] bg-[#1677FF]/20 rounded-full blur-[90px] sm:blur-[140px] pointer-events-none z-0"></div>
 
         {/* Active Banner Content */}
-        <div className="max-w-7xl mx-auto px-3 sm:px-10 lg:px-16 relative z-10 text-center w-full">
+        <div className="max-w-7xl mx-auto px-4 sm:px-10 lg:px-16 relative z-10 text-center w-full">
           {/* Badge */}
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 sm:px-4 sm:py-2 rounded-full bg-slate-900/90 border border-[#00A3FF]/40 text-[#00A3FF] text-[10px] sm:text-sm font-semibold mb-2 sm:mb-6 shadow-xl shadow-black/40 backdrop-blur-md animate-in fade-in duration-300 max-w-[90%] sm:max-w-none mx-auto">
-            <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-[#00A3FF] shrink-0" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-slate-900/90 border border-[#00A3FF]/40 text-[#00A3FF] text-[11px] sm:text-sm font-semibold mb-4 sm:mb-6 shadow-xl shadow-black/40 backdrop-blur-md animate-in fade-in duration-300 max-w-[95%] sm:max-w-none mx-auto">
+            <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#00A3FF] shrink-0" />
             <span className="truncate">{banners[currentBanner].badge}</span>
           </div>
 
           {/* Headline */}
-          <h1 className="text-[21px] sm:text-5xl lg:text-7xl font-extrabold tracking-tight font-heading max-w-5xl mx-auto leading-tight sm:leading-[1.15] animate-in fade-in duration-500">
+          <h1 className="text-2xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight font-heading max-w-5xl mx-auto leading-snug sm:leading-[1.15] animate-in fade-in duration-500">
             <span className="block text-white drop-shadow-[0_4px_20px_rgba(0,0,0,0.95)]">
               {banners[currentBanner].titleLine1}
             </span>
@@ -122,15 +122,15 @@ export default function HomePage() {
           </h1>
 
           {/* Subheadline */}
-          <p className="mt-2 sm:mt-6 text-[11px] sm:text-lg lg:text-xl text-white/90 max-w-md sm:max-w-3xl mx-auto leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)] font-medium animate-in fade-in duration-500 px-2 sm:px-0">
+          <p className="mt-3.5 sm:mt-6 text-xs sm:text-lg lg:text-xl text-white/85 max-w-md sm:max-w-3xl mx-auto leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)] font-medium animate-in fade-in duration-500 px-2 sm:px-0">
             {banners[currentBanner].subtitle}
           </p>
 
           {/* Call to Actions */}
-          <div className="mt-3.5 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-5 max-w-[280px] sm:max-w-none mx-auto">
+          <div className="mt-6 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5 max-w-[300px] sm:max-w-none mx-auto">
             <Link
               to={banners[currentBanner].primaryCtaLink}
-              className="w-full sm:w-auto px-5 py-2.5 sm:px-8 sm:py-4 rounded-full bg-gradient-to-r from-[#1677FF] to-[#00A3FF] hover:from-[#00A3FF] hover:to-[#1677FF] text-white font-bold text-xs sm:text-base shadow-lg sm:shadow-xl shadow-[#1677FF]/40 hover:shadow-[#00A3FF]/60 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2 group cursor-pointer"
+              className="w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-4 rounded-full bg-gradient-to-r from-[#1677FF] to-[#00A3FF] hover:from-[#00A3FF] hover:to-[#1677FF] text-white font-bold text-xs sm:text-base shadow-lg sm:shadow-xl shadow-[#1677FF]/40 hover:shadow-[#00A3FF]/60 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2 group cursor-pointer"
             >
               <span>{banners[currentBanner].primaryCtaText}</span>
               <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform" />
@@ -138,7 +138,7 @@ export default function HomePage() {
 
             <button
               onClick={scrollToBooking}
-              className="w-full sm:w-auto px-5 py-2.5 sm:px-8 sm:py-4 rounded-full bg-slate-900/90 hover:bg-slate-800 border border-slate-700 hover:border-[#00A3FF]/60 text-white font-semibold text-xs sm:text-base transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 cursor-pointer shadow-md sm:shadow-lg backdrop-blur-sm"
+              className="w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-4 rounded-full bg-slate-900/90 hover:bg-slate-800 border border-slate-700 hover:border-[#00A3FF]/60 text-white font-semibold text-xs sm:text-base transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 cursor-pointer shadow-md sm:shadow-lg backdrop-blur-sm"
             >
               <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#00A3FF]" />
               <span>{banners[currentBanner].secondaryCtaText}</span>
@@ -146,7 +146,7 @@ export default function HomePage() {
           </div>
 
           {/* Slide Progress Indicators */}
-          <div className="mt-3.5 sm:mt-8 flex items-center justify-center gap-1.5 sm:gap-2">
+          <div className="mt-6 sm:mt-8 flex items-center justify-center gap-2 sm:gap-2.5">
             {banners.map((banner, idx) => {
               const isActive = idx === currentBanner;
               return (
@@ -165,22 +165,22 @@ export default function HomePage() {
           </div>
 
           {/* Hero Quick Proof Points */}
-          <div className="mt-4 sm:mt-10 pt-3 sm:pt-7 border-t border-slate-800/80 grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 max-w-4xl mx-auto text-left">
-            <div className="bg-slate-900/90 p-2 sm:p-4 rounded-lg sm:rounded-xl border border-slate-800 backdrop-blur-md shadow-md sm:shadow-lg shadow-black/50">
-              <p className="text-[9px] sm:text-xs text-slate-400">Operating Hours</p>
-              <p className="text-[11px] sm:text-sm font-bold text-white mt-0.5">{BUSINESS_INFO.operatingHours.displayText}</p>
+          <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-slate-800/80 grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4 max-w-4xl mx-auto text-left">
+            <div className="bg-slate-900/90 p-3 sm:p-4 rounded-xl border border-slate-800 backdrop-blur-md shadow-md sm:shadow-lg shadow-black/50">
+              <p className="text-[10px] sm:text-xs text-slate-400">Operating Hours</p>
+              <p className="text-xs sm:text-sm font-bold text-white mt-1">{BUSINESS_INFO.operatingHours.displayText}</p>
             </div>
-            <div className="bg-slate-900/90 p-2 sm:p-4 rounded-lg sm:rounded-xl border border-slate-800 backdrop-blur-md shadow-md sm:shadow-lg shadow-black/50">
-              <p className="text-[9px] sm:text-xs text-slate-400">Location</p>
-              <p className="text-[11px] sm:text-sm font-bold text-white mt-0.5">Mehdipatnam, HYD</p>
+            <div className="bg-slate-900/90 p-3 sm:p-4 rounded-xl border border-slate-800 backdrop-blur-md shadow-md sm:shadow-lg shadow-black/50">
+              <p className="text-[10px] sm:text-xs text-slate-400">Location</p>
+              <p className="text-xs sm:text-sm font-bold text-white mt-1">Mehdipatnam, HYD</p>
             </div>
-            <div className="bg-slate-900/90 p-2 sm:p-4 rounded-lg sm:rounded-xl border border-slate-800 backdrop-blur-md shadow-md sm:shadow-lg shadow-black/50">
-              <p className="text-[9px] sm:text-xs text-slate-400">Direct WhatsApp</p>
-              <p className="text-[11px] sm:text-sm font-bold text-emerald-400 mt-0.5">{BUSINESS_INFO.whatsapp}</p>
+            <div className="bg-slate-900/90 p-3 sm:p-4 rounded-xl border border-slate-800 backdrop-blur-md shadow-md sm:shadow-lg shadow-black/50">
+              <p className="text-[10px] sm:text-xs text-slate-400">Direct WhatsApp</p>
+              <p className="text-xs sm:text-sm font-bold text-emerald-400 mt-1">{BUSINESS_INFO.whatsapp}</p>
             </div>
-            <div className="bg-slate-900/90 p-2.5 sm:p-4 rounded-lg sm:rounded-xl border border-slate-800 backdrop-blur-md shadow-md sm:shadow-lg shadow-black/50">
-              <p className="text-[9px] sm:text-xs text-slate-400">Apartment Service</p>
-              <p className="text-[11px] sm:text-sm font-bold text-[#00A3FF] mt-0.5">Doorstep Bays</p>
+            <div className="bg-slate-900/90 p-3 sm:p-4 rounded-xl border border-slate-800 backdrop-blur-md shadow-md sm:shadow-lg shadow-black/50">
+              <p className="text-[10px] sm:text-xs text-slate-400">Apartment Service</p>
+              <p className="text-xs sm:text-sm font-bold text-[#00A3FF] mt-1">Doorstep Bays</p>
             </div>
           </div>
         </div>
