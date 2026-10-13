@@ -2,7 +2,7 @@
 
 **Premium car care, delivered to your doorstep.**
 
-Operating out of **Mehdipatnam, Hyderabad, Telangana, India**, CLEANZX is a modern web application and management platform for apartment car owners and working professionals.
+Serving all across **Hyderabad, Telangana, India**, CLEANZX is a modern web application and management platform for apartment car owners and working professionals.
 
 ---
 
@@ -12,8 +12,8 @@ Operating out of **Mehdipatnam, Hyderabad, Telangana, India**, CLEANZX is a mode
    - **Home (`/`)**: Hero section with automotive imagery, trust points, 4 core services, 4-step process, subscription preview, add-on preview, why choose us, interactive FAQs, and booking form.
    - **Services (`/services`)**: In-depth breakdown of standard cleaning services (Dust Removal, Exterior Cleaning, Glass Cleaning, Tyre Cleaning), 5 optional paid add-ons, on-site execution protocol, and booking CTA.
    - **Subscription Plans (`/plans`)**: All 6 required subscription plans (Normal Plan, Premium Plan, 15-Day Plan, Monthly Plan, Quarterly Plan, Half-Yearly Plan), category filters (All / Normal / Premium), detailed side-by-side comparison table, and automatic form preselection.
-   - **About Us (`/about`)**: Company background in Mehdipatnam, mission, vision, core principles (Convenience, Consistency, Transparency, Customer Focus), and residential apartment service commitments.
-   - **Contact Us (`/contact`)**: Clickable phone (`tel:9642734252`), direct WhatsApp action, verified Mehdipatnam location embed, morning operating hours (`06:00 AM - 11:30 AM`), and contact enquiry form.
+   - **About Us (`/about`)**: Company background across Hyderabad, mission, vision, core principles (Convenience, Consistency, Transparency, Customer Focus), and residential apartment service commitments.
+   - **Contact Us (`/contact`)**: Clickable phone (`tel:9642734252`), direct WhatsApp action, verified Hyderabad service area embed, morning operating hours (`06:00 AM - 11:30 AM`), and contact enquiry form.
    - **Admin Operations Portal (`/admin`)**: Operations panel to search, filter, and track all booking enquiries, change status (Pending, Contacted, Confirmed, Completed), export data to CSV & JSON, and configure plan pricing and frequency.
 
 2. **Booking Enquiry Form**:

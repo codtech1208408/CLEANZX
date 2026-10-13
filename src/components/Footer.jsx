@@ -147,7 +147,7 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-[#263244] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
-          <p>© {currentYear} CLEANZX. All rights reserved. Operating in Mehdipatnam, Hyderabad, Telangana, India.</p>
+          <p>© {currentYear} CLEANZX. All rights reserved. Serving all across Hyderabad, Telangana, India.</p>
 
           <div className="flex items-center gap-4">
             <span className="text-xs text-[#AAB4C3]/70">Doorstep Car Detailing & Subscription Care</span>

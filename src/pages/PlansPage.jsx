@@ -90,7 +90,7 @@ export default function PlansPage() {
 
         <div className="mt-8 p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 text-center max-w-3xl mx-auto">
           <p>
-            * Pricing Policy: All subscription prices are confirmed upon review of your vehicle model and apartment location in Mehdipatnam/Hyderabad to ensure accurate pricing with no surprises.
+            * Pricing Policy: All subscription prices are confirmed upon review of your vehicle model and apartment location across Hyderabad to ensure accurate pricing with no surprises.
           </p>
         </div>
       </section>

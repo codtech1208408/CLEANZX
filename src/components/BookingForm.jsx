@@ -347,7 +347,7 @@ export default function BookingForm({ initialPlan = null, title, subtitle }) {
                     required
                     value={formData.apartment}
                     onChange={handleChange}
-                    placeholder="e.g. Skyline Towers, Mehdipatnam"
+                    placeholder="e.g. Skyline Towers, Hyderabad"
                     className={`w-full px-4 py-3 rounded-xl bg-slate-50 border text-slate-900 text-sm placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#1677FF] transition-all ${
                       errors.apartment ? 'border-red-500 form-input-error' : 'border-slate-200 focus:border-[#1677FF]'
                     }`}

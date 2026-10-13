@@ -8,12 +8,12 @@ export const BUSINESS_INFO = {
   whatsapp: "9642734252",
   whatsappUrl: "https://wa.me/919642734252",
   location: {
-    area: "Mehdipatnam",
+    area: "Hyderabad",
     city: "Hyderabad",
     state: "Telangana",
     country: "India",
-    displayText: "Mehdipatnam, Hyderabad, Telangana, India",
-    landmark: "Serving Mehdipatnam & residential apartments across Hyderabad"
+    displayText: "Hyderabad, Telangana, India",
+    landmark: "Serving all across Hyderabad"
   },
   operatingHours: {
     start: "06:00 AM",
@@ -309,7 +309,7 @@ export const TRUST_POINTS = [
 export const FAQS = [
   {
     question: "How does the doorstep car cleaning service work in apartments?",
-    answer: "Our technicians arrive directly at your residential apartment parking in Mehdipatnam or Hyderabad during our morning operating hours (06:00 AM - 11:30 AM). We perform the cleaning right at your allotted parking bay using eco-friendly, apartment-safe methods that do not create puddles or disrupt neighbours."
+    answer: "Our technicians arrive directly at your residential apartment parking across Hyderabad during our morning operating hours (06:00 AM - 11:30 AM). We perform the cleaning right at your allotted parking bay using eco-friendly, apartment-safe methods that do not create puddles or disrupt neighbours."
   },
   {
     question: "What are your operating hours?",
@@ -329,7 +329,7 @@ export const FAQS = [
   },
   {
     question: "Which areas in Hyderabad do you cover?",
-    answer: "We are based in Mehdipatnam, Hyderabad, Telangana, and cater to residential apartments and societies in Mehdipatnam and neighbouring areas. Submit your apartment details to confirm coverage for your society."
+    answer: "We serve residential apartments and gated societies all across Hyderabad. Submit your apartment details to confirm coverage for your society."
   }
 ];
 

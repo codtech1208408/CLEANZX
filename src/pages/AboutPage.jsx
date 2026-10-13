@@ -60,10 +60,10 @@ export default function AboutPage() {
               Who We Are
             </span>
             <h2 className="text-3xl font-bold text-slate-900 font-heading">
-              Dedicated Doorstep Vehicle Care in Mehdipatnam
+              Dedicated Doorstep Vehicle Care Across Hyderabad
             </h2>
             <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
-              Operating out of Mehdipatnam, Hyderabad, CLEANZX was built to eliminate the hassle of routine car washing for apartment residents, busy working professionals, and families.
+              Serving all across Hyderabad, CLEANZX was built to eliminate the hassle of routine car washing for apartment residents, busy working professionals, and families.
             </p>
             <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
               Instead of navigating congested roads to find a washing center or relying on inconsistent roadside cleaning, our customers enjoy systematic morning car maintenance performed right in their allotted parking spaces.
@@ -173,7 +173,7 @@ export default function AboutPage() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-8 sm:p-14 text-center text-white space-y-6 shadow-xl">
           <h2 className="text-3xl font-extrabold text-white font-heading">
-            Connect With Our Mehdipatnam Team
+            Connect With Our Hyderabad Team
           </h2>
           <p className="text-sm sm:text-base text-slate-300 max-w-xl mx-auto">
             Have questions about apartment parking permissions or want to schedule a trial plan? Reach out directly via phone or WhatsApp.

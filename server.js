@@ -171,7 +171,7 @@ app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
     service: 'CLEANZX Backend API',
-    location: 'Mehdipatnam, Hyderabad, Telangana, India',
+    location: 'Serving all across Hyderabad, Telangana, India',
     operatingHours: '06:00 AM - 11:30 AM',
     contact: '9642734252',
     timestamp: new Date().toISOString()

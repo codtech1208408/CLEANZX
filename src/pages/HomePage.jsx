@@ -17,7 +17,7 @@ export default function HomePage() {
     {
       id: 1,
       image: "/images/hero-car.jpg",
-      badge: "Serving Mehdipatnam & Hyderabad Residential Apartments",
+      badge: "Serving All Across Hyderabad",
       titleLine1: "Premium Car Cleaning.",
       titleLine2: "Right at Your Doorstep.",
       subtitle: "Keep your car spotless without leaving home. Discover convenient doorstep car cleaning and flexible subscription plans from CLEANZX in Hyderabad.",
@@ -172,7 +172,7 @@ export default function HomePage() {
             </div>
             <div className="bg-slate-900/90 p-3 sm:p-4 rounded-xl border border-slate-800 backdrop-blur-md shadow-md sm:shadow-lg shadow-black/50">
               <p className="text-[10px] sm:text-xs text-slate-400">Location</p>
-              <p className="text-xs sm:text-sm font-bold text-white mt-1">Mehdipatnam, HYD</p>
+              <p className="text-xs sm:text-sm font-bold text-white mt-1">Across Hyderabad</p>
             </div>
             <div className="bg-slate-900/90 p-3 sm:p-4 rounded-xl border border-slate-800 backdrop-blur-md shadow-md sm:shadow-lg shadow-black/50">
               <p className="text-[10px] sm:text-xs text-slate-400">Direct WhatsApp</p>
@@ -377,7 +377,7 @@ export default function HomePage() {
               Car Detailing Built Around Your Daily Routine
             </h2>
             <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
-              Living in an apartment or managing a tight work schedule leaves little time to visit wash stations. CLEANZX brings systematic, doorstep vehicle upkeep straight to your designated parking stall in Mehdipatnam.
+              Living in an apartment or managing a tight work schedule leaves little time to visit wash stations. CLEANZX brings systematic, doorstep vehicle upkeep straight to your designated parking stall, serving all across Hyderabad.
             </p>
 
             <div className="space-y-4 pt-2">

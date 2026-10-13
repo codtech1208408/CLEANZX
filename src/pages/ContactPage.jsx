@@ -196,7 +196,7 @@ export default function ContactPage() {
                     type="text"
                     value={formData.subject}
                     onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                    placeholder="e.g. Society coverage in Mehdipatnam"
+                    placeholder="e.g. Society coverage in Hyderabad"
                     className="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#1677FF]"
                   />
                 </div>
@@ -232,20 +232,20 @@ export default function ContactPage() {
                 Operational Base
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-6">
-                Our primary operating base is centered in Mehdipatnam, serving residential communities and gated apartment complexes throughout central and western Hyderabad.
+                We provide premium doorstep vehicle care serving all across Hyderabad, covering residential communities and gated apartment complexes.
               </p>
 
-              {/* Map embed / preview card for Mehdipatnam, Hyderabad */}
+              {/* Map embed / preview card for Hyderabad */}
               <div className="rounded-2xl overflow-hidden border border-slate-200 bg-white relative h-72 shadow-inner">
                 <iframe
-                  title="CLEANZX Service Location - Mehdipatnam, Hyderabad"
-                  src="https://maps.google.com/maps?q=Mehdipatnam%2C%20Hyderabad%2C%20Telangana&t=&z=14&ie=UTF8&iwloc=&output=embed"
+                  title="CLEANZX Service Location - Hyderabad"
+                  src="https://maps.google.com/maps?q=Hyderabad%2C%20Telangana&t=&z=12&ie=UTF8&iwloc=&output=embed"
                   className="w-full h-full border-0"
                   loading="lazy"
                 ></iframe>
                 <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-200 text-xs flex items-center gap-2 shadow-md">
                   <MapPin className="w-3.5 h-3.5 text-[#1677FF]" />
-                  <span className="font-semibold text-slate-900">Mehdipatnam, Hyderabad</span>
+                  <span className="font-semibold text-slate-900">Serving All Across Hyderabad</span>
                 </div>
               </div>
 
