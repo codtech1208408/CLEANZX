@@ -60,7 +60,7 @@ export default function AboutPage() {
               Who We Are
             </span>
             <h2 className="text-3xl font-bold text-slate-900 font-heading">
-              Dedicated Doorstep Vehicle Care in Mehdipatnam
+              Dedicated Doorstep Vehicle Care in Hyderabad
             </h2>
             <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
               Operating out of Mehdipatnam, Hyderabad, CLEANZX was built to eliminate the hassle of routine car washing for apartment residents, busy working professionals, and families.
@@ -179,10 +179,10 @@ export default function AboutPage() {
             Have questions about apartment parking permissions or want to schedule a trial plan? Reach out directly via phone or WhatsApp.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+          <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-4 pt-2">
             <Link
               to="/contact"
-              className="px-8 py-3.5 rounded-full bg-gradient-to-r from-[#1677FF] to-[#00A3FF] text-white font-bold text-sm shadow-lg shadow-[#1677FF]/30 hover:scale-105 transition-all"
+              className="w-full sm:w-auto px-6 sm:px-8 py-3.5 rounded-full bg-gradient-to-r from-[#1677FF] to-[#00A3FF] text-white font-bold text-sm shadow-lg shadow-[#1677FF]/30 hover:scale-105 transition-all text-center whitespace-nowrap shrink-0"
             >
               Contact Information
             </Link>
@@ -190,17 +190,17 @@ export default function AboutPage() {
               href={BUSINESS_INFO.whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-8 py-3.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-sm flex items-center gap-2 transition-colors"
+              className="w-full sm:w-auto px-6 sm:px-8 py-3.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-sm flex items-center justify-center gap-2 transition-colors whitespace-nowrap shrink-0"
             >
-              <MessageSquare className="w-4 h-4 text-emerald-400" />
-              <span>WhatsApp: {BUSINESS_INFO.whatsappFormatted}</span>
+              <MessageSquare className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span className="whitespace-nowrap">WhatsApp: {BUSINESS_INFO.whatsappFormatted}</span>
             </a>
             <a
               href={`mailto:${BUSINESS_INFO.email}`}
-              className="px-8 py-3.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-sm flex items-center gap-2 transition-colors"
+              className="w-full sm:w-auto px-6 sm:px-8 py-3.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-sm flex items-center justify-center gap-2 transition-colors whitespace-nowrap shrink-0"
             >
-              <Mail className="w-4 h-4 text-[#00A3FF]" />
-              <span>Email: {BUSINESS_INFO.email}</span>
+              <Mail className="w-4 h-4 text-[#00A3FF] shrink-0" />
+              <span className="whitespace-nowrap">Email: {BUSINESS_INFO.email}</span>
             </a>
           </div>
         </div>

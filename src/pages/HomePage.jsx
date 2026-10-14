@@ -515,31 +515,31 @@ export default function HomePage() {
               Reach out directly on WhatsApp or submit your booking enquiry today. We look forward to caring for your vehicle at your doorstep.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+            <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-4 pt-2">
               <a
                 href={BUSINESS_INFO.whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/40 transition-all hover:scale-105"
+                className="w-full sm:w-auto px-6 sm:px-8 py-3.5 rounded-full bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/40 transition-all hover:scale-105 whitespace-nowrap shrink-0"
               >
-                <MessageSquare className="w-4 h-4 fill-current" />
-                <span>Chat on WhatsApp ({BUSINESS_INFO.whatsappFormatted})</span>
+                <MessageSquare className="w-4 h-4 fill-current shrink-0" />
+                <span className="whitespace-nowrap">Chat on WhatsApp ({BUSINESS_INFO.whatsappFormatted})</span>
               </a>
 
               <a
                 href={`tel:${BUSINESS_INFO.phone}`}
-                className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-sm flex items-center justify-center gap-2 transition-all"
+                className="w-full sm:w-auto px-6 sm:px-8 py-3.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-sm flex items-center justify-center gap-2 transition-all whitespace-nowrap shrink-0"
               >
-                <Phone className="w-4 h-4 text-[#00A3FF]" />
-                <span>Call {BUSINESS_INFO.phoneFormatted}</span>
+                <Phone className="w-4 h-4 text-[#00A3FF] shrink-0" />
+                <span className="whitespace-nowrap">Call {BUSINESS_INFO.phoneFormatted}</span>
               </a>
 
               <a
                 href={`mailto:${BUSINESS_INFO.email}`}
-                className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-sm flex items-center justify-center gap-2 transition-all"
+                className="w-full sm:w-auto px-6 sm:px-8 py-3.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-sm flex items-center justify-center gap-2 transition-all whitespace-nowrap shrink-0"
               >
-                <Mail className="w-4 h-4 text-[#00A3FF]" />
-                <span>Email {BUSINESS_INFO.email}</span>
+                <Mail className="w-4 h-4 text-[#00A3FF] shrink-0" />
+                <span className="whitespace-nowrap">Email {BUSINESS_INFO.email}</span>
               </a>
             </div>
           </div>

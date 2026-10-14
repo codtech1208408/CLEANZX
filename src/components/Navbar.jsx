@@ -71,11 +71,11 @@ export default function Navbar() {
         <div className="hidden sm:flex items-center gap-3">
           <a
             href={`tel:${BUSINESS_INFO.phone}`}
-            className="text-xs font-semibold text-slate-700 hover:text-[#1677FF] flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-slate-200 hover:border-slate-300 transition-colors bg-slate-50 hover:bg-white"
+            className="text-xs font-semibold text-slate-700 hover:text-[#1677FF] flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-slate-200 hover:border-slate-300 transition-colors bg-slate-50 hover:bg-white whitespace-nowrap shrink-0"
             title="Call CLEANZX"
           >
-            <Phone className="w-3.5 h-3.5 text-[#1677FF]" />
-            <span>{BUSINESS_INFO.phoneFormatted}</span>
+            <Phone className="w-3.5 h-3.5 text-[#1677FF] shrink-0" />
+            <span className="whitespace-nowrap">{BUSINESS_INFO.phoneFormatted}</span>
           </a>
 
           <button
