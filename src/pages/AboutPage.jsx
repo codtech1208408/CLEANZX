@@ -193,7 +193,7 @@ export default function AboutPage() {
               className="px-8 py-3.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-sm flex items-center gap-2 transition-colors"
             >
               <MessageSquare className="w-4 h-4 text-emerald-400" />
-              <span>WhatsApp: {BUSINESS_INFO.whatsapp}</span>
+              <span>WhatsApp: {BUSINESS_INFO.whatsappFormatted}</span>
             </a>
           </div>
         </div>

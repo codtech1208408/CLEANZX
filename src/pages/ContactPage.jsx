@@ -79,7 +79,7 @@ export default function ContactPage() {
               className="w-full py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20ba59] text-white text-xs font-semibold text-center transition-colors flex items-center justify-center gap-1.5 shadow-sm"
             >
               <MessageSquare className="w-3.5 h-3.5" />
-              <span>{BUSINESS_INFO.whatsapp}</span>
+              <span>{BUSINESS_INFO.whatsappFormatted}</span>
             </a>
           </div>
 

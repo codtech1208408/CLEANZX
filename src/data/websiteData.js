@@ -6,6 +6,7 @@ export const BUSINESS_INFO = {
   phone: "9642734252",
   phoneFormatted: "+91 96427 34252",
   whatsapp: "9642734252",
+  whatsappFormatted: "+91 9642734252",
   whatsappUrl: "https://wa.me/919642734252",
   location: {
     area: "Mehdipatnam",

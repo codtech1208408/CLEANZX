@@ -17,7 +17,7 @@ export default function HomePage() {
     {
       id: 1,
       image: "/images/banner-1.png",
-      badge: "Serving Mehdipatnam & Hyderabad Residential Apartments",
+      badge: "Serving Overall Hyderabad",
       titleLine1: "Premium Car Cleaning.",
       titleLine2: "Right at Your Doorstep.",
       subtitle: "Keep your car spotless without leaving home. Discover convenient doorstep car cleaning and flexible subscription plans from CLEANZX in Hyderabad.",
@@ -177,7 +177,7 @@ export default function HomePage() {
             </div>
             <div className="bg-slate-900/90 p-3 sm:p-4 rounded-xl border border-slate-800 backdrop-blur-md shadow-md sm:shadow-lg shadow-black/50">
               <p className="text-[10px] sm:text-xs text-slate-400">Direct WhatsApp</p>
-              <p className="text-xs sm:text-sm font-bold text-emerald-400 mt-1">{BUSINESS_INFO.whatsapp}</p>
+              <p className="text-xs sm:text-sm font-bold text-emerald-400 mt-1">{BUSINESS_INFO.whatsappFormatted}</p>
             </div>
             <div className="bg-slate-900/90 p-3 sm:p-4 rounded-xl border border-slate-800 backdrop-blur-md shadow-md sm:shadow-lg shadow-black/50">
               <p className="text-[10px] sm:text-xs text-slate-400">Apartment Service</p>
@@ -512,7 +512,7 @@ export default function HomePage() {
                 className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/40 transition-all hover:scale-105"
               >
                 <MessageSquare className="w-4 h-4 fill-current" />
-                <span>Chat on WhatsApp ({BUSINESS_INFO.whatsapp})</span>
+                <span>Chat on WhatsApp ({BUSINESS_INFO.whatsappFormatted})</span>
               </a>
 
               <a
