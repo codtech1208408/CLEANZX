@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Sparkles, Calendar, ArrowRight, ShieldCheck, Clock, MessageSquare, CheckCircle2, ChevronDown, ChevronUp, MapPin, Phone, Car } from 'lucide-react';
+import { Sparkles, Calendar, ArrowRight, ShieldCheck, Clock, MessageSquare, CheckCircle2, ChevronDown, ChevronUp, MapPin, Phone, Car, Mail } from 'lucide-react';
 import { BUSINESS_INFO, STANDARD_SERVICES, OPTIONAL_ADDONS, HOW_IT_WORKS, TRUST_POINTS, FAQS, SUBSCRIPTION_PLANS } from '../data/websiteData';
 import { useBooking } from '../context/BookingContext';
 import ServiceCard from '../components/ServiceCard';
@@ -344,31 +344,42 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {OPTIONAL_ADDONS.map((addon) => (
               <div
                 key={addon.id}
-                className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between hover:border-[#00A3FF]/50 hover:shadow-md transition-all"
+                className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between overflow-hidden hover:border-[#00A3FF]/50 hover:shadow-lg transition-all group"
               >
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="text-xs font-bold text-slate-900">{addon.name}</span>
-                    <span className="text-[10px] bg-blue-50 text-[#1677FF] px-2 py-0.5 rounded-full border border-blue-200 font-medium">
-                      {addon.badge}
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-600 leading-relaxed">
-                    {addon.description}
-                  </p>
+                <div className="relative h-44 w-full overflow-hidden bg-slate-100">
+                  <img
+                    src={addon.image}
+                    alt={addon.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    loading="lazy"
+                  />
+                  <span className="absolute top-3 right-3 text-[11px] bg-white/95 backdrop-blur-md text-[#1677FF] px-2.5 py-1 rounded-full border border-blue-100 font-semibold shadow-sm">
+                    {addon.badge}
+                  </span>
                 </div>
-                <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
-                  <span className="text-slate-500 font-medium">{addon.priceStatus}</span>
-                  <button
-                    onClick={scrollToBooking}
-                    className="text-[#1677FF] hover:underline font-semibold cursor-pointer"
-                  >
-                    Add to Enquiry →
-                  </button>
+
+                <div className="p-5 flex-1 flex flex-col justify-between">
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900 mb-1.5 group-hover:text-[#1677FF] transition-colors">
+                      {addon.name}
+                    </h3>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      {addon.description}
+                    </p>
+                  </div>
+                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                    <span className="text-slate-500 font-medium">{addon.priceStatus}</span>
+                    <button
+                      onClick={scrollToBooking}
+                      className="text-[#1677FF] hover:text-[#00A3FF] hover:underline font-semibold cursor-pointer"
+                    >
+                      Add to Enquiry →
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -521,6 +532,14 @@ export default function HomePage() {
               >
                 <Phone className="w-4 h-4 text-[#00A3FF]" />
                 <span>Call {BUSINESS_INFO.phoneFormatted}</span>
+              </a>
+
+              <a
+                href={`mailto:${BUSINESS_INFO.email}`}
+                className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-sm flex items-center justify-center gap-2 transition-all"
+              >
+                <Mail className="w-4 h-4 text-[#00A3FF]" />
+                <span>Email {BUSINESS_INFO.email}</span>
               </a>
             </div>
           </div>

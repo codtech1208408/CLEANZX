@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, ShieldCheck, HeartHandshake, Eye, Target, MapPin, Clock, Phone, MessageSquare, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Sparkles, ShieldCheck, HeartHandshake, Eye, Target, MapPin, Clock, Phone, MessageSquare, ArrowRight, CheckCircle2, Mail } from 'lucide-react';
 import { BUSINESS_INFO } from '../data/websiteData';
 
 export default function AboutPage() {
@@ -194,6 +194,13 @@ export default function AboutPage() {
             >
               <MessageSquare className="w-4 h-4 text-emerald-400" />
               <span>WhatsApp: {BUSINESS_INFO.whatsappFormatted}</span>
+            </a>
+            <a
+              href={`mailto:${BUSINESS_INFO.email}`}
+              className="px-8 py-3.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-sm flex items-center gap-2 transition-colors"
+            >
+              <Mail className="w-4 h-4 text-[#00A3FF]" />
+              <span>Email: {BUSINESS_INFO.email}</span>
             </a>
           </div>
         </div>

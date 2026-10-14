@@ -123,45 +123,56 @@ export default function ServicesPage() {
             return (
               <div
                 key={addon.id}
-                className={`bg-white rounded-2xl p-6 border shadow-sm transition-all flex flex-col justify-between ${
+                className={`bg-white rounded-2xl border shadow-sm transition-all flex flex-col justify-between overflow-hidden group ${
                   isSelected ? 'border-[#1677FF] ring-2 ring-[#1677FF]/20 shadow-md' : 'border-slate-200 hover:border-slate-300 hover:shadow-md'
                 }`}
               >
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-3">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-[#1677FF] bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200">
-                      {addon.badge}
-                    </span>
-                    <span className="text-xs text-slate-500 font-medium">
-                      {addon.priceStatus}
-                    </span>
-                  </div>
-
-                  <h3 className="text-xl font-bold text-slate-900 font-heading">
-                    {addon.name}
-                  </h3>
-                  <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
-                    {addon.description}
-                  </p>
+                <div className="relative h-44 w-full overflow-hidden bg-slate-100">
+                  <img
+                    src={addon.image}
+                    alt={addon.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    loading="lazy"
+                  />
+                  <span className="absolute top-3 right-3 text-[11px] bg-white/95 backdrop-blur-md text-[#1677FF] px-2.5 py-1 rounded-full border border-blue-100 font-semibold shadow-sm">
+                    {addon.badge}
+                  </span>
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
-                  <span className="text-xs text-slate-600 font-medium">
-                    {isSelected ? '✓ Added to selection' : 'Not yet selected'}
-                  </span>
-                  <button
-                    onClick={() => {
-                      toggleAddon(addon.id);
-                      scrollToBooking();
-                    }}
-                    className={`text-xs px-3.5 py-2 rounded-xl font-semibold transition-all cursor-pointer ${
-                      isSelected
-                        ? 'bg-emerald-600 text-white'
-                        : 'bg-slate-100 hover:bg-[#1677FF] border border-slate-200 hover:border-[#1677FF] text-slate-800 hover:text-white'
-                    }`}
-                  >
-                    {isSelected ? 'Remove' : 'Select Add-on'}
-                  </button>
+                <div className="p-6 flex-1 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <h3 className="text-xl font-bold text-slate-900 font-heading">
+                        {addon.name}
+                      </h3>
+                      <span className="text-xs text-slate-500 font-medium">
+                        {addon.priceStatus}
+                      </span>
+                    </div>
+
+                    <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
+                      {addon.description}
+                    </p>
+                  </div>
+
+                  <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
+                    <span className="text-xs text-slate-600 font-medium">
+                      {isSelected ? '✓ Added to selection' : 'Not yet selected'}
+                    </span>
+                    <button
+                      onClick={() => {
+                        toggleAddon(addon.id);
+                        scrollToBooking();
+                      }}
+                      className={`text-xs px-3.5 py-2 rounded-xl font-semibold transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-emerald-600 text-white shadow-sm'
+                          : 'bg-slate-100 hover:bg-[#1677FF] border border-slate-200 hover:border-[#1677FF] text-slate-800 hover:text-white'
+                      }`}
+                    >
+                      {isSelected ? 'Remove' : 'Select Add-on'}
+                    </button>
+                  </div>
                 </div>
               </div>
             );

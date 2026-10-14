@@ -8,6 +8,9 @@ export const BUSINESS_INFO = {
   whatsapp: "9642734252",
   whatsappFormatted: "+91 9642734252",
   whatsappUrl: "https://wa.me/919642734252",
+  email: "cleanzxcare@gmail.com",
+  instagramUrl: "https://instagram.com/cleanzxcare?utm_source=qr&xtok=MWh4eG5oM2h5cGplMg==",
+  facebookUrl: "https://www.facebook.com/share/1YRdvBjEjh/",
   location: {
     area: "Mehdipatnam",
     city: "Hyderabad",
@@ -92,7 +95,8 @@ export const OPTIONAL_ADDONS = [
     price: null,
     priceStatus: "Price to be confirmed",
     badge: "Most Requested",
-    icon: "Fan"
+    icon: "Fan",
+    image: "/images/addon-vacuum.jpg"
   },
   {
     id: "dashboard-detailing",
@@ -101,7 +105,8 @@ export const OPTIONAL_ADDONS = [
     price: null,
     priceStatus: "Price to be confirmed",
     badge: "Interior Care",
-    icon: "Gauge"
+    icon: "Gauge",
+    image: "/images/addon-dashboard.jpg"
   },
   {
     id: "deep-interior-cleaning",
@@ -110,7 +115,8 @@ export const OPTIONAL_ADDONS = [
     price: null,
     priceStatus: "Price to be confirmed",
     badge: "Detailed Care",
-    icon: "Layers"
+    icon: "Layers",
+    image: "/images/addon-deep-interior.jpg"
   },
   {
     id: "premium-tyre-polish",
@@ -119,7 +125,8 @@ export const OPTIONAL_ADDONS = [
     price: null,
     priceStatus: "Price to be confirmed",
     badge: "Gloss Finish",
-    icon: "Sparkle"
+    icon: "Sparkle",
+    image: "/images/addon-tyre.jpg"
   },
   {
     id: "seat-cleaning",
@@ -128,7 +135,8 @@ export const OPTIONAL_ADDONS = [
     price: null,
     priceStatus: "Price to be confirmed",
     badge: "Comfort",
-    icon: "Armchair"
+    icon: "Armchair",
+    image: "/images/addon-seat-cleaning.jpg"
   }
 ];
 

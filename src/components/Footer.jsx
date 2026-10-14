@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Phone, MapPin, Clock, ArrowUp, MessageSquare, Sparkles, Shield, ChevronRight } from 'lucide-react';
+import { Phone, MapPin, Clock, ArrowUp, MessageSquare, Sparkles, Shield, ChevronRight, Mail } from 'lucide-react';
 import { BUSINESS_INFO } from '../data/websiteData';
+import { InstagramIcon, FacebookIcon } from './SocialIcons';
 
 export default function Footer() {
   const scrollToTop = () => {
@@ -29,15 +30,37 @@ export default function Footer() {
             <p className="text-sm text-[#AAB4C3] leading-relaxed">
               {BUSINESS_INFO.tagline} Professional morning vehicle care specifically designed for apartment car owners and working professionals in Hyderabad.
             </p>
-            <div className="pt-2 flex items-center gap-3">
+            {/* Social & Contact Buttons */}
+            <div className="pt-2 flex flex-wrap items-center gap-2">
               <a
                 href={BUSINESS_INFO.whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full bg-emerald-950/40 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-900/50 transition-colors"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-emerald-950/40 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-900/50 hover:border-emerald-400 transition-colors"
+                title="Chat on WhatsApp"
               >
                 <MessageSquare className="w-3.5 h-3.5" />
-                <span>WhatsApp: {BUSINESS_INFO.whatsappFormatted}</span>
+                <span>WhatsApp</span>
+              </a>
+              <a
+                href={BUSINESS_INFO.instagramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-pink-950/40 text-pink-400 border border-pink-500/30 hover:bg-pink-900/50 hover:border-pink-400 transition-colors"
+                title="Follow CLEANZX on Instagram"
+              >
+                <InstagramIcon className="w-3.5 h-3.5" />
+                <span>Instagram</span>
+              </a>
+              <a
+                href={BUSINESS_INFO.facebookUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-blue-950/40 text-blue-400 border border-blue-500/30 hover:bg-blue-900/50 hover:border-blue-400 transition-colors"
+                title="Follow CLEANZX on Facebook"
+              >
+                <FacebookIcon className="w-3.5 h-3.5" />
+                <span>Facebook</span>
               </a>
             </div>
           </div>
@@ -141,6 +164,12 @@ export default function Footer() {
                   {BUSINESS_INFO.phoneFormatted}
                 </a>
               </li>
+              <li className="flex items-center gap-2.5">
+                <Mail className="w-4 h-4 text-[#00A3FF] shrink-0" />
+                <a href={`mailto:${BUSINESS_INFO.email}`} className="hover:text-[#00A3FF] font-semibold text-white transition-colors break-all">
+                  {BUSINESS_INFO.email}
+                </a>
+              </li>
             </ul>
           </div>
         </div>
@@ -149,8 +178,29 @@ export default function Footer() {
         <div className="pt-8 border-t border-[#263244] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
           <p>© {currentYear} CLEANZX. All rights reserved. Operating in Mehdipatnam, Hyderabad, Telangana, India.</p>
 
-          <div className="flex items-center gap-4">
-            <span className="text-xs text-[#AAB4C3]/70">Doorstep Car Detailing & Subscription Care</span>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <a
+                href={BUSINESS_INFO.instagramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 rounded-lg bg-[#151C28] border border-[#263244] text-[#AAB4C3] hover:text-pink-400 hover:border-pink-500/40 transition-all flex items-center justify-center"
+                aria-label="Instagram"
+                title="CLEANZX Instagram"
+              >
+                <InstagramIcon className="w-3.5 h-3.5" />
+              </a>
+              <a
+                href={BUSINESS_INFO.facebookUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 rounded-lg bg-[#151C28] border border-[#263244] text-[#AAB4C3] hover:text-blue-400 hover:border-blue-500/40 transition-all flex items-center justify-center"
+                aria-label="Facebook"
+                title="CLEANZX Facebook"
+              >
+                <FacebookIcon className="w-3.5 h-3.5" />
+              </a>
+            </div>
             <button
               onClick={scrollToTop}
               className="p-2 rounded-lg bg-[#151C28] border border-[#263244] text-[#AAB4C3] hover:text-[#00A3FF] hover:border-[#00A3FF]/40 transition-all flex items-center gap-1.5 cursor-pointer"

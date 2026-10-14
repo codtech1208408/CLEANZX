@@ -185,15 +185,25 @@ export default function PlansPage() {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
             {OPTIONAL_ADDONS.map((addon) => (
               <div
                 key={addon.id}
-                className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-xs space-y-1.5"
+                className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden text-xs flex flex-col justify-between hover:border-[#1677FF]/40 hover:shadow-md transition-all group"
               >
-                <p className="font-semibold text-slate-900">{addon.name}</p>
-                <p className="text-[11px] text-[#1677FF] font-medium">{addon.priceStatus}</p>
-                <p className="text-[10px] text-slate-500 line-clamp-2">{addon.description}</p>
+                <div className="h-28 w-full overflow-hidden bg-slate-100">
+                  <img
+                    src={addon.image}
+                    alt={addon.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
+                  />
+                </div>
+                <div className="p-3 space-y-1">
+                  <p className="font-bold text-slate-900 group-hover:text-[#1677FF] transition-colors">{addon.name}</p>
+                  <p className="text-[11px] text-[#1677FF] font-medium">{addon.priceStatus}</p>
+                  <p className="text-[10px] text-slate-500 line-clamp-2 leading-relaxed">{addon.description}</p>
+                </div>
               </div>
             ))}
           </div>

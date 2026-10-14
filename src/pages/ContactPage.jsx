@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Phone, MessageSquare, MapPin, Clock, Send, CheckCircle2, Sparkles, Shield, ChevronDown, ChevronUp } from 'lucide-react';
+import { Phone, MessageSquare, MapPin, Clock, Send, CheckCircle2, Sparkles, Shield, ChevronDown, ChevronUp, Mail } from 'lucide-react';
 import { BUSINESS_INFO, FAQS } from '../data/websiteData';
+import { InstagramIcon, FacebookIcon } from '../components/SocialIcons';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -45,7 +46,7 @@ export default function ContactPage() {
 
       {/* 2. CONTACT DETAILS & DIRECT ACTIONS */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
           {/* Phone Card */}
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md flex flex-col justify-between space-y-4 transition-all">
             <div>
@@ -57,9 +58,10 @@ export default function ContactPage() {
             </div>
             <a
               href={`tel:${BUSINESS_INFO.phone}`}
-              className="w-full py-2.5 rounded-xl bg-slate-50 hover:bg-[#1677FF] border border-slate-200 text-slate-800 hover:text-white text-xs font-semibold text-center transition-colors"
+              className="w-full py-2.5 rounded-xl bg-slate-50 hover:bg-[#1677FF] border border-slate-200 text-slate-800 hover:text-white text-xs font-semibold text-center transition-colors flex items-center justify-center gap-1.5"
             >
-              {BUSINESS_INFO.phoneFormatted}
+              <Phone className="w-3.5 h-3.5" />
+              <span>{BUSINESS_INFO.phoneFormatted}</span>
             </a>
           </div>
 
@@ -80,6 +82,25 @@ export default function ContactPage() {
             >
               <MessageSquare className="w-3.5 h-3.5" />
               <span>{BUSINESS_INFO.whatsappFormatted}</span>
+            </a>
+          </div>
+
+          {/* Email Support Card */}
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md flex flex-col justify-between space-y-4 transition-all">
+            <div>
+              <div className="w-12 h-12 rounded-xl bg-blue-50 text-[#1677FF] flex items-center justify-center mb-3">
+                <Mail className="w-6 h-6" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900 font-heading">Email Support</h3>
+              <p className="text-xs text-slate-600 mt-1">Direct inquiries, society proposals & receipts.</p>
+            </div>
+            <a
+              href={`mailto:${BUSINESS_INFO.email}`}
+              className="w-full py-2.5 rounded-xl bg-slate-50 hover:bg-[#1677FF] border border-slate-200 text-slate-800 hover:text-white text-xs font-semibold text-center transition-colors flex items-center justify-center gap-1.5 truncate px-2"
+              title={`Email ${BUSINESS_INFO.email}`}
+            >
+              <Mail className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">{BUSINESS_INFO.email}</span>
             </a>
           </div>
 
@@ -249,9 +270,35 @@ export default function ContactPage() {
                 </div>
               </div>
 
-              <div className="mt-4 pt-4 border-t border-slate-200 flex items-center justify-between text-xs text-slate-600">
-                <span>Operating Hours: 06:00 AM - 11:30 AM (IST)</span>
-                <span className="text-[#1677FF] font-semibold">Doorstep Residential Slots</span>
+              <div className="mt-4 pt-4 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-600">
+                <div className="flex items-center gap-1.5">
+                  <Mail className="w-3.5 h-3.5 text-[#1677FF]" />
+                  <span>Email:</span>
+                  <a href={`mailto:${BUSINESS_INFO.email}`} className="text-[#1677FF] hover:underline font-semibold">
+                    {BUSINESS_INFO.email}
+                  </a>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-slate-400">Socials:</span>
+                  <a
+                    href={BUSINESS_INFO.instagramUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-1.5 rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-pink-600 hover:border-pink-300 transition-colors inline-flex items-center justify-center"
+                    title="CLEANZX Instagram"
+                  >
+                    <InstagramIcon className="w-3.5 h-3.5" />
+                  </a>
+                  <a
+                    href={BUSINESS_INFO.facebookUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-1.5 rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-blue-600 hover:border-blue-300 transition-colors inline-flex items-center justify-center"
+                    title="CLEANZX Facebook"
+                  >
+                    <FacebookIcon className="w-3.5 h-3.5" />
+                  </a>
+                </div>
               </div>
             </div>
           </div>
