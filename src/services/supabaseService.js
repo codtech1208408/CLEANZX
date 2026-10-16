@@ -252,3 +252,78 @@ export const deleteCloudBooking = async (id) => {
     console.warn('[Supabase] Failed to delete booking:', err);
   }
 };
+
+// ==========================================
+// UNIVERSAL KEY-VALUE CLOUD STORE (website_content, plans, subscriptions, daily_schedules, invoices, integrations_settings)
+// ==========================================
+export const saveCloudKV = async (key, data, versionTimestamp = Date.now()) => {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/website_content?on_conflict=key`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+        Prefer: 'resolution=merge-duplicates,return=minimal'
+      },
+      body: JSON.stringify({
+        key,
+        data: {
+          payload: data,
+          _updatedAt: versionTimestamp
+        },
+        updated_at: new Date().toISOString()
+      })
+    });
+    return res.ok;
+  } catch (err) {
+    console.warn(`[Supabase] Failed to save KV for key ${key}:`, err);
+    return false;
+  }
+};
+
+export const fetchAllCloudKV = async () => {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/website_content?select=*`, {
+      headers: getHeaders()
+    });
+    if (!res.ok) return null;
+    const rows = await res.json();
+    if (!Array.isArray(rows)) return null;
+
+    const kvMap = {};
+    rows.forEach(r => {
+      if (r && r.key) {
+        // Handle payload wrapper or raw data
+        const payload = r.data && typeof r.data === 'object' && 'payload' in r.data ? r.data.payload : r.data;
+        const updatedAt = (r.data && typeof r.data === 'object' && r.data._updatedAt) || new Date(r.updated_at).getTime() || 0;
+        kvMap[r.key] = {
+          data: payload,
+          updatedAt
+        };
+      }
+    });
+    return kvMap;
+  } catch (err) {
+    console.warn('[Supabase] Failed to fetch all KV:', err);
+    return null;
+  }
+};
+
+export const fetchCloudKV = async (key) => {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/website_content?key=eq.${key}&select=*`, {
+      headers: getHeaders()
+    });
+    if (!res.ok) return null;
+    const rows = await res.json();
+    if (!Array.isArray(rows) || rows.length === 0) return null;
+    const r = rows[0];
+    const payload = r.data && typeof r.data === 'object' && 'payload' in r.data ? r.data.payload : r.data;
+    const updatedAt = (r.data && typeof r.data === 'object' && r.data._updatedAt) || new Date(r.updated_at).getTime() || 0;
+    return { data: payload, updatedAt };
+  } catch (err) {
+    console.warn(`[Supabase] Failed to fetch KV for key ${key}:`, err);
+    return null;
+  }
+};

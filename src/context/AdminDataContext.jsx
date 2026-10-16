@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import {
   ADMIN_CREDENTIALS,
   INITIAL_WEBSITE_CONTENT,
@@ -22,7 +22,10 @@ import {
   deleteCloudCustomer,
   fetchCloudBookings,
   createCloudBooking,
-  deleteCloudBooking
+  deleteCloudBooking,
+  saveCloudKV,
+  fetchAllCloudKV,
+  fetchCloudKV
 } from '../services/supabaseService';
 
 const AdminDataContext = createContext();
@@ -343,20 +346,30 @@ export const AdminDataProvider = ({ children }) => {
       .catch(() => {});
   }, []);
 
+  // Tracking refs to differentiate local changes from incoming cloud updates
+  const lastCloudWebsiteContentStr = useRef('');
+  const lastCloudPlansStr = useRef('');
+  const lastCloudSubscriptionsStr = useRef('');
+  const lastCloudSchedulesStr = useRef('');
+  const lastCloudInvoicesStr = useRef('');
+  const lastCloudIntegrationsStr = useRef('');
+
   // Live Cloud Synchronization with Supabase
   // Ensures changes made on localhost show on Vercel, and changes made on Vercel show on localhost
   const syncWithCloud = async () => {
     try {
-      const [cloudEmployees, cloudCustomers, cloudBookings] = await Promise.all([
+      const [cloudEmployees, cloudCustomers, cloudBookings, cloudKVMap] = await Promise.all([
         fetchCloudEmployees(),
         fetchCloudCustomers(),
-        fetchCloudBookings()
+        fetchCloudBookings(),
+        fetchAllCloudKV()
       ]);
 
       setState(prev => {
         let updated = false;
         const nextState = { ...prev };
 
+        // 1. Employees Table
         if (cloudEmployees && Array.isArray(cloudEmployees)) {
           const localStr = JSON.stringify(prev.employees.map(e => ({ id: e.id, name: e.name, phone: e.phone, status: e.status })));
           const cloudStr = JSON.stringify(cloudEmployees.map(e => ({ id: e.id, name: e.name, phone: e.phone, status: e.status })));
@@ -366,6 +379,7 @@ export const AdminDataProvider = ({ children }) => {
           }
         }
 
+        // 2. Customers Table
         if (cloudCustomers && Array.isArray(cloudCustomers)) {
           const localStr = JSON.stringify(prev.customers.map(c => ({ id: c.id, name: c.name, phone: c.phone })));
           const cloudStr = JSON.stringify(cloudCustomers.map(c => ({ id: c.id, name: c.name, phone: c.phone })));
@@ -375,12 +389,107 @@ export const AdminDataProvider = ({ children }) => {
           }
         }
 
+        // 3. Bookings Table
         if (cloudBookings && Array.isArray(cloudBookings)) {
           const localStr = JSON.stringify((prev.bookings || []).map(b => b.id));
           const cloudStr = JSON.stringify(cloudBookings.map(b => b.id));
           if (localStr !== cloudStr) {
             nextState.bookings = cloudBookings;
             updated = true;
+          }
+        }
+
+        // 4. Universal Cloud KV Store (Website Content, Plans, Subscriptions, Schedules, Invoices, Integrations)
+        if (cloudKVMap) {
+          // 4a. Website Content (Banners, Services, Addons, FAQs, Business Info, About, Announcement)
+          if (cloudKVMap['website_content']?.data) {
+            const cloudContent = cloudKVMap['website_content'].data;
+            const mergedContent = {
+              ...(prev.websiteContent || {}),
+              ...cloudContent
+            };
+            if (cloudContent.banners) mergedContent.banners = cloudContent.banners;
+            if (cloudContent.services) mergedContent.services = cloudContent.services;
+            if (cloudContent.addons) mergedContent.addons = cloudContent.addons;
+            if (cloudContent.faqs) mergedContent.faqs = cloudContent.faqs;
+            if (cloudContent.businessInfo) mergedContent.businessInfo = { ...(prev.websiteContent?.businessInfo || {}), ...cloudContent.businessInfo };
+            if (cloudContent.about) mergedContent.about = { ...(prev.websiteContent?.about || {}), ...cloudContent.about };
+            if (cloudContent.announcement) mergedContent.announcement = { ...(prev.websiteContent?.announcement || {}), ...cloudContent.announcement };
+
+            const localStr = JSON.stringify(prev.websiteContent || {});
+            const mergedStr = JSON.stringify(mergedContent);
+            if (localStr !== mergedStr) {
+              nextState.websiteContent = mergedContent;
+              lastCloudWebsiteContentStr.current = mergedStr;
+              updated = true;
+            }
+          } else if (prev.websiteContent && Object.keys(prev.websiteContent).length > 0) {
+            // First time seed to cloud if cloud is empty
+            saveCloudKV('website_content', prev.websiteContent, Date.now());
+            lastCloudWebsiteContentStr.current = JSON.stringify(prev.websiteContent);
+          }
+
+          // 4b. Plans & Addons
+          if (cloudKVMap['plans']?.data && Array.isArray(cloudKVMap['plans'].data) && cloudKVMap['plans'].data.length > 0) {
+            const cloudPlans = cloudKVMap['plans'].data;
+            const localStr = JSON.stringify(prev.plans || []);
+            const cloudStr = JSON.stringify(cloudPlans || []);
+            if (localStr !== cloudStr) {
+              nextState.plans = cloudPlans;
+              lastCloudPlansStr.current = cloudStr;
+              updated = true;
+            }
+          } else if (prev.plans && Array.isArray(prev.plans) && prev.plans.length > 0) {
+            saveCloudKV('plans', prev.plans, Date.now());
+            lastCloudPlansStr.current = JSON.stringify(prev.plans);
+          }
+
+          // 4c. Subscriptions
+          if (cloudKVMap['subscriptions']?.data && Array.isArray(cloudKVMap['subscriptions'].data)) {
+            const cloudSubs = cloudKVMap['subscriptions'].data;
+            const localStr = JSON.stringify(prev.subscriptions || []);
+            const cloudStr = JSON.stringify(cloudSubs || []);
+            if (localStr !== cloudStr) {
+              nextState.subscriptions = cloudSubs;
+              lastCloudSubscriptionsStr.current = cloudStr;
+              updated = true;
+            }
+          }
+
+          // 4d. Daily Service Schedules
+          if (cloudKVMap['daily_schedules']?.data && Array.isArray(cloudKVMap['daily_schedules'].data)) {
+            const cloudSchedules = cloudKVMap['daily_schedules'].data;
+            const localStr = JSON.stringify(prev.dailySchedules || []);
+            const cloudStr = JSON.stringify(cloudSchedules || []);
+            if (localStr !== cloudStr) {
+              nextState.dailySchedules = cloudSchedules;
+              lastCloudSchedulesStr.current = cloudStr;
+              updated = true;
+            }
+          }
+
+          // 4e. Invoices & Payments
+          if (cloudKVMap['invoices']?.data && Array.isArray(cloudKVMap['invoices'].data)) {
+            const cloudInvoices = cloudKVMap['invoices'].data;
+            const localStr = JSON.stringify(prev.invoices || []);
+            const cloudStr = JSON.stringify(cloudInvoices || []);
+            if (localStr !== cloudStr) {
+              nextState.invoices = cloudInvoices;
+              lastCloudInvoicesStr.current = cloudStr;
+              updated = true;
+            }
+          }
+
+          // 4f. System Records & Integrations Settings
+          if (cloudKVMap['integrations_settings']?.data && typeof cloudKVMap['integrations_settings'].data === 'object') {
+            const cloudIntegrations = cloudKVMap['integrations_settings'].data;
+            const localStr = JSON.stringify(prev.integrationsSettings || {});
+            const cloudStr = JSON.stringify(cloudIntegrations || {});
+            if (localStr !== cloudStr) {
+              nextState.integrationsSettings = cloudIntegrations;
+              lastCloudIntegrationsStr.current = cloudStr;
+              updated = true;
+            }
           }
         }
 
@@ -396,6 +505,85 @@ export const AdminDataProvider = ({ children }) => {
       console.warn('Cloud sync error:', err);
     }
   };
+
+  // Auto-sync local state modifications to Supabase Cloud
+  useEffect(() => {
+    if (!state.websiteContent) return;
+    const currentStr = JSON.stringify(state.websiteContent);
+    if (!lastCloudWebsiteContentStr.current) {
+      lastCloudWebsiteContentStr.current = currentStr;
+      return;
+    }
+    if (lastCloudWebsiteContentStr.current !== currentStr) {
+      lastCloudWebsiteContentStr.current = currentStr;
+      saveCloudKV('website_content', state.websiteContent, Date.now());
+    }
+  }, [state.websiteContent]);
+
+  useEffect(() => {
+    if (!state.plans) return;
+    const currentStr = JSON.stringify(state.plans);
+    if (!lastCloudPlansStr.current) {
+      lastCloudPlansStr.current = currentStr;
+      return;
+    }
+    if (lastCloudPlansStr.current !== currentStr) {
+      lastCloudPlansStr.current = currentStr;
+      saveCloudKV('plans', state.plans, Date.now());
+    }
+  }, [state.plans]);
+
+  useEffect(() => {
+    if (!state.subscriptions) return;
+    const currentStr = JSON.stringify(state.subscriptions);
+    if (!lastCloudSubscriptionsStr.current) {
+      lastCloudSubscriptionsStr.current = currentStr;
+      return;
+    }
+    if (lastCloudSubscriptionsStr.current !== currentStr) {
+      lastCloudSubscriptionsStr.current = currentStr;
+      saveCloudKV('subscriptions', state.subscriptions, Date.now());
+    }
+  }, [state.subscriptions]);
+
+  useEffect(() => {
+    if (!state.dailySchedules) return;
+    const currentStr = JSON.stringify(state.dailySchedules);
+    if (!lastCloudSchedulesStr.current) {
+      lastCloudSchedulesStr.current = currentStr;
+      return;
+    }
+    if (lastCloudSchedulesStr.current !== currentStr) {
+      lastCloudSchedulesStr.current = currentStr;
+      saveCloudKV('daily_schedules', state.dailySchedules, Date.now());
+    }
+  }, [state.dailySchedules]);
+
+  useEffect(() => {
+    if (!state.invoices) return;
+    const currentStr = JSON.stringify(state.invoices);
+    if (!lastCloudInvoicesStr.current) {
+      lastCloudInvoicesStr.current = currentStr;
+      return;
+    }
+    if (lastCloudInvoicesStr.current !== currentStr) {
+      lastCloudInvoicesStr.current = currentStr;
+      saveCloudKV('invoices', state.invoices, Date.now());
+    }
+  }, [state.invoices]);
+
+  useEffect(() => {
+    if (!state.integrationsSettings) return;
+    const currentStr = JSON.stringify(state.integrationsSettings);
+    if (!lastCloudIntegrationsStr.current) {
+      lastCloudIntegrationsStr.current = currentStr;
+      return;
+    }
+    if (lastCloudIntegrationsStr.current !== currentStr) {
+      lastCloudIntegrationsStr.current = currentStr;
+      saveCloudKV('integrations_settings', state.integrationsSettings, Date.now());
+    }
+  }, [state.integrationsSettings]);
 
   useEffect(() => {
     // Initial sync

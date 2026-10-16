@@ -21,30 +21,6 @@ export const INITIAL_WEBSITE_CONTENT = {
   businessInfo: { ...BUSINESS_INFO },
   banners: [
     {
-      id: "banner-1",
-      image: "/images/banner-1.png",
-      badge: "Serving Overall Hyderabad",
-      titleLine1: "Premium Car Cleaning.",
-      titleLine2: "Right at Your Doorstep.",
-      subtitle: "Keep your car spotless without leaving home. Discover convenient doorstep car cleaning and flexible subscription plans from CLEANZX in Hyderabad.",
-      primaryCtaText: "Explore Subscription Plans",
-      primaryCtaLink: "/plans",
-      secondaryCtaText: "Book Your Cleaning",
-      published: true
-    },
-    {
-      id: "banner-2",
-      image: "/images/banner-2.jpg",
-      badge: "Apartment-Safe Microfiber Detailing",
-      titleLine1: "Scratch-Free Exterior Wash.",
-      titleLine2: "Pure Showroom Shine.",
-      subtitle: "Gentle microfiber wash engineered specifically for residential apartment parking bays with zero water puddle mess.",
-      primaryCtaText: "View Exterior Services",
-      primaryCtaLink: "/services",
-      secondaryCtaText: "Book Your Cleaning",
-      published: true
-    },
-    {
       id: "banner-3",
       image: "/images/banner-3.png",
       badge: "High-Clarity Glass & Windscreen Polish",
@@ -64,6 +40,18 @@ export const INITIAL_WEBSITE_CONTENT = {
       titleLine2: "Deep Wheel Care.",
       subtitle: "Thorough visible wheel cleaning and deep tyre dressing to keep your vehicle looking sharp before your daily commute.",
       primaryCtaText: "Compare All 8 Subscription Plans",
+      primaryCtaLink: "/plans",
+      secondaryCtaText: "Book Your Cleaning",
+      published: true
+    },
+    {
+      id: "banner-5",
+      image: "/images/hero-car.jpg",
+      badge: "Doorstep Care",
+      titleLine1: "Clean Cars Daily.",
+      titleLine2: "Zero Water Mess.",
+      subtitle: "Doorstep car cleaning for apartment owners across Hyderabad.",
+      primaryCtaText: "Explore Plans",
       primaryCtaLink: "/plans",
       secondaryCtaText: "Book Your Cleaning",
       published: true
