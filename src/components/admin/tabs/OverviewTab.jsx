@@ -136,16 +136,16 @@ export default function OverviewTab({ setActiveTab, onOpenWhatsApp }) {
   return (
     <div className="space-y-8 animate-fadeIn">
       {/* Top Banner & Export Actions */}
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl border border-indigo-900/50 flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="bg-white rounded-3xl p-6 sm:p-8 text-slate-800 shadow-sm border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/20 border border-cyan-400/30 text-cyan-300 text-xs font-semibold mb-3">
-            <Sparkles className="w-3.5 h-3.5" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-50 border border-cyan-200 text-cyan-700 text-xs font-semibold mb-3">
+            <Sparkles className="w-3.5 h-3.5 text-cyan-600" />
             <span>Hyderabad Doorstep Morning Operations (06:00 AM - 11:30 AM)</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white drop-shadow-sm">
+          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
             CLEANZX Operations & Reports Hub
           </h2>
-          <p className="text-slate-300 text-sm mt-1 max-w-2xl">
+          <p className="text-slate-600 text-sm mt-1 max-w-2xl">
             Live overview of subscription renewals, daily morning cleans, technician assignments, invoices, and website performance.
           </p>
         </div>
@@ -153,14 +153,14 @@ export default function OverviewTab({ setActiveTab, onOpenWhatsApp }) {
         <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={exportAllDataCSV}
-            className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold border border-slate-700 flex items-center gap-2 shadow-sm transition-all cursor-pointer"
+            className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold border border-slate-200 flex items-center gap-2 shadow-xs transition-all cursor-pointer"
           >
-            <Download className="w-4 h-4 text-cyan-400" />
+            <Download className="w-4 h-4 text-cyan-600" />
             <span>Export CSV</span>
           </button>
           <button
             onClick={exportAllDataJSON}
-            className="px-4 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-cyan-600/30 flex items-center gap-2 transition-all cursor-pointer"
+            className="px-4 py-2.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white rounded-xl text-xs font-semibold shadow-md shadow-cyan-600/20 flex items-center gap-2 transition-all cursor-pointer"
           >
             <FileText className="w-4 h-4" />
             <span>Export Full JSON</span>

@@ -283,18 +283,17 @@ export default function CoreRecordsScopeTab({ setActiveTab, onOpenWhatsApp }) {
   return (
     <div className="space-y-6 animate-fadeIn pb-16">
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 sm:p-8 border border-slate-800 shadow-xl relative overflow-hidden">
-        <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="bg-white text-slate-800 rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm relative overflow-hidden">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 text-xs font-semibold mb-2.5">
-              <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-50 border border-cyan-200 text-cyan-700 text-xs font-semibold mb-2.5">
+              <Sparkles className="w-3.5 h-3.5 text-cyan-600" />
               <span>Platform Architecture & System Database</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
               Core Database, Records Management & Roadmap
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl leading-relaxed">
               Structured database records, future integrations (Payments, WhatsApp, Renewals, Referrals, Multi-Locations, Mobile App), security & performance matrix, deliverables verification, and official sign-off.
             </p>
           </div>
@@ -303,7 +302,7 @@ export default function CoreRecordsScopeTab({ setActiveTab, onOpenWhatsApp }) {
             <button
               type="button"
               onClick={handleExportDatabase}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs shadow-md shadow-cyan-600/20 transition-all cursor-pointer"
             >
               <Download className="w-4 h-4" />
               <span>Export Full Database (JSON)</span>
@@ -311,7 +310,7 @@ export default function CoreRecordsScopeTab({ setActiveTab, onOpenWhatsApp }) {
             <button
               type="button"
               onClick={() => window.print()}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-xs transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 font-semibold text-xs transition-all cursor-pointer"
             >
               <Printer className="w-4 h-4" />
               <span>Print / Export Specifications</span>
