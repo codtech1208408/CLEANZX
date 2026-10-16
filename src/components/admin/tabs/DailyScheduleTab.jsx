@@ -15,7 +15,8 @@ import {
   Car,
   Building,
   X,
-  Check
+  Check,
+  Trash2
 } from 'lucide-react';
 import { useAdminData } from '../../../context/AdminDataContext';
 import { SERVICE_TIME_SLOTS } from '../../../data/websiteData';
@@ -27,6 +28,7 @@ export default function DailyScheduleTab({ onOpenWhatsApp }) {
     reassignScheduleEmployee,
     rescheduleSlot,
     addScheduleItem,
+    deleteScheduleItem,
     employees,
     customers,
     plans
@@ -36,6 +38,21 @@ export default function DailyScheduleTab({ onOpenWhatsApp }) {
   const [slotFilter, setSlotFilter] = useState('ALL');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [employeeFilter, setEmployeeFilter] = useState('ALL');
+
+  // Filter only records belonging to existing active customers
+  const validCustIds = new Set(customers.map(c => c.id).filter(Boolean));
+  const validCustNames = new Set(customers.map(c => (c.name || '').trim().toLowerCase()).filter(Boolean));
+  const validCustPhones = new Set(customers.map(c => (c.phone || '').replace(/\D/g, '')).filter(Boolean));
+
+  const isCustActive = (customerId, customerName, phone) => {
+    if (customers.length === 0) return false;
+    if (customerId && validCustIds.has(customerId)) return true;
+    if (customerName && validCustNames.has((customerName || '').trim().toLowerCase())) return true;
+    if (phone && validCustPhones.has((phone || '').replace(/\D/g, ''))) return true;
+    return false;
+  };
+
+  const activeDailySchedules = customers.length === 0 ? [] : dailySchedules.filter(s => isCustActive(s.customerId, s.customerName, s.phone));
 
   // New Schedule Modal
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -47,17 +64,17 @@ export default function DailyScheduleTab({ onOpenWhatsApp }) {
     notes: 'Standard morning exterior wipe & glass cleaning'
   });
 
-  const filteredSchedules = dailySchedules.filter(s => {
+  const filteredSchedules = activeDailySchedules.filter(s => {
     const matchesSlot = slotFilter === 'ALL' || s.timeSlot === slotFilter;
     const matchesStatus = statusFilter === 'ALL' || s.status === statusFilter;
     const matchesEmployee = employeeFilter === 'ALL' || s.employeeName === employeeFilter;
     return matchesSlot && matchesStatus && matchesEmployee;
   });
 
-  const completedCount = dailySchedules.filter(s => s.status === 'Completed').length;
-  const inProgressCount = dailySchedules.filter(s => s.status === 'In Progress').length;
-  const missedCount = dailySchedules.filter(s => s.status === 'Missed').length;
-  const assignedCount = dailySchedules.filter(s => s.status === 'Assigned').length;
+  const completedCount = activeDailySchedules.filter(s => s.status === 'Completed').length;
+  const inProgressCount = activeDailySchedules.filter(s => s.status === 'In Progress').length;
+  const missedCount = activeDailySchedules.filter(s => s.status === 'Missed').length;
+  const assignedCount = activeDailySchedules.filter(s => s.status === 'Assigned').length;
 
   const handleAddScheduleSubmit = (e) => {
     e.preventDefault();
@@ -328,6 +345,19 @@ export default function DailyScheduleTab({ onOpenWhatsApp }) {
                             Missed
                           </button>
                         )}
+
+                        {/* Delete Schedule Item */}
+                        <button
+                          onClick={() => {
+                            if (window.confirm(`Delete morning service schedule for ${item.customerName || 'customer'}?`)) {
+                              deleteScheduleItem(item.id);
+                            }
+                          }}
+                          className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                          title="Delete Schedule Entry"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </td>
                   </tr>

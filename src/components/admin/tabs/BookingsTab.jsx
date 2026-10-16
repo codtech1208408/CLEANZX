@@ -14,7 +14,8 @@ import {
   X,
   Check,
   Car,
-  Building
+  Building,
+  Trash2
 } from 'lucide-react';
 import { useAdminData } from '../../../context/AdminDataContext';
 import { SERVICE_TIME_SLOTS } from '../../../data/websiteData';
@@ -25,11 +26,28 @@ export default function BookingsTab({ onOpenWhatsApp }) {
     updateBookingStatus,
     assignBookingEmployee,
     rescheduleBooking,
-    employees
+    deleteBooking,
+    employees,
+    customers
   } = useAdminData();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
+
+  // Filter only records belonging to existing active customers
+  const validCustIds = new Set(customers.map(c => c.id).filter(Boolean));
+  const validCustNames = new Set(customers.map(c => (c.name || '').trim().toLowerCase()).filter(Boolean));
+  const validCustPhones = new Set(customers.map(c => (c.phone || '').replace(/\D/g, '')).filter(Boolean));
+
+  const isCustActive = (customerId, customerName, phone) => {
+    if (customers.length === 0) return false;
+    if (customerId && validCustIds.has(customerId)) return true;
+    if (customerName && validCustNames.has((customerName || '').trim().toLowerCase())) return true;
+    if (phone && validCustPhones.has((phone || '').replace(/\D/g, ''))) return true;
+    return false;
+  };
+
+  const activeBookings = customers.length === 0 ? [] : bookings.filter(b => isCustActive(b.customerId, b.customer_name, b.phone_number));
 
   // Reschedule Modal State
   const [reschedulingBooking, setReschedulingBooking] = useState(null);
@@ -40,7 +58,7 @@ export default function BookingsTab({ onOpenWhatsApp }) {
   const [rejectingBooking, setRejectingBooking] = useState(null);
   const [rejectReason, setRejectReason] = useState('No slot availability in requested apartment');
 
-  const filteredBookings = bookings.filter(b => {
+  const filteredBookings = activeBookings.filter(b => {
     const q = searchTerm.toLowerCase();
     const matchesSearch =
       (b.customer_name || '').toLowerCase().includes(q) ||
@@ -54,10 +72,10 @@ export default function BookingsTab({ onOpenWhatsApp }) {
     return matchesSearch && matchesStatus;
   });
 
-  const pendingCount = bookings.filter(b => b.status === 'Pending').length;
-  const confirmedCount = bookings.filter(b => b.status === 'Confirmed').length;
-  const completedCount = bookings.filter(b => b.status === 'Completed').length;
-  const missedCount = bookings.filter(b => b.status === 'Missed').length;
+  const pendingCount = activeBookings.filter(b => b.status === 'Pending').length;
+  const confirmedCount = activeBookings.filter(b => b.status === 'Confirmed').length;
+  const completedCount = activeBookings.filter(b => b.status === 'Completed').length;
+  const missedCount = activeBookings.filter(b => b.status === 'Missed').length;
 
   const handleRescheduleSubmit = (e) => {
     e.preventDefault();
@@ -280,6 +298,19 @@ export default function BookingsTab({ onOpenWhatsApp }) {
                             <X className="w-4 h-4" />
                           </button>
                         )}
+
+                        {/* Delete Booking */}
+                        <button
+                          onClick={() => {
+                            if (window.confirm(`Permanently delete booking ${b.id} for ${b.customer_name || 'customer'}?`)) {
+                              deleteBooking(b.id);
+                            }
+                          }}
+                          className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                          title="Permanently Delete Booking"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </td>
                   </tr>

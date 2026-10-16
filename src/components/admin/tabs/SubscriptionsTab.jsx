@@ -15,7 +15,8 @@ import {
   Sparkles,
   Calendar,
   User,
-  ArrowRight
+  ArrowRight,
+  Trash2
 } from 'lucide-react';
 import { useAdminData } from '../../../context/AdminDataContext';
 
@@ -26,6 +27,7 @@ export default function SubscriptionsTab({ onOpenWhatsApp }) {
     renewSubscription,
     extendSubscription,
     cancelSubscription,
+    deleteSubscription,
     customers,
     plans,
     employees
@@ -33,6 +35,21 @@ export default function SubscriptionsTab({ onOpenWhatsApp }) {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
+
+  // Filter only records belonging to existing active customers
+  const validCustIds = new Set(customers.map(c => c.id).filter(Boolean));
+  const validCustNames = new Set(customers.map(c => (c.name || '').trim().toLowerCase()).filter(Boolean));
+  const validCustPhones = new Set(customers.map(c => (c.phone || '').replace(/\D/g, '')).filter(Boolean));
+
+  const isCustActive = (customerId, customerName, phone) => {
+    if (customers.length === 0) return false;
+    if (customerId && validCustIds.has(customerId)) return true;
+    if (customerName && validCustNames.has((customerName || '').trim().toLowerCase())) return true;
+    if (phone && validCustPhones.has((phone || '').replace(/\D/g, ''))) return true;
+    return false;
+  };
+
+  const activeSubscriptions = customers.length === 0 ? [] : subscriptions.filter(s => isCustActive(s.customerId, s.customerName, s.phone));
 
   // Modals
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
@@ -52,7 +69,7 @@ export default function SubscriptionsTab({ onOpenWhatsApp }) {
   });
 
   // Filter subscriptions
-  const filteredSubs = subscriptions.filter(s => {
+  const filteredSubs = activeSubscriptions.filter(s => {
     const q = searchTerm.toLowerCase();
     const matchesSearch =
       (s.customerName || '').toLowerCase().includes(q) ||
@@ -66,7 +83,7 @@ export default function SubscriptionsTab({ onOpenWhatsApp }) {
   });
 
   // Calculate upcoming expirations in 7 days
-  const upcomingExpirations = subscriptions.filter(s => {
+  const upcomingExpirations = activeSubscriptions.filter(s => {
     if (s.status !== 'Active') return false;
     const expiry = new Date(s.expiryDate);
     const today = new Date();
@@ -319,6 +336,19 @@ export default function SubscriptionsTab({ onOpenWhatsApp }) {
                             <XCircle className="w-4 h-4" />
                           </button>
                         )}
+
+                        {/* Delete Subscription */}
+                        <button
+                          onClick={() => {
+                            if (window.confirm(`Permanently delete subscription ${sub.id} for ${sub.customerName || 'customer'}?`)) {
+                              deleteSubscription(sub.id);
+                            }
+                          }}
+                          className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                          title="Permanently Delete Subscription"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </td>
                   </tr>

@@ -177,6 +177,42 @@ export const AdminDataProvider = ({ children }) => {
           });
         }
 
+        // Automatic Sanitization: Ensure any orphaned records from deleted customers are completely purged
+        const currentCustomers = Array.isArray(parsed.customers) ? parsed.customers : [];
+        const validCustIds = new Set(currentCustomers.map(c => c.id).filter(Boolean));
+        const validCustNames = new Set(currentCustomers.map(c => (c.name || '').trim().toLowerCase()).filter(Boolean));
+        const validCustPhones = new Set(currentCustomers.map(c => (c.phone || '').replace(/\D/g, '')).filter(Boolean));
+
+        const isCustomerActive = (customerId, customerName, phone) => {
+          if (currentCustomers.length === 0) return false;
+          if (customerId && validCustIds.has(customerId)) return true;
+          if (customerName && validCustNames.has((customerName || '').trim().toLowerCase())) return true;
+          if (phone && validCustPhones.has((phone || '').replace(/\D/g, ''))) return true;
+          return false;
+        };
+
+        if (Array.isArray(parsed.invoices)) {
+          parsed.invoices = parsed.invoices.filter(inv => isCustomerActive(inv.customerId, inv.customerName, inv.phone));
+        }
+        if (Array.isArray(parsed.subscriptions)) {
+          parsed.subscriptions = parsed.subscriptions.filter(s => isCustomerActive(s.customerId, s.customerName, s.phone));
+        }
+        if (Array.isArray(parsed.dailySchedules)) {
+          parsed.dailySchedules = parsed.dailySchedules.filter(s => isCustomerActive(s.customerId, s.customerName, s.phone));
+        }
+        if (Array.isArray(parsed.bookings)) {
+          parsed.bookings = parsed.bookings.filter(b => isCustomerActive(b.customerId, b.customer_name, b.phone_number));
+        }
+        if (Array.isArray(parsed.subscriptionChanges) && Array.isArray(parsed.subscriptions)) {
+          const validSubIds = new Set(parsed.subscriptions.map(s => s.id));
+          parsed.subscriptionChanges = parsed.subscriptionChanges.filter(sc => validSubIds.has(sc.subscriptionId));
+        }
+
+        // Immediately persist the sanitized version back to localStorage
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+        } catch {}
+
         return parsed;
       }
     } catch (e) {
@@ -206,6 +242,55 @@ export const AdminDataProvider = ({ children }) => {
       console.error('Failed to sync admin state to localStorage:', e);
     }
   }, [state]);
+
+  // Safety sanitizer on mount: clean any orphaned entries if active customers were deleted
+  useEffect(() => {
+    setState(prev => {
+      const customers = Array.isArray(prev.customers) ? prev.customers : [];
+      const validCustIds = new Set(customers.map(c => c.id).filter(Boolean));
+      const validCustNames = new Set(customers.map(c => (c.name || '').trim().toLowerCase()).filter(Boolean));
+      const validCustPhones = new Set(customers.map(c => (c.phone || '').replace(/\D/g, '')).filter(Boolean));
+
+      const isCustomerActive = (customerId, customerName, phone) => {
+        if (customers.length === 0) return false;
+        if (customerId && validCustIds.has(customerId)) return true;
+        if (customerName && validCustNames.has((customerName || '').trim().toLowerCase())) return true;
+        if (phone && validCustPhones.has((phone || '').replace(/\D/g, ''))) return true;
+        return false;
+      };
+
+      const cleanedInvoices = (prev.invoices || []).filter(inv => isCustomerActive(inv.customerId, inv.customerName, inv.phone));
+      const cleanedSubs = (prev.subscriptions || []).filter(s => isCustomerActive(s.customerId, s.customerName, s.phone));
+      const cleanedSchedules = (prev.dailySchedules || []).filter(s => isCustomerActive(s.customerId, s.customerName, s.phone));
+      const cleanedBookings = (prev.bookings || []).filter(b => isCustomerActive(b.customerId, b.customer_name, b.phone_number));
+      const validSubIds = new Set(cleanedSubs.map(s => s.id));
+      const cleanedChanges = (prev.subscriptionChanges || []).filter(sc => validSubIds.has(sc.subscriptionId));
+
+      const hasChange =
+        cleanedInvoices.length !== (prev.invoices || []).length ||
+        cleanedSubs.length !== (prev.subscriptions || []).length ||
+        cleanedSchedules.length !== (prev.dailySchedules || []).length ||
+        cleanedBookings.length !== (prev.bookings || []).length ||
+        cleanedChanges.length !== (prev.subscriptionChanges || []).length;
+
+      if (!hasChange) return prev;
+
+      const cleanedState = {
+        ...prev,
+        invoices: cleanedInvoices,
+        subscriptions: cleanedSubs,
+        dailySchedules: cleanedSchedules,
+        bookings: cleanedBookings,
+        subscriptionChanges: cleanedChanges
+      };
+
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(cleanedState));
+      } catch {}
+
+      return cleanedState;
+    });
+  }, []);
 
   // Sync state across browser tabs in real time
   useEffect(() => {
@@ -1167,35 +1252,40 @@ export const AdminDataProvider = ({ children }) => {
       const targetName = targetCustomer ? (targetCustomer.name || '').trim().toLowerCase() : '';
       const targetPhone = targetCustomer ? (targetCustomer.phone || '').replace(/\D/g, '') : '';
 
-      return {
-        ...prev,
-        customers: prev.customers.filter(c => c.id !== id),
-        // Cascade delete invoices associated with this deleted customer
-        invoices: prev.invoices.filter(inv => {
-          if (inv.customerId === id) return false;
-          if (targetName && (inv.customerName || '').trim().toLowerCase() === targetName) return false;
-          if (targetPhone && (inv.phone || '').replace(/\D/g, '') === targetPhone) return false;
-          return true;
-        }),
-        // Cascade delete subscriptions
-        subscriptions: prev.subscriptions.filter(s => {
-          if (s.customerId === id) return false;
-          if (targetName && (s.customerName || '').trim().toLowerCase() === targetName) return false;
-          return true;
-        }),
-        // Cascade delete daily schedules
-        dailySchedules: prev.dailySchedules.filter(s => {
-          if (s.customerId === id) return false;
-          if (targetName && (s.customerName || '').trim().toLowerCase() === targetName) return false;
-          return true;
-        }),
-        // Cascade delete bookings
-        bookings: prev.bookings.filter(b => {
-          if (b.customerId === id) return false;
-          if (targetName && (b.customer_name || '').trim().toLowerCase() === targetName) return false;
-          return true;
-        })
+      const updatedCustomers = prev.customers.filter(c => c.id !== id);
+      const validCustIds = new Set(updatedCustomers.map(c => c.id).filter(Boolean));
+      const validCustNames = new Set(updatedCustomers.map(c => (c.name || '').trim().toLowerCase()).filter(Boolean));
+      const validCustPhones = new Set(updatedCustomers.map(c => (c.phone || '').replace(/\D/g, '')).filter(Boolean));
+
+      const isKeepable = (customerId, customerName, phone) => {
+        if (updatedCustomers.length === 0) return false;
+        if (customerId === id) return false;
+        if (targetName && (customerName || '').trim().toLowerCase() === targetName) return false;
+        if (targetPhone && (phone || '').replace(/\D/g, '') === targetPhone) return false;
+        if (customerId && validCustIds.has(customerId)) return true;
+        if (customerName && validCustNames.has((customerName || '').trim().toLowerCase())) return true;
+        if (phone && validCustPhones.has((phone || '').replace(/\D/g, ''))) return true;
+        return false;
       };
+
+      const remainingSubs = prev.subscriptions.filter(s => isKeepable(s.customerId, s.customerName, s.phone));
+      const validSubIds = new Set(remainingSubs.map(s => s.id));
+
+      const updatedState = {
+        ...prev,
+        customers: updatedCustomers,
+        invoices: prev.invoices.filter(inv => isKeepable(inv.customerId, inv.customerName, inv.phone)),
+        subscriptions: remainingSubs,
+        dailySchedules: prev.dailySchedules.filter(s => isKeepable(s.customerId, s.customerName, s.phone)),
+        bookings: prev.bookings.filter(b => isKeepable(b.customerId, b.customer_name, b.phone_number)),
+        subscriptionChanges: (prev.subscriptionChanges || []).filter(sc => validSubIds.has(sc.subscriptionId))
+      };
+
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedState));
+      } catch {}
+
+      return updatedState;
     });
   };
 
@@ -1313,6 +1403,14 @@ export const AdminDataProvider = ({ children }) => {
     }));
   };
 
+  const deleteSubscription = (subId) => {
+    setState(prev => ({
+      ...prev,
+      subscriptions: prev.subscriptions.filter(s => s.id !== subId),
+      subscriptionChanges: (prev.subscriptionChanges || []).filter(sc => sc.subscriptionId !== subId)
+    }));
+  };
+
   // ==========================================
   // 5. BOOKING MANAGEMENT
   // ==========================================
@@ -1324,11 +1422,55 @@ export const AdminDataProvider = ({ children }) => {
       assigned_employee: 'Unassigned',
       ...bookingData
     };
+
+    setState(prev => {
+      // Find or register customer
+      const phoneClean = (bookingData.phone_number || bookingData.phone || '').replace(/\D/g, '');
+      const nameClean = (bookingData.customer_name || bookingData.name || '').trim().toLowerCase();
+      const existingCustomer = prev.customers.find(c =>
+        (phoneClean && (c.phone || '').replace(/\D/g, '') === phoneClean) ||
+        (nameClean && (c.name || '').trim().toLowerCase() === nameClean)
+      );
+
+      let updatedCustomers = [...prev.customers];
+      let assignedCustId = existingCustomer?.id;
+
+      if (!existingCustomer && (bookingData.customer_name || bookingData.name)) {
+        assignedCustId = 'CUST-' + Math.floor(100 + Math.random() * 900);
+        const newCust = {
+          id: assignedCustId,
+          name: bookingData.customer_name || bookingData.name || 'New Customer',
+          phone: bookingData.phone_number || bookingData.phone || '',
+          apartment: bookingData.apartment || 'Prestige High Fields',
+          flat_number: bookingData.flat_number || bookingData.flat || '',
+          car_model: bookingData.car_model || 'Sedan',
+          vehicle_registration_number: bookingData.vehicle_registration_number || '',
+          activePlan: bookingData.preferred_plan || 'Pending Approval',
+          subscriptionStatus: 'Pending',
+          password: 'clean@' + new Date().getFullYear(),
+          balanceDue: 0,
+          joinedDate: new Date().toISOString().slice(0, 10)
+        };
+        updatedCustomers.push(newCust);
+      }
+
+      newBooking.customerId = assignedCustId;
+
+      return {
+        ...prev,
+        customers: updatedCustomers,
+        bookings: [newBooking, ...prev.bookings]
+      };
+    });
+    return newBooking;
+  };
+
+  const deleteBooking = (bookingId) => {
     setState(prev => ({
       ...prev,
-      bookings: [newBooking, ...prev.bookings]
+      bookings: prev.bookings.filter(b => b.id !== bookingId),
+      dailySchedules: prev.dailySchedules.filter(s => s.bookingId !== bookingId && s.id !== 'SCH-' + bookingId)
     }));
-    return newBooking;
   };
 
   const updateBookingStatus = (id, status, notes) => {
@@ -1479,10 +1621,24 @@ export const AdminDataProvider = ({ children }) => {
   };
 
   const deleteEmployee = (id) => {
-    setState(prev => ({
-      ...prev,
-      employees: prev.employees.filter(e => e.id !== id)
-    }));
+    setState(prev => {
+      const emp = prev.employees.find(e => e.id === id);
+      const empName = emp?.name;
+      return {
+        ...prev,
+        employees: prev.employees.filter(e => e.id !== id),
+        dailySchedules: prev.dailySchedules.map(s =>
+          s.employeeId === id || s.employeeName === empName
+            ? { ...s, employeeId: '', employeeName: 'Unassigned' }
+            : s
+        ),
+        bookings: prev.bookings.map(b =>
+          b.assigned_employee === empName
+            ? { ...b, assigned_employee: 'Unassigned' }
+            : b
+        )
+      };
+    });
   };
 
   const toggleEmployeeStatus = (id) => {
@@ -1609,6 +1765,13 @@ export const AdminDataProvider = ({ children }) => {
       dailySchedules: [newItem, ...prev.dailySchedules]
     }));
     return newItem;
+  };
+
+  const deleteScheduleItem = (scheduleId) => {
+    setState(prev => ({
+      ...prev,
+      dailySchedules: prev.dailySchedules.filter(s => s.id !== scheduleId)
+    }));
   };
 
   // ==========================================
@@ -1791,23 +1954,46 @@ export const AdminDataProvider = ({ children }) => {
     }));
   };
 
-  const cleanOrphanedInvoices = () => {
+  const cleanOrphanedData = () => {
     setState(prev => {
-      const validCustomerIds = new Set(prev.customers.map(c => c.id));
-      const validCustomerNames = new Set(prev.customers.map(c => (c.name || '').trim().toLowerCase()));
-      const validPhones = new Set(prev.customers.map(c => (c.phone || '').replace(/\D/g, '')).filter(Boolean));
+      const currentCustomers = prev.customers || [];
+      const validCustIds = new Set(currentCustomers.map(c => c.id).filter(Boolean));
+      const validCustNames = new Set(currentCustomers.map(c => (c.name || '').trim().toLowerCase()).filter(Boolean));
+      const validCustPhones = new Set(currentCustomers.map(c => (c.phone || '').replace(/\D/g, '')).filter(Boolean));
 
-      return {
-        ...prev,
-        invoices: prev.invoices.filter(inv => {
-          if (inv.customerId && validCustomerIds.has(inv.customerId)) return true;
-          if (inv.customerName && validCustomerNames.has((inv.customerName || '').trim().toLowerCase())) return true;
-          if (inv.phone && validPhones.has((inv.phone || '').replace(/\D/g, ''))) return true;
-          return false;
-        })
+      const isCustomerActive = (customerId, customerName, phone) => {
+        if (currentCustomers.length === 0) return false;
+        if (customerId && validCustIds.has(customerId)) return true;
+        if (customerName && validCustNames.has((customerName || '').trim().toLowerCase())) return true;
+        if (phone && validCustPhones.has((phone || '').replace(/\D/g, ''))) return true;
+        return false;
       };
+
+      const newInvoices = (prev.invoices || []).filter(inv => isCustomerActive(inv.customerId, inv.customerName, inv.phone));
+      const newSubs = (prev.subscriptions || []).filter(s => isCustomerActive(s.customerId, s.customerName, s.phone));
+      const newSchedules = (prev.dailySchedules || []).filter(s => isCustomerActive(s.customerId, s.customerName, s.phone));
+      const newBookings = (prev.bookings || []).filter(b => isCustomerActive(b.customerId, b.customer_name, b.phone_number));
+      const validSubIds = new Set(newSubs.map(s => s.id));
+      const newChanges = (prev.subscriptionChanges || []).filter(sc => validSubIds.has(sc.subscriptionId));
+
+      const cleaned = {
+        ...prev,
+        invoices: newInvoices,
+        subscriptions: newSubs,
+        dailySchedules: newSchedules,
+        bookings: newBookings,
+        subscriptionChanges: newChanges
+      };
+
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(cleaned));
+      } catch {}
+
+      return cleaned;
     });
   };
+
+  const cleanOrphanedInvoices = cleanOrphanedData;
 
   // Integrations & Scope Actions
   const updateIntegrationsSettings = (patch) => {
@@ -1959,12 +2145,14 @@ export const AdminDataProvider = ({ children }) => {
         renewSubscription,
         extendSubscription,
         cancelSubscription,
+        deleteSubscription,
 
         // Bookings Actions
         addBooking,
         updateBookingStatus,
         assignBookingEmployee,
         rescheduleBooking,
+        deleteBooking,
 
         // Employees Actions
         createEmployee,
@@ -1977,6 +2165,7 @@ export const AdminDataProvider = ({ children }) => {
         reassignScheduleEmployee,
         rescheduleSlot,
         addScheduleItem,
+        deleteScheduleItem,
 
         // Invoices Actions
         generateInvoice,
@@ -1985,6 +2174,7 @@ export const AdminDataProvider = ({ children }) => {
         cancelInvoice,
         deleteInvoice,
         cleanOrphanedInvoices,
+        cleanOrphanedData,
 
         // Integrations & Scope Actions
         updateIntegrationsSettings,

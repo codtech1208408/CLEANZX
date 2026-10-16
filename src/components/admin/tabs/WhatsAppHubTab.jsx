@@ -90,11 +90,15 @@ export default function WhatsAppHubTab({ onOpenWhatsApp }) {
                 }}
                 className="w-full p-2.5 border border-slate-300 rounded-xl bg-white"
               >
-                {customers.map(c => (
-                  <option key={c.id} value={c.id}>
-                    {c.name} - {c.apartment} ({c.phone})
-                  </option>
-                ))}
+                {customers.length === 0 ? (
+                  <option value="">No customers registered yet</option>
+                ) : (
+                  customers.map(c => (
+                    <option key={c.id} value={c.id}>
+                      {c.name} - {c.apartment} ({c.phone})
+                    </option>
+                  ))
+                )}
               </select>
             </div>
 
@@ -177,7 +181,12 @@ export default function WhatsAppHubTab({ onOpenWhatsApp }) {
           </div>
 
           <div className="space-y-2.5 max-h-[460px] overflow-y-auto pr-1">
-            {filteredRoster.map(cust => (
+            {filteredRoster.length === 0 ? (
+              <div className="py-12 text-center text-slate-400 text-xs">
+                {customers.length === 0 ? 'No customer accounts registered yet.' : 'No customers match the current search.'}
+              </div>
+            ) : (
+              filteredRoster.map(cust => (
               <div
                 key={cust.id}
                 className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center justify-between gap-3 text-xs hover:bg-slate-100/70 transition-colors"
@@ -231,7 +240,7 @@ export default function WhatsAppHubTab({ onOpenWhatsApp }) {
                   </button>
                 </div>
               </div>
-            ))}
+            )))}
           </div>
         </div>
       </div>

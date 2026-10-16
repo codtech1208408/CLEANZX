@@ -313,7 +313,7 @@ export default function CustomersTab({ onOpenWhatsApp }) {
                         </button>
                         <button
                           onClick={() => {
-                            if (confirm(`Delete customer ${cust.name}?`)) {
+                            if (window.confirm(`Permanently delete customer "${cust.name}"? This will also remove all their active subscriptions, daily schedules, bookings, and invoices across all tabs.`)) {
                               deleteCustomer(cust.id);
                             }
                           }}

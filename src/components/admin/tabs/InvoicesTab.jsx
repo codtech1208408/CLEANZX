@@ -61,25 +61,37 @@ export default function InvoicesTab({ onOpenWhatsApp }) {
     notes: 'Payment confirmed by operations admin'
   });
 
-  // Metrics
-  const totalInvoiced = invoices.reduce((acc, i) => acc + (i.total || 0), 0);
-  const totalCollected = invoices.reduce((acc, i) => acc + (i.amountPaid || 0), 0);
-  const totalOutstanding = invoices.reduce((acc, i) => acc + (i.balance || 0), 0);
-  const pendingCount = invoices.filter(i => i.status === 'Pending' || i.status === 'Partially Paid').length;
-
-  // Detect invoices belonging to deleted customers
-  const validCustomerIds = new Set(customers.map(c => c.id));
-  const validCustomerNames = new Set(customers.map(c => (c.name || '').trim().toLowerCase()));
+  // Filter only records belonging to existing active customers
+  const validCustomerIds = new Set(customers.map(c => c.id).filter(Boolean));
+  const validCustomerNames = new Set(customers.map(c => (c.name || '').trim().toLowerCase()).filter(Boolean));
   const validPhones = new Set(customers.map(c => (c.phone || '').replace(/\D/g, '')).filter(Boolean));
 
-  const orphanedInvoices = invoices.filter(inv => {
-    const hasId = inv.customerId && validCustomerIds.has(inv.customerId);
-    const hasName = inv.customerName && validCustomerNames.has((inv.customerName || '').trim().toLowerCase());
-    const hasPhone = inv.phone && validPhones.has((inv.phone || '').replace(/\D/g, ''));
-    return !hasId && !hasName && !hasPhone;
-  });
+  const isCustActive = (customerId, customerName, phone) => {
+    if (customers.length === 0) return false;
+    if (customerId && validCustomerIds.has(customerId)) return true;
+    if (customerName && validCustomerNames.has((customerName || '').trim().toLowerCase())) return true;
+    if (phone && validPhones.has((phone || '').replace(/\D/g, ''))) return true;
+    return false;
+  };
 
-  const filteredInvoices = invoices.filter(inv => {
+  const activeInvoices = customers.length === 0 ? [] : invoices.filter(inv => isCustActive(inv.customerId, inv.customerName, inv.phone));
+
+  // Metrics
+  const totalInvoiced = activeInvoices.reduce((acc, i) => acc + (i.total || 0), 0);
+  const totalCollected = activeInvoices.reduce((acc, i) => acc + (i.amountPaid || 0), 0);
+  const totalOutstanding = activeInvoices.reduce((acc, i) => acc + (i.balance || 0), 0);
+  const pendingCount = activeInvoices.filter(i => i.status === 'Pending' || i.status === 'Partially Paid').length;
+
+  // Detect invoices belonging to deleted customers and auto-purge
+  const orphanedInvoices = invoices.filter(inv => !isCustActive(inv.customerId, inv.customerName, inv.phone));
+
+  useEffect(() => {
+    if (orphanedInvoices.length > 0) {
+      cleanOrphanedInvoices();
+    }
+  }, [orphanedInvoices.length]);
+
+  const filteredInvoices = activeInvoices.filter(inv => {
     const q = searchTerm.toLowerCase();
     const matchesSearch =
       (inv.invoiceNumber || '').toLowerCase().includes(q) ||

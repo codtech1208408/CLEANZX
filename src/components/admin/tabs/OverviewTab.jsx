@@ -27,14 +27,31 @@ export default function OverviewTab({ setActiveTab, onOpenWhatsApp }) {
     plans
   } = useAdminData();
 
+  // Filter only records belonging to existing active customers
+  const validCustIds = new Set(customers.map(c => c.id).filter(Boolean));
+  const validCustNames = new Set(customers.map(c => (c.name || '').trim().toLowerCase()).filter(Boolean));
+  const validCustPhones = new Set(customers.map(c => (c.phone || '').replace(/\D/g, '')).filter(Boolean));
+
+  const isCustActive = (customerId, customerName, phone) => {
+    if (customers.length === 0) return false;
+    if (customerId && validCustIds.has(customerId)) return true;
+    if (customerName && validCustNames.has((customerName || '').trim().toLowerCase())) return true;
+    if (phone && validCustPhones.has((phone || '').replace(/\D/g, ''))) return true;
+    return false;
+  };
+
+  const activeCustomerSubs = customers.length === 0 ? [] : subscriptions.filter(s => isCustActive(s.customerId, s.customerName, s.phone));
+  const activeCustomerSchedules = customers.length === 0 ? [] : dailySchedules.filter(s => isCustActive(s.customerId, s.customerName, s.phone));
+  const activeCustomerInvoices = customers.length === 0 ? [] : invoices.filter(inv => isCustActive(inv.customerId, inv.customerName, inv.phone));
+
   // Metrics calculations
   const totalCustomers = customers.length;
-  const activeSubs = subscriptions.filter(s => s.status === 'Active' || s.status === 'Renewed');
-  const expiredSubs = subscriptions.filter(s => s.status === 'Expired');
-  const pendingSubs = subscriptions.filter(s => s.status === 'Pending');
+  const activeSubs = activeCustomerSubs.filter(s => s.status === 'Active' || s.status === 'Renewed');
+  const expiredSubs = activeCustomerSubs.filter(s => s.status === 'Expired');
+  const pendingSubs = activeCustomerSubs.filter(s => s.status === 'Pending');
 
   // Next 7 days upcoming expirations
-  const upcomingExpirations = subscriptions.filter(s => {
+  const upcomingExpirations = activeCustomerSubs.filter(s => {
     if (s.status !== 'Active') return false;
     const expiry = new Date(s.expiryDate);
     const today = new Date();
@@ -43,18 +60,18 @@ export default function OverviewTab({ setActiveTab, onOpenWhatsApp }) {
   });
 
   // Services today
-  const todaySchedules = dailySchedules;
+  const todaySchedules = activeCustomerSchedules;
   const completedServices = todaySchedules.filter(s => s.status === 'Completed').length;
   const missedServices = todaySchedules.filter(s => s.status === 'Missed').length;
   const inProgressServices = todaySchedules.filter(s => s.status === 'In Progress').length;
   const assignedServices = todaySchedules.filter(s => s.status === 'Assigned').length;
 
   // Revenue & Invoices
-  const totalInvoiced = invoices.reduce((acc, inv) => acc + (inv.total || 0), 0);
-  const totalRecordedRevenue = invoices.reduce((acc, inv) => acc + (inv.amountPaid || 0), 0);
-  const outstandingBalance = invoices.reduce((acc, inv) => acc + (inv.balance || 0), 0);
-  const paidInvoicesCount = invoices.filter(i => i.status === 'Paid').length;
-  const pendingInvoicesCount = invoices.filter(i => i.status === 'Pending' || i.status === 'Partially Paid').length;
+  const totalInvoiced = activeCustomerInvoices.reduce((acc, inv) => acc + (inv.total || 0), 0);
+  const totalRecordedRevenue = activeCustomerInvoices.reduce((acc, inv) => acc + (inv.amountPaid || 0), 0);
+  const outstandingBalance = activeCustomerInvoices.reduce((acc, inv) => acc + (inv.balance || 0), 0);
+  const paidInvoicesCount = activeCustomerInvoices.filter(i => i.status === 'Paid').length;
+  const pendingInvoicesCount = activeCustomerInvoices.filter(i => i.status === 'Pending' || i.status === 'Partially Paid').length;
 
   // Active workforce
   const activeEmployees = employees.filter(e => e.status === 'Active').length;
@@ -248,7 +265,7 @@ export default function OverviewTab({ setActiveTab, onOpenWhatsApp }) {
             <div>
               <p className="text-xs text-slate-500 font-medium">Morning Services Today</p>
               <p className="text-lg font-bold text-slate-900">
-                {completedServices} / {todaySchedules.length} <span className="text-xs text-emerald-600 font-normal">({Math.round((completedServices / (todaySchedules.length || 1)) * 100)}% done)</span>
+                {completedServices} / {todaySchedules.length} <span className="text-xs text-emerald-600 font-normal">({todaySchedules.length > 0 ? Math.round((completedServices / todaySchedules.length) * 100) : 0}% done)</span>
               </p>
             </div>
           </div>
@@ -329,8 +346,8 @@ export default function OverviewTab({ setActiveTab, onOpenWhatsApp }) {
 
           <div className="space-y-3">
             {plans.slice(0, 5).map(plan => {
-              const subsCount = subscriptions.filter(s => s.planId === plan.id).length;
-              const percentage = Math.round((subsCount / (subscriptions.length || 1)) * 100);
+              const subsCount = activeCustomerSubs.filter(s => s.planId === plan.id).length;
+              const percentage = activeCustomerSubs.length > 0 ? Math.round((subsCount / activeCustomerSubs.length) * 100) : 0;
 
               return (
                 <div key={plan.id} className="p-3 rounded-xl bg-slate-50 border border-slate-100">
@@ -341,7 +358,7 @@ export default function OverviewTab({ setActiveTab, onOpenWhatsApp }) {
                   <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
                     <div
                       className="bg-gradient-to-r from-cyan-500 to-blue-600 h-full rounded-full transition-all duration-500"
-                      style={{ width: `${Math.max(percentage, 5)}%` }}
+                      style={{ width: `${subsCount > 0 ? Math.max(percentage, 5) : 0}%` }}
                     />
                   </div>
                 </div>
