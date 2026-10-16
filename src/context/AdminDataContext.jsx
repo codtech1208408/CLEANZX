@@ -22,6 +22,7 @@ import {
   deleteCloudCustomer,
   fetchCloudBookings,
   createCloudBooking,
+  updateCloudBooking,
   deleteCloudBooking,
   saveCloudKV,
   fetchAllCloudKV,
@@ -402,13 +403,40 @@ export const AdminDataProvider = ({ children }) => {
         }
 
         // 3. Bookings Table & Cloud KV
-        let mergedBookings = (cloudBookings && Array.isArray(cloudBookings) && cloudBookings.length > 0) ? cloudBookings : null;
-        if (cloudKVMap && cloudKVMap['bookings']?.data && Array.isArray(cloudKVMap['bookings'].data) && cloudKVMap['bookings'].data.length > 0) {
-          if (!mergedBookings || mergedBookings.length === 0) {
-            mergedBookings = cloudKVMap['bookings'].data;
-          }
+        const kvBookings = (cloudKVMap && cloudKVMap['bookings']?.data && Array.isArray(cloudKVMap['bookings'].data)) ? cloudKVMap['bookings'].data : [];
+        const tableBookings = (cloudBookings && Array.isArray(cloudBookings)) ? cloudBookings : [];
+
+        let mergedBookings = [];
+        if (kvBookings.length > 0 || tableBookings.length > 0) {
+          const map = new Map();
+          // Add tableBookings first
+          tableBookings.forEach(b => {
+            if (b && b.id) map.set(b.id, { ...b });
+          });
+          // Merge kvBookings (holds fast real-time status and employee assignments)
+          kvBookings.forEach(b => {
+            if (b && b.id) {
+              const existing = map.get(b.id);
+              if (existing) {
+                map.set(b.id, {
+                  ...existing,
+                  ...b,
+                  assigned_employee: (b.assigned_employee && b.assigned_employee !== 'Unassigned')
+                    ? b.assigned_employee
+                    : (existing.assigned_employee || 'Unassigned'),
+                  status: (b.status && b.status !== 'Pending')
+                    ? b.status
+                    : (existing.status || 'Pending')
+                });
+              } else {
+                map.set(b.id, { ...b });
+              }
+            }
+          });
+          mergedBookings = Array.from(map.values());
         }
-        if (mergedBookings && Array.isArray(mergedBookings) && mergedBookings.length > 0) {
+
+        if (mergedBookings.length > 0) {
           const localStr = JSON.stringify((prev.bookings || []).map(b => ({ id: b.id, status: b.status, emp: b.assigned_employee })));
           const cloudStr = JSON.stringify(mergedBookings.map(b => ({ id: b.id, status: b.status, emp: b.assigned_employee })));
           if (localStr !== cloudStr) {
@@ -1805,6 +1833,11 @@ export const AdminDataProvider = ({ children }) => {
   };
 
   const updateBookingStatus = (id, status, notes) => {
+    updateCloudBooking(id, {
+      status,
+      ...(notes !== undefined ? { admin_notes: notes } : {})
+    });
+
     setState(prev => {
       const updatedBookings = prev.bookings.map(b =>
         b.id === id ? { ...b, status, ...(notes !== undefined ? { adminNotes: notes } : {}) } : b
@@ -1827,19 +1860,25 @@ export const AdminDataProvider = ({ children }) => {
   };
 
   const assignBookingEmployee = (id, employeeName) => {
+    updateCloudBooking(id, {
+      assigned_employee: employeeName,
+      status: 'Confirmed'
+    });
+
     setState(prev => {
       const booking = prev.bookings.find(b => b.id === id);
       const emp = prev.employees.find(e => e.name?.toLowerCase().trim() === employeeName?.toLowerCase().trim());
+      const normalizedName = emp ? emp.name : employeeName;
 
       const updatedBookings = prev.bookings.map(b =>
-        b.id === id ? { ...b, assigned_employee: employeeName, status: b.status === 'Pending' ? 'Confirmed' : b.status } : b
+        b.id === id ? { ...b, assigned_employee: normalizedName, status: b.status === 'Pending' ? 'Confirmed' : b.status } : b
       );
       saveCloudKV('bookings', updatedBookings, Date.now());
 
       let updatedSchedules = [...prev.dailySchedules];
       const schedIndex = updatedSchedules.findIndex(s => s.bookingId === id || s.id === 'SCH-' + id);
 
-      if (employeeName && employeeName !== 'Unassigned') {
+      if (normalizedName && normalizedName !== 'Unassigned') {
         const schedItem = {
           id: 'SCH-' + id,
           bookingId: id,
@@ -1853,7 +1892,7 @@ export const AdminDataProvider = ({ children }) => {
           regNumber: booking?.vehicle_registration_number || 'TS-REG',
           planName: booking?.preferred_plan || 'Confirmed Booking',
           employeeId: emp?.id || 'EMP-01',
-          employeeName: employeeName,
+          employeeName: normalizedName,
           date: booking?.preferred_start_date || new Date().toISOString().slice(0, 10),
           status: 'Assigned',
           notes: booking?.adminNotes || (booking?.selected_addons?.length ? `Add-ons: ${booking.selected_addons.join(', ')}` : 'Assigned Doorstep Service'),
@@ -1883,9 +1922,14 @@ export const AdminDataProvider = ({ children }) => {
   };
 
   const rescheduleBooking = (id, newDate, newTimeSlot) => {
-    setState(prev => ({
-      ...prev,
-      bookings: prev.bookings.map(b =>
+    updateCloudBooking(id, {
+      preferred_start_date: newDate,
+      preferred_time: newTimeSlot,
+      status: 'Confirmed'
+    });
+
+    setState(prev => {
+      const updatedBookings = prev.bookings.map(b =>
         b.id === id
           ? {
               ...b,
@@ -1895,18 +1939,24 @@ export const AdminDataProvider = ({ children }) => {
               adminNotes: `${b.adminNotes || ''} [Rescheduled to ${newDate} ${newTimeSlot}]`.trim()
             }
           : b
-      ),
-      dailySchedules: prev.dailySchedules.map(s =>
-        (s.bookingId === id || s.id === 'SCH-' + id)
-          ? {
-              ...s,
-              date: newDate || s.date,
-              timeSlot: newTimeSlot || s.timeSlot,
-              status: 'Assigned'
-            }
-          : s
-      )
-    }));
+      );
+      saveCloudKV('bookings', updatedBookings, Date.now());
+
+      return {
+        ...prev,
+        bookings: updatedBookings,
+        dailySchedules: prev.dailySchedules.map(s =>
+          (s.bookingId === id || s.id === 'SCH-' + id)
+            ? {
+                ...s,
+                date: newDate || s.date,
+                timeSlot: newTimeSlot || s.timeSlot,
+                status: 'Assigned'
+              }
+            : s
+        )
+      };
+    });
   };
 
   // ==========================================

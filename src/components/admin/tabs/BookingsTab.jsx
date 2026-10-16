@@ -195,16 +195,27 @@ export default function BookingsTab({ onOpenWhatsApp }) {
                     </td>
 
                     <td className="py-3 px-4">
-                      <select
-                        value={b.assigned_employee || 'Unassigned'}
-                        onChange={(e) => assignBookingEmployee(b.id, e.target.value)}
-                        className="p-1.5 text-xs border border-slate-300 rounded-lg bg-white"
-                      >
-                        <option value="Unassigned">Unassigned</option>
-                        {employees.map(emp => (
-                          <option key={emp.id} value={emp.name}>{emp.name}</option>
-                        ))}
-                      </select>
+                      {(() => {
+                        const matchedEmp = employees.find(e =>
+                          (e.name || '').trim().toLowerCase() === (b.assigned_employee || '').trim().toLowerCase()
+                        );
+                        const selectedVal = matchedEmp ? matchedEmp.name : (b.assigned_employee || 'Unassigned');
+
+                        return (
+                          <select
+                            value={selectedVal}
+                            onChange={(e) => assignBookingEmployee(b.id, e.target.value)}
+                            className="p-1.5 text-xs border border-slate-300 rounded-lg bg-white capitalize font-medium"
+                          >
+                            <option value="Unassigned">Unassigned</option>
+                            {employees.map(emp => (
+                              <option key={emp.id} value={emp.name}>
+                                {emp.name ? emp.name.charAt(0).toUpperCase() + emp.name.slice(1) : emp.id}
+                              </option>
+                            ))}
+                          </select>
+                        );
+                      })()}
                     </td>
 
                     <td className="py-3 px-4">

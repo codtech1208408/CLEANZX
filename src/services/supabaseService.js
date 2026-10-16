@@ -272,6 +272,23 @@ export const deleteCloudBooking = async (id) => {
   }
 };
 
+export const updateCloudBooking = async (id, fields) => {
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/bookings?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal'
+      },
+      body: JSON.stringify(fields)
+    });
+  } catch (err) {
+    console.warn('[Supabase] Failed to update booking:', err);
+  }
+};
+
 // ==========================================
 // UNIVERSAL KEY-VALUE CLOUD STORE (website_content, plans, subscriptions, daily_schedules, invoices, integrations_settings)
 // ==========================================
