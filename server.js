@@ -849,6 +849,10 @@ app.post('/api/auth/verify-recovery-otp', (req, res) => {
   return res.json({ success: true, message: 'Verification code confirmed.' });
 });
 
-app.listen(PORT, () => {
-  console.log(`CLEANZX API server running on port ${PORT}`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`CLEANZX API server running on port ${PORT}`);
+  });
+}
+
+export default app;
