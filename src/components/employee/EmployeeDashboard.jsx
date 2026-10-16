@@ -410,27 +410,27 @@ export default function EmployeeDashboard() {
           {activeTab === 'runs' && (
             <div className="space-y-4 animate-fadeIn">
               {/* Shift Banner with KPI Progress */}
-              <div className="bg-gradient-to-r from-cyan-950/80 via-blue-950/70 to-slate-900 border border-cyan-500/30 rounded-3xl p-5 shadow-xl">
+              <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 text-[11px] font-bold uppercase tracking-wider mb-1.5">
-                      <Clock className="w-3 h-3 text-cyan-400" />
+                    <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-cyan-50 text-cyan-700 border border-cyan-200 text-[11px] font-bold uppercase tracking-wider mb-1.5">
+                      <Clock className="w-3 h-3 text-cyan-600" />
                       <span>CleanZX Doorstep Service Cycle</span>
                     </div>
-                    <h2 className="text-lg sm:text-xl font-black text-white">
+                    <h2 className="text-lg sm:text-xl font-black text-slate-900">
                       Today's Morning Run
                     </h2>
-                    <p className="text-xs text-slate-300 mt-0.5">
-                      Zone: <strong className="text-white">{employeeUser?.zone || 'Hyderabad West'}</strong> • Assigned Specialist: <strong className="text-cyan-300">{employeeUser?.name || 'Staff'}</strong>
+                    <p className="text-xs text-slate-600 mt-0.5">
+                      Zone: <strong className="text-slate-900">{employeeUser?.zone || 'Hyderabad West'}</strong> • Assigned Specialist: <strong className="text-cyan-700">{employeeUser?.name || 'Staff'}</strong>
                     </p>
                   </div>
 
                   <div className="flex items-center gap-3">
                     <div className="text-right">
-                      <span className="text-2xl sm:text-3xl font-black text-cyan-400">
+                      <span className="text-2xl sm:text-3xl font-black text-cyan-700">
                         {completedJobs}/{totalJobs}
                       </span>
-                      <span className="text-[10px] text-slate-400 block uppercase font-bold tracking-wider">
+                      <span className="text-[10px] text-slate-500 block uppercase font-bold tracking-wider">
                         Visits Done
                       </span>
                     </div>
@@ -438,14 +438,14 @@ export default function EmployeeDashboard() {
                 </div>
 
                 {/* Progress Bar */}
-                <div className="mt-4 pt-3 border-t border-slate-800/80">
-                  <div className="w-full bg-slate-950/80 rounded-full h-2.5 overflow-hidden border border-slate-800">
+                <div className="mt-4 pt-3 border-t border-slate-100">
+                  <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden border border-slate-200">
                     <div
                       className="bg-gradient-to-r from-cyan-500 via-blue-500 to-emerald-400 h-2.5 rounded-full transition-all duration-500"
                       style={{ width: `${progressPercent}%` }}
                     />
                   </div>
-                  <div className="flex justify-between items-center text-[11px] text-slate-400 mt-1.5">
+                  <div className="flex justify-between items-center text-[11px] text-slate-500 mt-1.5">
                     <span>{progressPercent}% shift completed</span>
                     <span>{pendingJobs + inProgressJobs} morning visits remaining</span>
                   </div>
@@ -454,37 +454,37 @@ export default function EmployeeDashboard() {
 
               {/* Quick Stat Chips */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="bg-slate-900 border border-slate-800 p-3.5 rounded-2xl text-center">
-                  <span className="text-[10px] text-slate-400 block uppercase font-bold">Total Assigned</span>
-                  <span className="text-xl font-black text-white mt-0.5 block">{totalJobs}</span>
+                <div className="bg-white border border-slate-200 p-3.5 rounded-2xl text-center shadow-xs">
+                  <span className="text-[10px] text-slate-500 block uppercase font-bold">Total Assigned</span>
+                  <span className="text-xl font-black text-slate-900 mt-0.5 block">{totalJobs}</span>
                 </div>
-                <div className="bg-slate-900 border border-cyan-500/30 p-3.5 rounded-2xl text-center">
-                  <span className="text-[10px] text-cyan-400 block uppercase font-bold">In Progress</span>
-                  <span className="text-xl font-black text-cyan-400 mt-0.5 block">{inProgressJobs}</span>
+                <div className="bg-white border border-cyan-200 p-3.5 rounded-2xl text-center shadow-xs">
+                  <span className="text-[10px] text-cyan-700 block uppercase font-bold">In Progress</span>
+                  <span className="text-xl font-black text-cyan-700 mt-0.5 block">{inProgressJobs}</span>
                 </div>
-                <div className="bg-slate-900 border border-emerald-500/30 p-3.5 rounded-2xl text-center">
-                  <span className="text-[10px] text-emerald-400 block uppercase font-bold">Completed</span>
-                  <span className="text-xl font-black text-emerald-400 mt-0.5 block">{completedJobs}</span>
+                <div className="bg-white border border-emerald-200 p-3.5 rounded-2xl text-center shadow-xs">
+                  <span className="text-[10px] text-emerald-700 block uppercase font-bold">Completed</span>
+                  <span className="text-xl font-black text-emerald-700 mt-0.5 block">{completedJobs}</span>
                 </div>
-                <div className="bg-slate-900 border border-amber-500/30 p-3.5 rounded-2xl text-center">
-                  <span className="text-[10px] text-amber-400 block uppercase font-bold">Pending</span>
-                  <span className="text-xl font-black text-amber-400 mt-0.5 block">{pendingJobs}</span>
+                <div className="bg-white border border-amber-200 p-3.5 rounded-2xl text-center shadow-xs">
+                  <span className="text-[10px] text-amber-700 block uppercase font-bold">Pending</span>
+                  <span className="text-xl font-black text-amber-700 mt-0.5 block">{pendingJobs}</span>
                 </div>
               </div>
 
               {/* Upcoming Visits Alert Banner */}
               {upcomingJobs.length > 0 && (
-                <div className="bg-gradient-to-r from-amber-950/60 via-slate-900 to-amber-950/40 border border-amber-500/40 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg">
+                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center shrink-0">
-                      <Calendar className="w-5 h-5 text-amber-400" />
+                    <div className="w-10 h-10 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center shrink-0">
+                      <Calendar className="w-5 h-5 text-amber-700" />
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-amber-300">
+                      <p className="text-xs font-bold text-amber-900">
                         {upcomingJobs.length} Assigned Service Visit(s) Scheduled for Tomorrow ({tomorrowStr})
                       </p>
-                      <p className="text-[11px] text-slate-300 mt-0.5">
-                        Customer: <strong className="text-white">{upcomingJobs.map(j => `${j.customerName} (${j.apartment})`).join(', ')}</strong>
+                      <p className="text-[11px] text-amber-800 mt-0.5">
+                        Customer: <strong className="text-slate-900">{upcomingJobs.map(j => `${j.customerName} (${j.apartment})`).join(', ')}</strong>
                       </p>
                     </div>
                   </div>
@@ -493,8 +493,8 @@ export default function EmployeeDashboard() {
                       onClick={() => setDateFilter('tomorrow')}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                         dateFilter === 'tomorrow'
-                          ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/30'
-                          : 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40'
+                          ? 'bg-amber-500 text-white shadow-xs'
+                          : 'bg-white hover:bg-amber-100 text-amber-800 border border-amber-300'
                       }`}
                     >
                       View Tomorrow's Run
@@ -502,7 +502,7 @@ export default function EmployeeDashboard() {
                     {dateFilter !== 'all' && (
                       <button
                         onClick={() => setDateFilter('all')}
-                        className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs rounded-xl cursor-pointer"
+                        className="px-2.5 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs rounded-xl cursor-pointer"
                       >
                         Show All
                       </button>
@@ -774,32 +774,32 @@ export default function EmployeeDashboard() {
           {/* TAB 2: VISIT HISTORY & LOGS */}
           {activeTab === 'history' && (
             <div className="space-y-4 animate-fadeIn">
-              <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5">
-                <h3 className="font-bold text-base text-white">Completed Visit Records</h3>
-                <p className="text-xs text-slate-400 mt-1">
+              <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm">
+                <h3 className="font-bold text-base text-slate-900">Completed Visit Records</h3>
+                <p className="text-xs text-slate-500 mt-1">
                   History of car cleaning jobs completed during your morning shift cycles.
                 </p>
               </div>
 
               <div className="space-y-3">
                 {completedJobs === 0 ? (
-                  <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center text-slate-400 text-xs">
+                  <div className="bg-white border border-slate-200 rounded-3xl p-8 text-center text-slate-500 text-xs shadow-sm">
                     No visits marked completed yet today.
                   </div>
                 ) : (
                   myAssignedJobs.filter(j => j.status === 'Completed').map(job => (
-                    <div key={job.id} className="p-4 bg-slate-900 border border-emerald-500/30 rounded-2xl flex items-center justify-between gap-3">
+                    <div key={job.id} className="p-4 bg-white border border-emerald-200 rounded-2xl flex items-center justify-between gap-3 shadow-xs">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0 border border-emerald-200">
                           <CheckCircle2 className="w-5 h-5" />
                         </div>
                         <div>
-                          <span className="font-bold text-white text-xs block">{job.customerName} • {job.carModel}</span>
-                          <span className="text-[11px] text-slate-400 block">{job.apartment} (Flat {job.flat}) • {job.regNumber}</span>
-                          {job.notes && <p className="text-[10px] text-emerald-300 mt-0.5">Notes: {job.notes}</p>}
+                          <span className="font-bold text-slate-900 text-xs block">{job.customerName} • {job.carModel}</span>
+                          <span className="text-[11px] text-slate-500 block">{job.apartment} (Flat {job.flat}) • {job.regNumber}</span>
+                          {job.notes && <p className="text-[10px] text-emerald-700 mt-0.5">Notes: {job.notes}</p>}
                         </div>
                       </div>
-                      <span className="font-mono text-xs text-slate-300 shrink-0 font-bold bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800">
+                      <span className="font-mono text-xs text-slate-700 shrink-0 font-bold bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
                         {job.timeSlot}
                       </span>
                     </div>
@@ -812,15 +812,15 @@ export default function EmployeeDashboard() {
           {/* TAB 3: ASSIGNED COMMUNITIES */}
           {activeTab === 'communities' && (
             <div className="space-y-4 animate-fadeIn">
-              <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="bg-white border border-slate-200 rounded-3xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
                 <div>
-                  <h3 className="font-bold text-base text-white">Assigned Apartment Communities</h3>
-                  <p className="text-xs text-slate-400 mt-1">
+                  <h3 className="font-bold text-base text-slate-900">Assigned Apartment Communities</h3>
+                  <p className="text-xs text-slate-500 mt-1">
                     Gated residential communities where CleanZX doorstep service is scheduled.
                   </p>
                 </div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-cyan-950/80 border border-cyan-500/30 rounded-xl text-xs font-bold text-cyan-300 self-start sm:self-auto">
-                  <Building className="w-3.5 h-3.5 text-cyan-400" />
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-cyan-50 border border-cyan-200 rounded-xl text-xs font-bold text-cyan-800 self-start sm:self-auto">
+                  <Building className="w-3.5 h-3.5 text-cyan-600" />
                   <span>{myAssignedJobs.length} Assigned Customer(s)</span>
                 </div>
               </div>
@@ -838,56 +838,56 @@ export default function EmployeeDashboard() {
                   );
 
                   return (
-                    <div key={idx} className="p-4 bg-slate-900 border border-slate-800 rounded-2xl space-y-3 transition-all hover:border-slate-700">
+                    <div key={idx} className="p-4 bg-white border border-slate-200 rounded-2xl space-y-3 transition-all hover:border-slate-300 shadow-sm">
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-white text-sm">{com.name}</span>
+                        <span className="font-bold text-slate-900 text-sm">{com.name}</span>
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
                           communityJobs.length > 0
-                            ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                            : 'bg-cyan-950 text-cyan-400 border-cyan-800'
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                            : 'bg-cyan-50 text-cyan-700 border-cyan-200'
                         }`}>
                           {communityJobs.length > 0 ? `${communityJobs.length} Assigned to You` : 'Active Zone'}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-400 flex items-center gap-1.5">
-                        <MapPin className="w-3.5 h-3.5 text-slate-500" />
+                      <p className="text-xs text-slate-500 flex items-center gap-1.5">
+                        <MapPin className="w-3.5 h-3.5 text-slate-400" />
                         <span>{com.zone}</span>
                       </p>
-                      <div className="pt-2 border-t border-slate-800 text-[11px] text-slate-300 flex justify-between">
+                      <div className="pt-2 border-t border-slate-100 text-[11px] text-slate-600 flex justify-between">
                         <span>{communityJobs.length > 0 ? `${communityJobs.length} Assigned Customer(s)` : com.flats}</span>
-                        <span className="text-cyan-400 font-mono">{com.window}</span>
+                        <span className="text-cyan-700 font-mono font-bold">{com.window}</span>
                       </div>
 
                       {/* Display assigned customer cards in this community */}
                       {communityJobs.length > 0 && (
-                        <div className="pt-2.5 border-t border-slate-800 space-y-2">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-400 block">
+                        <div className="pt-2.5 border-t border-slate-100 space-y-2">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-700 block">
                             Your Assigned Customers:
                           </span>
                           {communityJobs.map(custJob => (
                             <div
                               key={custJob.id}
-                              className="p-3 bg-slate-950/90 rounded-xl border border-slate-800/80 flex flex-col gap-2"
+                              className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-col gap-2"
                             >
                               <div className="flex items-start justify-between gap-2">
                                 <div>
-                                  <span className="font-bold text-xs text-white block">{custJob.customerName}</span>
-                                  <span className="text-[10px] text-slate-400 block">
+                                  <span className="font-bold text-xs text-slate-900 block">{custJob.customerName}</span>
+                                  <span className="text-[10px] text-slate-500 block">
                                     {custJob.block ? `${custJob.block}, ` : ''}{custJob.flat ? `Flat ${custJob.flat}` : ''}
                                   </span>
                                 </div>
-                                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-cyan-950 text-cyan-300 border border-cyan-800">
+                                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-cyan-50 text-cyan-800 border border-cyan-200">
                                   {custJob.status}
                                 </span>
                               </div>
 
-                              <div className="flex items-center justify-between text-[11px] text-slate-300 pt-1 border-t border-slate-800/60">
-                                <span className="flex items-center gap-1 font-semibold text-white">
-                                  <Car className="w-3 h-3 text-cyan-400" />
+                              <div className="flex items-center justify-between text-[11px] text-slate-600 pt-1 border-t border-slate-200">
+                                <span className="flex items-center gap-1 font-semibold text-slate-900">
+                                  <Car className="w-3 h-3 text-cyan-600" />
                                   <span>{custJob.carModel}</span>
-                                  <span className="font-mono text-[10px] text-cyan-400">({custJob.regNumber})</span>
+                                  <span className="font-mono text-[10px] text-cyan-700">({custJob.regNumber})</span>
                                 </span>
-                                <span className="font-mono text-[10px] text-amber-400 font-bold">
+                                <span className="font-mono text-[10px] text-amber-700 font-bold">
                                   {custJob.date} • {custJob.timeSlot}
                                 </span>
                               </div>
@@ -898,7 +898,7 @@ export default function EmployeeDashboard() {
                                     <>
                                       <a
                                         href={`tel:${custJob.phone}`}
-                                        className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-400 text-xs flex items-center justify-center transition-colors"
+                                        className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-cyan-700 text-xs flex items-center justify-center transition-colors border border-slate-200"
                                         title="Call Customer"
                                       >
                                         <Phone className="w-3 h-3" />
@@ -909,7 +909,7 @@ export default function EmployeeDashboard() {
                                         )}`}
                                         target="_blank"
                                         rel="noreferrer"
-                                        className="p-1.5 rounded-lg bg-emerald-950/60 hover:bg-emerald-900 text-emerald-400 text-xs flex items-center justify-center transition-colors"
+                                        className="p-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs flex items-center justify-center transition-colors border border-emerald-200"
                                         title="WhatsApp Customer"
                                       >
                                         <MessageSquare className="w-3 h-3" />
@@ -920,7 +920,7 @@ export default function EmployeeDashboard() {
                                 <button
                                   type="button"
                                   onClick={() => setActiveTab('runs')}
-                                  className="px-2.5 py-1 bg-cyan-600/30 hover:bg-cyan-600/50 text-cyan-300 text-[10px] font-bold rounded-lg border border-cyan-500/40 transition-colors cursor-pointer"
+                                  className="px-2.5 py-1 bg-cyan-50 hover:bg-cyan-100 text-cyan-700 text-[10px] font-bold rounded-lg border border-cyan-200 transition-colors cursor-pointer"
                                 >
                                   Open in Run Schedule
                                 </button>
@@ -939,33 +939,33 @@ export default function EmployeeDashboard() {
           {/* TAB 4: MY RATING & PERFORMANCE */}
           {activeTab === 'performance' && (
             <div className="space-y-4 animate-fadeIn">
-              <div className="bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-slate-800 rounded-3xl p-6">
+              <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-2xl bg-cyan-600/30 text-cyan-300 border border-cyan-500/40 font-black text-2xl flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-2xl bg-cyan-100 text-cyan-800 border border-cyan-200 font-black text-2xl flex items-center justify-center">
                     {employeeUser?.name?.charAt(0) || 'S'}
                   </div>
                   <div>
-                    <h3 className="font-black text-xl text-white">{employeeUser?.name || 'Staff Member'}</h3>
-                    <p className="text-xs text-cyan-400 font-medium">{employeeUser?.role || 'Doorstep Cleaning Specialist'}</p>
-                    <div className="flex items-center gap-1 text-sm text-amber-400 font-bold mt-1">
+                    <h3 className="font-black text-xl text-slate-900">{employeeUser?.name || 'Staff Member'}</h3>
+                    <p className="text-xs text-cyan-700 font-medium">{employeeUser?.role || 'Doorstep Cleaning Specialist'}</p>
+                    <div className="flex items-center gap-1 text-sm text-amber-500 font-bold mt-1">
                       <Star className="w-4 h-4 fill-amber-400" />
                       <span>{employeeUser?.rating || '5.0'} / 5.0 Overall Customer Rating</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-6 grid grid-cols-3 gap-3 text-center pt-4 border-t border-slate-800">
-                  <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-800">
-                    <span className="text-[10px] text-slate-400 uppercase font-bold block">Jobs Completed</span>
-                    <span className="text-lg font-black text-white">{employeeUser?.jobsCompleted || 0 + completedJobs}</span>
+                <div className="mt-6 grid grid-cols-3 gap-3 text-center pt-4 border-t border-slate-100">
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <span className="text-[10px] text-slate-500 uppercase font-bold block">Jobs Completed</span>
+                    <span className="text-lg font-black text-slate-900">{employeeUser?.jobsCompleted || 0 + completedJobs}</span>
                   </div>
-                  <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-800">
-                    <span className="text-[10px] text-slate-400 uppercase font-bold block">On-Time Score</span>
-                    <span className="text-lg font-black text-emerald-400">99.4%</span>
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <span className="text-[10px] text-slate-500 uppercase font-bold block">On-Time Score</span>
+                    <span className="text-lg font-black text-emerald-600">99.4%</span>
                   </div>
-                  <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-800">
-                    <span className="text-[10px] text-slate-400 uppercase font-bold block">Shift Status</span>
-                    <span className="text-lg font-black text-cyan-400">Active</span>
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <span className="text-[10px] text-slate-500 uppercase font-bold block">Shift Status</span>
+                    <span className="text-lg font-black text-cyan-700">Active</span>
                   </div>
                 </div>
               </div>
@@ -975,13 +975,13 @@ export default function EmployeeDashboard() {
           {/* TAB 5: SUPERVISOR WHATSAPP & SUPPORT */}
           {activeTab === 'support' && (
             <div className="space-y-4 animate-fadeIn">
-              <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 text-center space-y-3">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mx-auto">
+              <div className="bg-white border border-slate-200 rounded-3xl p-6 text-center space-y-3 shadow-sm">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center mx-auto">
                   <MessageSquare className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-white">Operations Support & Supervisor Help</h3>
-                  <p className="text-xs text-slate-400 max-w-sm mx-auto mt-1">
+                  <h3 className="font-bold text-lg text-slate-900">Operations Support & Supervisor Help</h3>
+                  <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">
                     Encountered gated security issue, customer absence, or need equipment refill? Contact CleanZX Admin directly.
                   </p>
                 </div>
@@ -1006,21 +1006,21 @@ export default function EmployeeDashboard() {
 
       {/* UPDATE STATUS MODAL / SHEET */}
       {updatingJob && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-slate-900 border border-slate-800 w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white border border-slate-200 w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
             {/* Modal Header */}
-            <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+            <div className="p-4 border-b border-slate-100 flex items-center justify-between">
               <div>
-                <h3 className="font-bold text-white text-sm">
+                <h3 className="font-bold text-slate-900 text-sm">
                   Update Service Visit
                 </h3>
-                <p className="text-[11px] text-slate-400">
+                <p className="text-[11px] text-slate-500">
                   {updatingJob.customerName} • {updatingJob.carModel} ({updatingJob.regNumber})
                 </p>
               </div>
               <button
                 onClick={() => setUpdatingJob(null)}
-                className="w-8 h-8 rounded-lg bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer"
+                className="w-8 h-8 rounded-lg bg-slate-100 text-slate-400 hover:text-slate-700 flex items-center justify-center cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1029,16 +1029,16 @@ export default function EmployeeDashboard() {
             {/* Modal Body */}
             <form onSubmit={handleSaveStatus} className="p-4 space-y-4 overflow-y-auto text-xs">
               <div>
-                <label className="block font-semibold text-slate-300 mb-2">
+                <label className="block font-semibold text-slate-700 mb-2">
                   Select Service Status
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   {[
-                    { id: 'Completed', label: 'Completed', color: 'border-emerald-500 bg-emerald-500/10 text-emerald-300' },
-                    { id: 'In Progress', label: 'In Progress', color: 'border-cyan-500 bg-cyan-500/10 text-cyan-300' },
-                    { id: 'Assigned', label: 'Assigned', color: 'border-amber-500 bg-amber-500/10 text-amber-300' },
-                    { id: 'Missed', label: 'Missed Visit', color: 'border-rose-500 bg-rose-500/10 text-rose-300' },
-                    { id: 'Rescheduled', label: 'Rescheduled', color: 'border-purple-500 bg-purple-500/10 text-purple-300' }
+                    { id: 'Completed', label: 'Completed', color: 'border-emerald-500 bg-emerald-50 text-emerald-700' },
+                    { id: 'In Progress', label: 'In Progress', color: 'border-cyan-500 bg-cyan-50 text-cyan-700' },
+                    { id: 'Assigned', label: 'Assigned', color: 'border-amber-500 bg-amber-50 text-amber-700' },
+                    { id: 'Missed', label: 'Missed Visit', color: 'border-rose-500 bg-rose-50 text-rose-700' },
+                    { id: 'Rescheduled', label: 'Rescheduled', color: 'border-purple-500 bg-purple-50 text-purple-700' }
                   ].map(item => (
                     <button
                       key={item.id}
@@ -1046,8 +1046,8 @@ export default function EmployeeDashboard() {
                       onClick={() => setUpdateForm({ ...updateForm, status: item.id })}
                       className={`p-3 rounded-2xl border text-xs font-bold transition-all text-left flex items-center justify-between cursor-pointer ${
                         updateForm.status === item.id
-                          ? `${item.color} ring-2 ring-cyan-400/40`
-                          : 'border-slate-800 bg-slate-950/60 text-slate-400 hover:border-slate-700'
+                          ? `${item.color} ring-2 ring-cyan-500/40`
+                          : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300'
                       }`}
                     >
                       <span>{item.label}</span>
@@ -1059,14 +1059,14 @@ export default function EmployeeDashboard() {
 
               {/* If Missed: Prompt for Specific Reason */}
               {updateForm.status === 'Missed' && (
-                <div className="p-3.5 bg-rose-950/30 border border-rose-500/40 rounded-2xl space-y-2 animate-fadeIn">
-                  <label className="block font-bold text-rose-300 text-xs">
+                <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl space-y-2 animate-fadeIn">
+                  <label className="block font-bold text-rose-700 text-xs">
                     Reason for Missed Visit (Required)
                   </label>
                   <select
                     value={updateForm.reason}
                     onChange={(e) => setUpdateForm({ ...updateForm, reason: e.target.value })}
-                    className="w-full p-2.5 bg-slate-950 border border-rose-500/40 rounded-xl text-white text-xs focus:outline-none"
+                    className="w-full p-2.5 bg-white border border-rose-300 rounded-xl text-slate-900 text-xs focus:outline-none"
                   >
                     <option value="Vehicle not parked in designated bay">Vehicle not parked in designated bay</option>
                     <option value="Gate security denied apartment entry">Gate security denied apartment entry</option>
@@ -1080,7 +1080,7 @@ export default function EmployeeDashboard() {
 
               {/* Remarks / Service Notes */}
               <div>
-                <label className="block font-semibold text-slate-300 mb-1.5">
+                <label className="block font-semibold text-slate-700 mb-1.5">
                   Service Notes / Remarks
                 </label>
                 <textarea
@@ -1094,7 +1094,7 @@ export default function EmployeeDashboard() {
                       ? 'e.g. Checked bay B2-114 twice between 7:15 and 7:45 AM, car absent.'
                       : 'Add any notes for operations admin...'
                   }
-                  className="w-full p-3 bg-slate-950 border border-slate-800 rounded-2xl text-white text-xs focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 text-xs focus:ring-2 focus:ring-cyan-500 focus:bg-white focus:outline-none"
                 />
               </div>
 
@@ -1103,7 +1103,7 @@ export default function EmployeeDashboard() {
                 <button
                   type="button"
                   onClick={() => setUpdatingJob(null)}
-                  className="flex-1 py-3 px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-2xl transition-colors cursor-pointer"
+                  className="flex-1 py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl transition-colors border border-slate-200 cursor-pointer"
                 >
                   Cancel
                 </button>
