@@ -217,11 +217,11 @@ export default function EmployeeDashboard() {
   ];
 
   return (
-    <div className="h-screen w-full bg-slate-950 text-slate-100 flex font-sans antialiased overflow-hidden">
+    <div className="h-screen w-full bg-slate-50 text-slate-800 flex font-sans antialiased overflow-hidden">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-cyan-400 text-slate-950 font-bold text-xs px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-2 animate-bounce">
-          <CheckCircle2 className="w-4 h-4 text-slate-950" />
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-cyan-600 text-white font-bold text-xs px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-2 animate-bounce">
+          <CheckCircle2 className="w-4 h-4 text-white" />
           <span>{toastMessage}</span>
         </div>
       )}
@@ -230,7 +230,7 @@ export default function EmployeeDashboard() {
       {sidebarOpen && (
         <div
           onClick={() => setSidebarOpen(false)}
-          className="fixed inset-0 bg-slate-950/80 z-40 lg:hidden backdrop-blur-xs transition-opacity"
+          className="fixed inset-0 bg-slate-900/50 z-40 lg:hidden backdrop-blur-xs transition-opacity"
         />
       )}
 
@@ -238,16 +238,16 @@ export default function EmployeeDashboard() {
       {/* VERTICAL SIDEBAR (Desktop Pinned & Mobile Drawer) */}
       {/* ======================================================== */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 w-72 bg-slate-900 border-r border-slate-800 text-slate-200 flex flex-col justify-between transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 z-50 w-72 bg-white border-r border-slate-200 text-slate-700 flex flex-col justify-between transition-transform duration-300 ease-in-out lg:translate-x-0 ${
           sidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
         }`}
       >
         <div>
           {/* Logo Container */}
-          <div className="py-4 px-4 border-b border-slate-800 flex items-center justify-center bg-slate-950 relative">
+          <div className="py-4 px-4 border-b border-slate-100 flex items-center justify-center bg-white relative">
             <button
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden absolute right-3 top-3 p-1.5 text-slate-400 hover:text-white rounded-lg cursor-pointer"
+              className="lg:hidden absolute right-3 top-3 p-1.5 text-slate-400 hover:text-slate-800 rounded-lg cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -255,41 +255,41 @@ export default function EmployeeDashboard() {
             <img
               src="/images/admin-brand-logo.png"
               alt="CLEANZX Logo"
-              className="w-full max-w-[230px] h-18 sm:h-20 object-contain drop-shadow-md transition-all hover:scale-105"
+              className="w-full max-w-[230px] h-18 sm:h-20 object-contain drop-shadow-sm transition-all hover:scale-105"
             />
           </div>
 
           {/* Specialist Portal Pill Badge (Below Line) */}
           <div className="pt-3 pb-1.5 px-4 flex items-center justify-center">
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 text-[11px] font-extrabold tracking-wider uppercase shadow-xs">
-              <Clock className="w-3.5 h-3.5 text-cyan-400 stroke-[2.5]" />
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-cyan-50 text-cyan-700 border border-cyan-200 text-[11px] font-extrabold tracking-wider uppercase shadow-xs">
+              <Clock className="w-3.5 h-3.5 text-cyan-600 stroke-[2.5]" />
               <span>SPECIALIST PORTAL</span>
             </div>
           </div>
 
           {/* Specialist Profile Snippet Card */}
-          <div className="mx-3.5 my-3 p-3 bg-slate-950/70 border border-slate-800/80 rounded-2xl">
+          <div className="mx-3.5 my-3 p-3 bg-slate-50 border border-slate-200 rounded-2xl">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 to-blue-600 text-white font-black text-sm flex items-center justify-center shadow-md shadow-cyan-600/30 shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 to-blue-600 text-white font-black text-sm flex items-center justify-center shadow-md shadow-cyan-600/20 shrink-0">
                 {employeeUser?.name?.charAt(0) || 'S'}
               </div>
               <div className="overflow-hidden">
-                <span className="font-bold text-xs text-white block truncate leading-tight">
+                <span className="font-bold text-xs text-slate-900 block truncate leading-tight">
                   {employeeUser?.name || 'Staff Member'}
                 </span>
-                <span className="text-[10px] text-cyan-400 font-medium block truncate">
+                <span className="text-[10px] text-cyan-700 font-semibold block truncate">
                   {employeeUser?.role || 'Doorstep Cleaning Specialist'}
                 </span>
-                <div className="flex items-center gap-1 mt-0.5 text-[10px] text-amber-400 font-bold">
+                <div className="flex items-center gap-1 mt-0.5 text-[10px] text-amber-500 font-bold">
                   <Star className="w-3 h-3 fill-amber-400" />
                   <span>{employeeUser?.rating || '5.0'} Rating</span>
                 </div>
               </div>
             </div>
 
-            <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] text-slate-400">
+            <div className="mt-2.5 pt-2 border-t border-slate-200 flex items-center justify-between text-[10px] text-slate-500">
               <span className="truncate max-w-[150px]">{employeeUser?.zone || 'Hyderabad West'}</span>
-              <span className="text-emerald-400 font-bold">On Duty</span>
+              <span className="text-emerald-600 font-bold">On Duty</span>
             </div>
           </div>
 
@@ -308,14 +308,14 @@ export default function EmployeeDashboard() {
                   }}
                   className={`w-full px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-between transition-all cursor-pointer group ${
                     isActive
-                      ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg shadow-cyan-600/30 font-bold'
-                      : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
+                      ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-md shadow-cyan-600/30 font-bold'
+                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                   }`}
                 >
                   <div className="flex items-center gap-3 truncate">
                     <Icon
                       className={`w-4 h-4 shrink-0 transition-colors ${
-                        isActive ? 'text-white' : 'text-cyan-400 group-hover:text-cyan-300'
+                        isActive ? 'text-white' : 'text-cyan-600 group-hover:text-cyan-700'
                       }`}
                     />
                     <span className="truncate">{item.label}</span>
@@ -326,7 +326,7 @@ export default function EmployeeDashboard() {
                       className={`px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${
                         isActive
                           ? 'bg-white/20 text-white'
-                          : item.badgeColor || 'bg-slate-800 text-slate-300'
+                          : item.badgeColor || 'bg-slate-100 text-slate-700 border border-slate-200'
                       }`}
                     >
                       {item.badge}
@@ -339,15 +339,15 @@ export default function EmployeeDashboard() {
         </div>
 
         {/* Sidebar Footer Logout */}
-        <div className="p-3.5 border-t border-slate-800 bg-slate-950/80">
-          <div className="flex items-center justify-between text-xs text-slate-400 mb-2 px-1">
+        <div className="p-3.5 border-t border-slate-200 bg-slate-50/80">
+          <div className="flex items-center justify-between text-xs text-slate-500 mb-2 px-1">
             <span className="text-[10px] uppercase font-bold text-slate-500">Service Hours</span>
-            <span className="font-mono text-cyan-400 font-bold text-[10px]">6:00 AM - 11:30 AM</span>
+            <span className="font-mono text-cyan-700 font-bold text-[10px]">6:00 AM - 11:30 AM</span>
           </div>
 
           <button
             onClick={employeeLogout}
-            className="w-full px-3 py-2 bg-slate-800/80 hover:bg-rose-950/40 text-slate-300 hover:text-rose-300 border border-slate-700/60 hover:border-rose-500/40 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer"
+            className="w-full px-3 py-2 bg-white hover:bg-rose-50 text-slate-700 hover:text-rose-700 border border-slate-200 hover:border-rose-300 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span>End Shift / Logout</span>
@@ -358,13 +358,13 @@ export default function EmployeeDashboard() {
       {/* ======================================================== */}
       {/* MAIN CONTENT AREA (Pinned Header + Scrollable View) */}
       {/* ======================================================== */}
-      <div className="flex-1 lg:pl-72 flex flex-col h-screen w-full overflow-hidden">
+      <div className="flex-1 lg:pl-72 flex flex-col h-screen w-full overflow-hidden bg-slate-50/50">
         {/* Pinned Top Header */}
-        <header className="sticky top-0 z-30 bg-slate-900/95 border-b border-slate-800 backdrop-blur-md px-4 sm:px-6 py-3 flex items-center justify-between">
+        <header className="sticky top-0 z-30 bg-white/95 border-b border-slate-200 backdrop-blur-md px-4 sm:px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-2 text-slate-400 hover:text-white rounded-xl bg-slate-800 border border-slate-700 cursor-pointer"
+              className="lg:hidden p-2 text-slate-600 hover:text-slate-900 rounded-xl bg-slate-100 border border-slate-200 cursor-pointer"
               aria-label="Open Sidebar"
             >
               <Menu className="w-5 h-5" />
@@ -372,30 +372,30 @@ export default function EmployeeDashboard() {
 
             <div>
               <div className="flex items-center gap-2 text-xs">
-                <span className="text-slate-400 font-medium hidden sm:inline">Specialist Staff</span>
-                <span className="text-slate-600 hidden sm:inline">/</span>
-                <span className="text-cyan-400 font-bold">
+                <span className="text-slate-500 font-medium hidden sm:inline">Specialist Staff</span>
+                <span className="text-slate-300 hidden sm:inline">/</span>
+                <span className="text-cyan-700 font-bold">
                   {navItems.find(t => t.id === activeTab)?.label || 'Dashboard'}
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-xs text-slate-300 mt-0.5">
-                <Clock className="w-3 h-3 text-cyan-400 shrink-0" />
-                <span className="font-bold text-white font-mono">6:00 AM - 11:30 AM Shift</span>
-                <span className="text-slate-600">•</span>
-                <span className="text-slate-400">{todayDate}</span>
+              <div className="flex items-center gap-2 text-xs text-slate-600 mt-0.5">
+                <Clock className="w-3 h-3 text-cyan-600 shrink-0" />
+                <span className="font-bold text-slate-900 font-mono">6:00 AM - 11:30 AM Shift</span>
+                <span className="text-slate-300">•</span>
+                <span className="text-slate-500">{todayDate}</span>
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-2.5">
-            <div className="px-3 py-1 bg-cyan-950/80 border border-cyan-500/30 rounded-xl text-xs font-bold text-cyan-300 flex items-center gap-1.5 shadow-xs">
-              <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />
+            <div className="px-3 py-1 bg-cyan-50 border border-cyan-200 rounded-xl text-xs font-bold text-cyan-700 flex items-center gap-1.5 shadow-xs">
+              <CheckCircle2 className="w-3.5 h-3.5 text-cyan-600" />
               <span>{completedJobs}/{totalJobs} Completed</span>
             </div>
 
             <button
               onClick={employeeLogout}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-semibold transition-colors cursor-pointer border border-slate-700"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 rounded-xl text-xs font-semibold transition-colors cursor-pointer border border-slate-200"
               title="Logout"
             >
               <LogOut className="w-3.5 h-3.5" />
@@ -515,7 +515,7 @@ export default function EmployeeDashboard() {
               <div className="space-y-2.5 pt-1">
                 {/* Date Selection Pills */}
                 <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1 shrink-0">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mr-1 shrink-0">
                     Filter Date:
                   </span>
                   {[
@@ -531,8 +531,8 @@ export default function EmployeeDashboard() {
                       onClick={() => setDateFilter(dt.id)}
                       className={`px-3 py-1 rounded-xl text-xs font-bold shrink-0 transition-all cursor-pointer ${
                         dateFilter === dt.id
-                          ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-md shadow-cyan-600/30 border border-cyan-400/40'
-                          : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                          ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-md shadow-cyan-600/30 border border-cyan-500'
+                          : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200'
                       }`}
                     >
                       {dt.label}
@@ -555,8 +555,8 @@ export default function EmployeeDashboard() {
                         onClick={() => setActiveFilter(tab.id)}
                         className={`px-3 py-1.5 rounded-xl text-xs font-semibold shrink-0 transition-colors cursor-pointer ${
                           activeFilter === tab.id
-                            ? 'bg-cyan-500 text-slate-950 font-bold shadow-md shadow-cyan-500/30'
-                            : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                            ? 'bg-cyan-600 text-white font-bold shadow-md shadow-cyan-600/30'
+                            : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200'
                         }`}
                       >
                         {tab.label}
@@ -567,7 +567,7 @@ export default function EmployeeDashboard() {
                   {myAssignedJobs.length === 0 && (
                     <button
                       onClick={() => setShowAllCityVisits(!showAllCityVisits)}
-                      className="text-xs text-cyan-400 hover:text-cyan-300 font-semibold cursor-pointer underline flex items-center gap-1 self-start sm:self-auto"
+                      className="text-xs text-cyan-600 hover:text-cyan-700 font-semibold cursor-pointer underline flex items-center gap-1 self-start sm:self-auto"
                     >
                       <span>{showAllCityVisits ? 'Showing All City Visits' : 'View All City Morning Visits'}</span>
                     </button>
@@ -577,12 +577,12 @@ export default function EmployeeDashboard() {
 
               {/* If no jobs are currently assigned */}
               {myAssignedJobs.length === 0 && (
-                <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center space-y-2">
-                  <Clock className="w-10 h-10 text-cyan-400 mx-auto mb-1 opacity-70" />
-                  <h3 className="font-bold text-base text-white">
+                <div className="bg-white border border-slate-200 rounded-3xl p-8 text-center space-y-2 shadow-xs">
+                  <Clock className="w-10 h-10 text-cyan-600 mx-auto mb-1 opacity-70" />
+                  <h3 className="font-bold text-base text-slate-900">
                     No Morning Visits Assigned
                   </h3>
-                  <p className="text-xs text-slate-400 max-w-md mx-auto">
+                  <p className="text-xs text-slate-500 max-w-md mx-auto">
                     No doorstep cleaning visits are assigned to your shift for today. CleanZX Operations Admin will assign your apartment run during dispatch.
                   </p>
                 </div>
@@ -591,10 +591,10 @@ export default function EmployeeDashboard() {
               {/* Job Cards Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {filteredJobs.length === 0 ? (
-                  <div className="col-span-full bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center">
-                    <CheckCircle2 className="w-10 h-10 text-slate-600 mx-auto mb-2" />
-                    <p className="text-sm font-bold text-white">No visits in this category</p>
-                    <p className="text-xs text-slate-400 mt-1">
+                  <div className="col-span-full bg-white border border-slate-200 rounded-3xl p-8 text-center shadow-xs">
+                    <CheckCircle2 className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+                    <p className="text-sm font-bold text-slate-900">No visits in this category</p>
+                    <p className="text-xs text-slate-500 mt-1">
                       Switch filter to "All Assigned" or "All Status" to see your full schedule.
                     </p>
                   </div>
@@ -608,37 +608,37 @@ export default function EmployeeDashboard() {
                     return (
                       <div
                         key={job.id}
-                        className={`bg-slate-900 border rounded-3xl p-5 transition-all shadow-md flex flex-col justify-between ${
+                        className={`bg-white border rounded-3xl p-5 transition-all shadow-xs flex flex-col justify-between ${
                           isInProgress
-                            ? 'border-cyan-500 ring-2 ring-cyan-500/20 bg-slate-900/95'
+                            ? 'border-cyan-500 ring-2 ring-cyan-500/20 bg-cyan-50/20'
                             : isDone
-                            ? 'border-emerald-500/40 opacity-95'
+                            ? 'border-emerald-300 bg-white opacity-95'
                             : isMissed
-                            ? 'border-rose-500/40 bg-rose-950/10'
-                            : 'border-slate-800 hover:border-slate-700'
+                            ? 'border-rose-300 bg-rose-50/30'
+                            : 'border-slate-200 hover:border-slate-300'
                         }`}
                       >
                         <div>
                           {/* Top Slot & Status Header */}
                           <div className="flex items-center justify-between gap-2 mb-3">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <div className="flex items-center gap-1.5 font-bold text-xs text-white">
-                                <Clock className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                              <div className="flex items-center gap-1.5 font-bold text-xs text-slate-900">
+                                <Clock className="w-3.5 h-3.5 text-cyan-600 shrink-0" />
                                 <span className="font-mono">{job.timeSlot}</span>
                               </div>
                               {job.date && (
                                 <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold font-mono ${
                                   job.date === todayStr
-                                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                                     : job.date === tomorrowStr
-                                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                                    : 'bg-slate-800 text-slate-300 border border-slate-700'
+                                    ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                                    : 'bg-slate-100 text-slate-700 border border-slate-200'
                                 }`}>
                                   {job.date === todayStr ? 'Today' : (job.date === tomorrowStr ? `Tomorrow (${job.date})` : job.date)}
                                 </span>
                               )}
                               {job.source === 'booking' && (
-                                <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-950 text-blue-300 border border-blue-800">
+                                <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
                                   Booking
                                 </span>
                               )}
@@ -647,14 +647,14 @@ export default function EmployeeDashboard() {
                             <span
                               className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
                                 isDone
-                                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                                   : isInProgress
-                                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 animate-pulse'
+                                  ? 'bg-cyan-50 text-cyan-700 border border-cyan-200 animate-pulse'
                                   : isMissed
-                                  ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                                  ? 'bg-rose-50 text-rose-700 border border-rose-200'
                                   : isRescheduled
-                                  ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
-                                  : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                                  ? 'bg-purple-50 text-purple-700 border border-purple-200'
+                                  : 'bg-amber-50 text-amber-700 border border-amber-200'
                               }`}
                             >
                               {job.status}
@@ -665,13 +665,13 @@ export default function EmployeeDashboard() {
                           <div className="space-y-1 mb-3">
                             <div className="flex items-start justify-between">
                               <div>
-                                <h3 className="text-base font-black text-white">
+                                <h3 className="text-base font-black text-slate-900">
                                   {job.customerName}
                                 </h3>
-                                <div className="flex items-center gap-1 text-xs text-slate-300 mt-0.5">
+                                <div className="flex items-center gap-1 text-xs text-slate-600 mt-0.5">
                                   <Building className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                                  <span className="font-semibold text-white">{job.apartment}</span>
-                                  <span className="text-slate-500">•</span>
+                                  <span className="font-semibold text-slate-900">{job.apartment}</span>
+                                  <span className="text-slate-400">•</span>
                                   <span>{job.block ? `${job.block}, ` : ''}Flat {job.flat}</span>
                                 </div>
                               </div>
@@ -680,7 +680,7 @@ export default function EmployeeDashboard() {
                               <div className="flex items-center gap-1.5 shrink-0">
                                 <a
                                   href={`tel:${job.phone}`}
-                                  className="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-400 border border-slate-700 flex items-center justify-center transition-colors cursor-pointer"
+                                  className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-cyan-700 border border-slate-200 flex items-center justify-center transition-colors cursor-pointer"
                                   title="Call Customer"
                                 >
                                   <Phone className="w-3.5 h-3.5" />
@@ -691,7 +691,7 @@ export default function EmployeeDashboard() {
                                   )}`}
                                   target="_blank"
                                   rel="noreferrer"
-                                  className="w-8 h-8 rounded-xl bg-emerald-950/60 hover:bg-emerald-900/60 text-emerald-400 border border-emerald-500/30 flex items-center justify-center transition-colors"
+                                  className="w-8 h-8 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 flex items-center justify-center transition-colors"
                                   title="WhatsApp Customer"
                                 >
                                   <MessageSquare className="w-3.5 h-3.5" />
@@ -701,25 +701,25 @@ export default function EmployeeDashboard() {
                           </div>
 
                           {/* Vehicle Details Card */}
-                          <div className="p-3 bg-slate-950/80 rounded-2xl border border-slate-800/80 space-y-1 text-xs">
+                          <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 space-y-1 text-xs">
                             <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-1.5 text-white font-bold">
-                                <Car className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                              <div className="flex items-center gap-1.5 text-slate-900 font-bold">
+                                <Car className="w-3.5 h-3.5 text-cyan-600 shrink-0" />
                                 <span>{job.carModel}</span>
                               </div>
-                              <span className="font-mono text-[11px] font-bold text-cyan-300 bg-cyan-950/80 px-2 py-0.5 rounded-md border border-cyan-800/50">
+                              <span className="font-mono text-[11px] font-bold text-cyan-800 bg-cyan-50 px-2 py-0.5 rounded-md border border-cyan-200">
                                 {job.regNumber}
                               </span>
                             </div>
 
-                            <div className="flex items-center justify-between pt-1 text-[11px] text-slate-400 border-t border-slate-800/60">
-                              <span>Plan: <strong className="text-slate-200">{job.planName}</strong></span>
-                              <span className="text-[10px] text-slate-500 font-mono">ID: {job.id}</span>
+                            <div className="flex items-center justify-between pt-1 text-[11px] text-slate-500 border-t border-slate-200">
+                              <span>Plan: <strong className="text-slate-700">{job.planName}</strong></span>
+                              <span className="text-[10px] text-slate-400 font-mono">ID: {job.id}</span>
                             </div>
 
                             {job.notes && (
-                              <div className="pt-1.5 text-[11px] text-amber-300/90 flex items-start gap-1">
-                                <FileText className="w-3 h-3 text-amber-400 shrink-0 mt-0.5" />
+                              <div className="pt-1.5 text-[11px] text-amber-700 flex items-start gap-1">
+                                <FileText className="w-3 h-3 text-amber-500 shrink-0 mt-0.5" />
                                 <span>{job.notes}</span>
                               </div>
                             )}
@@ -727,16 +727,16 @@ export default function EmployeeDashboard() {
                         </div>
 
                         {/* Interactive Status Update Actions */}
-                        <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center gap-2">
+                        <div className="mt-4 pt-3 border-t border-slate-200 flex items-center gap-2">
                           {!isDone && (
                             <>
                               {!isInProgress && (
                                 <button
                                   type="button"
                                   onClick={() => handleQuickStatusChange(job.id, 'In Progress')}
-                                  className="flex-1 py-2 px-3 bg-cyan-600/30 hover:bg-cyan-600/50 text-cyan-300 hover:text-white border border-cyan-500/40 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                                  className="flex-1 py-2 px-3 bg-cyan-50 hover:bg-cyan-100 text-cyan-700 border border-cyan-200 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                                 >
-                                  <Play className="w-3.5 h-3.5 fill-cyan-400" />
+                                  <Play className="w-3.5 h-3.5 fill-cyan-600 text-cyan-600" />
                                   <span>Start Job</span>
                                 </button>
                               )}
@@ -744,7 +744,7 @@ export default function EmployeeDashboard() {
                               <button
                                 type="button"
                                 onClick={() => handleOpenUpdateModal(job, 'Completed')}
-                                className="flex-1 py-2 px-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-md shadow-emerald-600/30 cursor-pointer"
+                                className="flex-1 py-2 px-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-md shadow-emerald-600/25 cursor-pointer"
                               >
                                 <Check className="w-3.5 h-3.5 stroke-[3]" />
                                 <span>Mark Done</span>
@@ -755,8 +755,8 @@ export default function EmployeeDashboard() {
                           <button
                             type="button"
                             onClick={() => handleOpenUpdateModal(job, job.status)}
-                            className={`py-2 px-3 text-xs font-semibold rounded-xl border border-slate-700 transition-colors cursor-pointer flex items-center justify-center gap-1 ${
-                              isDone ? 'w-full bg-slate-800 text-slate-300 hover:text-white' : 'bg-slate-800 text-slate-300 hover:text-white'
+                            className={`py-2 px-3 text-xs font-semibold rounded-xl border border-slate-200 transition-colors cursor-pointer flex items-center justify-center gap-1 ${
+                              isDone ? 'w-full bg-slate-100 text-slate-700 hover:bg-slate-200' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                             }`}
                           >
                             <span>Update Status</span>

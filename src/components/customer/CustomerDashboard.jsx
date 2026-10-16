@@ -312,70 +312,70 @@ export default function CustomerDashboard() {
   }, [customerVisits, historyFilter]);
 
   return (
-    <div className="flex h-screen w-full bg-slate-950 text-slate-100 overflow-hidden font-sans antialiased">
+    <div className="flex h-screen w-full bg-slate-50 text-slate-800 overflow-hidden font-sans antialiased">
       {/* =========================================================================
           LEFT VERTICAL SIDEBAR
       ========================================================================= */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-72 bg-slate-900 border-r border-slate-800 flex flex-col justify-between transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-slate-200 flex flex-col justify-between transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${
           sidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-0 max-lg:-translate-x-full'
         }`}
       >
         <div className="flex flex-col h-full overflow-y-auto">
           {/* Logo & Portal Badge */}
-          <div className="p-5 pb-4 border-b border-slate-800">
+          <div className="p-5 pb-4 border-b border-slate-100">
             <div className="flex items-center justify-between">
               <img
                 src="/images/admin-brand-logo.png"
                 alt="CLEANZX"
-                className="h-20 sm:h-24 max-w-[240px] w-auto object-contain drop-shadow-xl"
+                className="h-20 sm:h-24 max-w-[240px] w-auto object-contain drop-shadow-sm"
               />
               <button
                 onClick={() => setSidebarOpen(false)}
-                className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
+                className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-100"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Dividing Line */}
-            <div className="w-full h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent my-3" />
+            <div className="w-full h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent my-3" />
 
             {/* Cyan Pill Badge */}
             <div className="flex justify-center">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 text-[11px] font-bold tracking-wider uppercase">
-                <Sparkles className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-50 border border-cyan-200 text-cyan-700 text-[11px] font-bold tracking-wider uppercase">
+                <Sparkles className="w-3.5 h-3.5 text-cyan-600 shrink-0" />
                 <span>CUSTOMER PORTAL</span>
               </div>
             </div>
           </div>
 
           {/* Customer Profile Snippet */}
-          <div className="p-4 mx-3 my-3 rounded-2xl bg-slate-950/70 border border-slate-800/80">
+          <div className="p-4 mx-3 my-3 rounded-2xl bg-slate-50 border border-slate-200">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center font-bold text-white shadow-md shadow-cyan-500/20 text-sm shrink-0">
                 {customerUser?.name?.slice(0, 2).toUpperCase() || 'CU'}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-bold text-white truncate">{customerUser?.name || 'Customer'}</p>
-                <p className="text-[11px] text-slate-400 truncate flex items-center gap-1">
-                  <Building className="w-3 h-3 text-cyan-400 shrink-0" />
+                <p className="text-xs font-bold text-slate-900 truncate">{customerUser?.name || 'Customer'}</p>
+                <p className="text-[11px] text-slate-500 truncate flex items-center gap-1">
+                  <Building className="w-3 h-3 text-cyan-600 shrink-0" />
                   <span>{customerUser?.apartment || 'Hyderabad'}</span>
                 </p>
-                <div className="text-[10px] text-cyan-400 font-mono font-semibold truncate mt-0.5">
+                <div className="text-[10px] text-cyan-700 font-mono font-semibold truncate mt-0.5">
                   {customerUser?.vehicle_registration_number || 'TS Vehicle'}
                 </div>
               </div>
             </div>
 
             {/* Subscription Status Tag */}
-            <div className="mt-2.5 pt-2 border-t border-slate-800/60 flex items-center justify-between text-[11px]">
-              <span className="text-slate-400">Current Plan:</span>
+            <div className="mt-2.5 pt-2 border-t border-slate-200 flex items-center justify-between text-[11px]">
+              <span className="text-slate-500">Current Plan:</span>
               <span
                 className={`px-2 py-0.5 rounded-full font-semibold text-[10px] ${
                   activeSub?.status === 'Active' || activeSub?.status === 'Renewed'
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                    : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                    : 'bg-amber-50 text-amber-700 border border-amber-200'
                 }`}
               >
                 {activeSub?.status || customerUser?.subscriptionStatus || 'Pending'}
@@ -393,10 +393,10 @@ export default function CustomerDashboard() {
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === 'subscriptions'
                   ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md shadow-cyan-500/20'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
-              <Award className="w-4 h-4 text-cyan-400" />
+              <Award className="w-4 h-4 text-cyan-600" />
               <span>My Subscriptions</span>
             </button>
 
@@ -408,17 +408,17 @@ export default function CustomerDashboard() {
               className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === 'payments'
                   ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-500/20 font-bold'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
               <div className="flex items-center gap-3">
-                <QrCode className="w-4 h-4 text-emerald-400" />
+                <QrCode className="w-4 h-4 text-emerald-600" />
                 <span>Make Payment & QR</span>
               </div>
               <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                 isPaymentPending
-                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30 animate-pulse'
-                  : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                  ? 'bg-amber-50 text-amber-700 border border-amber-200 animate-pulse'
+                  : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
               }`}>
                 {isPaymentPending ? 'Due' : 'Active'}
               </span>
@@ -432,10 +432,10 @@ export default function CustomerDashboard() {
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === 'profile'
                   ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md shadow-cyan-500/20'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
-              <User className="w-4 h-4 text-cyan-400" />
+              <User className="w-4 h-4 text-cyan-600" />
               <span>Customer Profile & Car</span>
             </button>
 
@@ -447,10 +447,10 @@ export default function CustomerDashboard() {
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === 'plans'
                   ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md shadow-cyan-500/20'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
-              <Layers className="w-4 h-4 text-cyan-400" />
+              <Layers className="w-4 h-4 text-cyan-600" />
               <span>Plan Selection & Renewal</span>
             </button>
 
@@ -462,10 +462,10 @@ export default function CustomerDashboard() {
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === 'history'
                   ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md shadow-cyan-500/20'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
-              <Calendar className="w-4 h-4 text-cyan-400" />
+              <Calendar className="w-4 h-4 text-cyan-600" />
               <span>Booking & Service History</span>
             </button>
 
@@ -477,10 +477,10 @@ export default function CustomerDashboard() {
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === 'invoices'
                   ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md shadow-cyan-500/20'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
-              <FileText className="w-4 h-4 text-cyan-400" />
+              <FileText className="w-4 h-4 text-cyan-600" />
               <span>Invoices & Receipts</span>
             </button>
 
@@ -492,10 +492,10 @@ export default function CustomerDashboard() {
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === 'addons'
                   ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md shadow-cyan-500/20'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
-              <Zap className="w-4 h-4 text-cyan-400" />
+              <Zap className="w-4 h-4 text-cyan-600" />
               <span>Add-On Detailing Services</span>
             </button>
 
@@ -507,26 +507,26 @@ export default function CustomerDashboard() {
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === 'support'
                   ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md shadow-cyan-500/20'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
-              <MessageCircle className="w-4 h-4 text-emerald-400" />
+              <MessageCircle className="w-4 h-4 text-emerald-600" />
               <span>WhatsApp Support Desk</span>
             </button>
           </nav>
 
           {/* Quick Help Box */}
-          <div className="p-3 m-3 rounded-2xl bg-gradient-to-br from-slate-900 to-blue-950 border border-slate-800 text-[11px]">
-            <p className="font-semibold text-white flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-cyan-400" />
+          <div className="p-3 m-3 rounded-2xl bg-slate-50 border border-slate-200 text-[11px]">
+            <p className="font-semibold text-slate-900 flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5 text-cyan-600" />
               <span>Morning Shift Window</span>
             </p>
-            <p className="text-slate-400 mt-1">
-              Cleaning executed daily between <strong className="text-slate-200">6:00 AM – 11:30 AM</strong> at your allotted parking bay.
+            <p className="text-slate-500 mt-1">
+              Cleaning executed daily between <strong className="text-slate-700">6:00 AM – 11:30 AM</strong> at your allotted parking bay.
             </p>
             <a
               href="tel:+919121992399"
-              className="mt-2 text-cyan-400 hover:underline flex items-center gap-1 font-semibold"
+              className="mt-2 text-cyan-600 hover:underline flex items-center gap-1 font-semibold"
             >
               <Phone className="w-3 h-3" />
               <span>+91 91219 92399</span>
@@ -534,10 +534,10 @@ export default function CustomerDashboard() {
           </div>
 
           {/* Bottom Logout */}
-          <div className="p-3 border-t border-slate-800">
+          <div className="p-3 border-t border-slate-200">
             <button
               onClick={customerLogout}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-950 hover:bg-rose-950/40 text-slate-400 hover:text-rose-300 border border-slate-800 hover:border-rose-800/50 text-xs font-semibold transition-all cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-700 border border-slate-200 hover:border-rose-300 text-xs font-semibold transition-all cursor-pointer shadow-xs"
             >
               <LogOut className="w-4 h-4" />
               <span>Sign Out of Account</span>
@@ -549,13 +549,13 @@ export default function CustomerDashboard() {
       {/* =========================================================================
           MAIN CONTENT AREA
       ========================================================================= */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden bg-slate-950">
+      <main className="flex-1 flex flex-col h-full overflow-hidden bg-slate-50/50">
         {/* Top Header Bar */}
-        <header className="h-16 border-b border-slate-800 bg-slate-900/80 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between shrink-0">
+        <header className="h-16 border-b border-slate-200 bg-white/95 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white"
+              className="lg:hidden p-2 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-900"
               aria-label="Open navigation"
             >
               <Menu className="w-5 h-5" />
@@ -564,7 +564,7 @@ export default function CustomerDashboard() {
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-medium text-slate-400">Customer Dashboard /</span>
-                <span className="text-xs font-bold text-white capitalize">
+                <span className="text-xs font-bold text-cyan-700 capitalize">
                   {activeTab === 'subscriptions' && 'My Subscriptions'}
                   {activeTab === 'profile' && 'Customer Profile & Vehicle'}
                   {activeTab === 'plans' && 'Plan Selection & Renewal'}
@@ -575,7 +575,7 @@ export default function CustomerDashboard() {
                   {activeTab === 'payments' && 'Online Payment & UPI Gateway'}
                 </span>
               </div>
-              <h2 className="text-sm sm:text-base font-black text-white tracking-tight">
+              <h2 className="text-sm sm:text-base font-black text-slate-900 tracking-tight">
                 Welcome back, {customerUser?.name || 'Customer'}
               </h2>
             </div>
@@ -583,8 +583,8 @@ export default function CustomerDashboard() {
 
           <div className="flex items-center gap-2 sm:gap-3">
             {/* Vehicle TS Pill */}
-            <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/80 border border-slate-700 text-xs font-mono font-bold text-cyan-300">
-              <Car className="w-3.5 h-3.5 text-cyan-400" />
+            <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200 text-xs font-mono font-bold text-cyan-800">
+              <Car className="w-3.5 h-3.5 text-cyan-600" />
               <span>{customerUser?.vehicle_registration_number || 'TS VEHICLE'}</span>
             </div>
 
@@ -593,7 +593,7 @@ export default function CustomerDashboard() {
               href={getWhatsAppLink('support')}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-3.5 py-1.5 rounded-xl bg-emerald-600/90 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
+              className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
             >
               <MessageCircle className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">WhatsApp Help</span>
@@ -871,14 +871,14 @@ export default function CustomerDashboard() {
           ========================================================================= */}
           {activeTab === 'profile' && (
             <div className="space-y-6 max-w-4xl">
-              <div className="p-6 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-xl">
+              <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm">
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h3 className="text-lg font-black text-white tracking-tight flex items-center gap-2">
-                      <User className="w-5 h-5 text-cyan-400" />
+                    <h3 className="text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
+                      <User className="w-5 h-5 text-cyan-600" />
                       <span>Customer Profile & Vehicle Details</span>
                     </h3>
-                    <p className="text-xs text-slate-400 mt-0.5">
+                    <p className="text-xs text-slate-500 mt-0.5">
                       View and update permitted profile information, apartment location, and vehicle details.
                     </p>
                   </div>
@@ -898,7 +898,7 @@ export default function CustomerDashboard() {
                   {/* Name and Phone */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-slate-300 font-semibold mb-1">
+                      <label className="block text-slate-700 font-semibold mb-1">
                         Full Name *
                       </label>
                       <input
@@ -906,12 +906,12 @@ export default function CustomerDashboard() {
                         disabled={!isEditingProfile}
                         value={profileForm.name}
                         onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white disabled:opacity-60 disabled:cursor-not-allowed focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 disabled:bg-slate-100 disabled:opacity-80 disabled:cursor-not-allowed focus:ring-2 focus:ring-cyan-500 focus:bg-white focus:outline-none"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-slate-300 font-semibold mb-1">
+                      <label className="block text-slate-700 font-semibold mb-1">
                         Mobile Phone Number *
                       </label>
                       <input
@@ -919,7 +919,7 @@ export default function CustomerDashboard() {
                         disabled={!isEditingProfile}
                         value={profileForm.phone}
                         onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white disabled:opacity-60 disabled:cursor-not-allowed focus:ring-2 focus:ring-cyan-500 focus:outline-none font-mono"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 disabled:bg-slate-100 disabled:opacity-80 disabled:cursor-not-allowed focus:ring-2 focus:ring-cyan-500 focus:bg-white focus:outline-none font-mono"
                       />
                     </div>
                   </div>
@@ -927,7 +927,7 @@ export default function CustomerDashboard() {
                   {/* Apartment, Block, Flat Number */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-slate-300 font-semibold mb-1">
+                      <label className="block text-slate-700 font-semibold mb-1">
                         Apartment or Community *
                       </label>
                       <input
@@ -935,12 +935,12 @@ export default function CustomerDashboard() {
                         disabled={!isEditingProfile}
                         value={profileForm.apartment}
                         onChange={(e) => setProfileForm({ ...profileForm, apartment: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white disabled:opacity-60 disabled:cursor-not-allowed focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 disabled:bg-slate-100 disabled:opacity-80 disabled:cursor-not-allowed focus:ring-2 focus:ring-cyan-500 focus:bg-white focus:outline-none"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-slate-300 font-semibold mb-1">
+                      <label className="block text-slate-700 font-semibold mb-1">
                         Block Number / Tower
                       </label>
                       <input
@@ -948,12 +948,12 @@ export default function CustomerDashboard() {
                         disabled={!isEditingProfile}
                         value={profileForm.block}
                         onChange={(e) => setProfileForm({ ...profileForm, block: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white disabled:opacity-60 disabled:cursor-not-allowed focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 disabled:bg-slate-100 disabled:opacity-80 disabled:cursor-not-allowed focus:ring-2 focus:ring-cyan-500 focus:bg-white focus:outline-none"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-slate-300 font-semibold mb-1">
+                      <label className="block text-slate-700 font-semibold mb-1">
                         Flat Number *
                       </label>
                       <input
@@ -961,7 +961,7 @@ export default function CustomerDashboard() {
                         disabled={!isEditingProfile}
                         value={profileForm.flat_number}
                         onChange={(e) => setProfileForm({ ...profileForm, flat_number: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white disabled:opacity-60 disabled:cursor-not-allowed focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 disabled:bg-slate-100 disabled:opacity-80 disabled:cursor-not-allowed focus:ring-2 focus:ring-cyan-500 focus:bg-white focus:outline-none"
                       />
                     </div>
                   </div>
@@ -969,7 +969,7 @@ export default function CustomerDashboard() {
                   {/* Car Model & Vehicle Registration Number */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-slate-300 font-semibold mb-1">
+                      <label className="block text-slate-700 font-semibold mb-1">
                         Car Model *
                       </label>
                       <input
@@ -977,12 +977,12 @@ export default function CustomerDashboard() {
                         disabled={!isEditingProfile}
                         value={profileForm.car_model}
                         onChange={(e) => setProfileForm({ ...profileForm, car_model: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white disabled:opacity-60 disabled:cursor-not-allowed focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 disabled:bg-slate-100 disabled:opacity-80 disabled:cursor-not-allowed focus:ring-2 focus:ring-cyan-500 focus:bg-white focus:outline-none"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-slate-300 font-semibold mb-1">
+                      <label className="block text-slate-700 font-semibold mb-1">
                         Vehicle Registration Number *
                       </label>
                       <input
@@ -990,14 +990,14 @@ export default function CustomerDashboard() {
                         disabled={!isEditingProfile}
                         value={profileForm.vehicle_registration_number}
                         onChange={(e) => setProfileForm({ ...profileForm, vehicle_registration_number: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white disabled:opacity-60 disabled:cursor-not-allowed focus:ring-2 focus:ring-cyan-500 focus:outline-none font-mono uppercase"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 disabled:bg-slate-100 disabled:opacity-80 disabled:cursor-not-allowed focus:ring-2 focus:ring-cyan-500 focus:bg-white focus:outline-none font-mono uppercase"
                       />
                     </div>
                   </div>
 
                   {/* Notes & Parking Bay */}
                   <div>
-                    <label className="block text-slate-300 font-semibold mb-1">
+                    <label className="block text-slate-700 font-semibold mb-1">
                       Parking Bay & Special Instructions
                     </label>
                     <textarea
@@ -1006,7 +1006,7 @@ export default function CustomerDashboard() {
                       value={profileForm.notes}
                       onChange={(e) => setProfileForm({ ...profileForm, notes: e.target.value })}
                       placeholder="e.g. Parked at Basement 2 Bay 114. Preferred timing before 8:00 AM."
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white disabled:opacity-60 disabled:cursor-not-allowed focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 disabled:bg-slate-100 disabled:opacity-80 disabled:cursor-not-allowed focus:ring-2 focus:ring-cyan-500 focus:bg-white focus:outline-none"
                     />
                   </div>
 
@@ -1033,7 +1033,7 @@ export default function CustomerDashboard() {
                             notes: customerUser?.notes || ''
                           });
                         }}
-                        className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition-colors cursor-pointer"
+                        className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition-colors cursor-pointer border border-slate-200"
                       >
                         Cancel
                       </button>
@@ -1051,10 +1051,10 @@ export default function CustomerDashboard() {
             <div className="space-y-6 max-w-5xl">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h3 className="text-xl font-black text-white tracking-tight">
+                  <h3 className="text-xl font-black text-slate-900 tracking-tight">
                     Explore Plans & Renewal Options
                   </h3>
-                  <p className="text-xs text-slate-400 mt-1">
+                  <p className="text-xs text-slate-500 mt-1">
                     Compare features, request a new plan, or submit a subscription renewal request.
                   </p>
                 </div>
@@ -1063,7 +1063,7 @@ export default function CustomerDashboard() {
                   href={getWhatsAppLink('subscription')}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-4 py-2 rounded-xl bg-emerald-600/90 hover:bg-emerald-500 text-white font-semibold text-xs flex items-center gap-2 self-start transition-all cursor-pointer shadow-md shadow-emerald-600/20"
+                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs flex items-center gap-2 self-start transition-all cursor-pointer shadow-md shadow-emerald-600/20"
                 >
                   <MessageCircle className="w-4 h-4" />
                   <span>Contact Regarding Plan Changes</span>
@@ -1083,12 +1083,12 @@ export default function CustomerDashboard() {
                       key={plan.id}
                       className={`p-5 rounded-3xl border flex flex-col justify-between transition-all relative ${
                         isCurrent
-                          ? 'bg-gradient-to-b from-blue-950/70 to-slate-900 border-cyan-500/80 shadow-xl shadow-cyan-500/10'
-                          : 'bg-slate-900/80 border-slate-800 hover:border-slate-700'
+                          ? 'bg-white border-2 border-cyan-500 shadow-xl shadow-cyan-500/10'
+                          : 'bg-white border-slate-200 hover:border-slate-300 shadow-sm'
                       }`}
                     >
                       {isCurrent && (
-                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-cyan-500 text-slate-950 font-black text-[10px] uppercase tracking-wider shadow">
+                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-cyan-600 text-white font-black text-[10px] uppercase tracking-wider shadow">
                           Current Plan
                         </div>
                       )}
@@ -1098,25 +1098,25 @@ export default function CustomerDashboard() {
                           <span
                             className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                               plan.category === 'Premium'
-                                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                                : 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+                                ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                                : 'bg-blue-50 text-blue-700 border border-blue-200'
                             }`}
                           >
                             {plan.category} Tier
                           </span>
-                          <span className="text-xs text-slate-400 font-mono font-medium">
+                          <span className="text-xs text-slate-500 font-mono font-medium">
                             {plan.duration || 'Monthly'}
                           </span>
                         </div>
 
-                        <h4 className="text-base font-bold text-white mb-1">{plan.name}</h4>
+                        <h4 className="text-base font-bold text-slate-900 mb-1">{plan.name}</h4>
                         <div className="flex items-baseline gap-1 my-3">
-                          <span className="text-2xl font-black text-white font-mono">₹{plan.price}</span>
-                          <span className="text-xs text-slate-400 font-medium">/ duration</span>
+                          <span className="text-2xl font-black text-slate-900 font-mono">₹{plan.price}</span>
+                          <span className="text-xs text-slate-500 font-medium">/ duration</span>
                         </div>
 
                         {/* Plan Features */}
-                        <ul className="space-y-1.5 text-[11px] text-slate-300 my-4 border-t border-slate-800/80 pt-3">
+                        <ul className="space-y-1.5 text-[11px] text-slate-600 my-4 border-t border-slate-100 pt-3">
                           {(plan.features || [
                             'Daily Exterior Doorstep Wash',
                             'Glass & Mirror Microfiber Polish',
@@ -1124,7 +1124,7 @@ export default function CustomerDashboard() {
                             'Dedicated Trained Specialist'
                           ]).slice(0, 4).map((f, i) => (
                             <li key={i} className="flex items-center gap-1.5">
-                              <Check className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                              <Check className="w-3.5 h-3.5 text-cyan-600 shrink-0" />
                               <span className="truncate">{f}</span>
                             </li>
                           ))}
@@ -1145,7 +1145,7 @@ export default function CustomerDashboard() {
                           <button
                             type="button"
                             onClick={() => handleRenewalRequest(activeSub?.id)}
-                            className="w-full py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                            className="w-full py-2 rounded-xl bg-cyan-50 hover:bg-cyan-100 text-cyan-700 border border-cyan-200 text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                           >
                             <RefreshCw className="w-3.5 h-3.5" />
                             <span>Request Next Cycle Renewal</span>
@@ -1154,7 +1154,7 @@ export default function CustomerDashboard() {
                           <button
                             type="button"
                             onClick={() => handleRequestPlan(plan)}
-                            className="w-full py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                            className="w-full py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-slate-200"
                           >
                             <span>Request Info</span>
                             <ArrowRight className="w-3.5 h-3.5" />
@@ -1175,10 +1175,10 @@ export default function CustomerDashboard() {
             <div className="space-y-6 max-w-5xl">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h3 className="text-xl font-black text-white tracking-tight">
+                  <h3 className="text-xl font-black text-slate-900 tracking-tight">
                     Booking & Service History
                   </h3>
-                  <p className="text-xs text-slate-400 mt-1">
+                  <p className="text-xs text-slate-500 mt-1">
                     Morning service visits executed between 6:00 AM – 11:30 AM with status updates and specialist notes.
                   </p>
                 </div>
@@ -1191,8 +1191,8 @@ export default function CustomerDashboard() {
                       onClick={() => setHistoryFilter(status)}
                       className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                         historyFilter === status
-                          ? 'bg-cyan-500 text-slate-950 font-bold shadow'
-                          : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                          ? 'bg-cyan-600 text-white font-bold shadow'
+                          : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200'
                       }`}
                     >
                       {status}
@@ -1207,18 +1207,18 @@ export default function CustomerDashboard() {
                   {filteredVisits.map((visit) => (
                     <div
                       key={visit.id}
-                      className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-slate-700 transition-all shadow-md"
+                      className="p-5 rounded-2xl bg-white border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-slate-300 transition-all shadow-sm"
                     >
                       <div className="flex items-start gap-3.5">
                         <div
                           className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${
                             visit.status === 'Completed'
-                              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                              ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
                               : visit.status === 'In Progress'
-                              ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                              ? 'bg-blue-50 text-blue-600 border border-blue-200'
                               : visit.status === 'Missed'
-                              ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
-                              : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                              ? 'bg-rose-50 text-rose-600 border border-rose-200'
+                              : 'bg-amber-50 text-amber-600 border border-amber-200'
                           }`}
                         >
                           {visit.status === 'Completed' ? (
@@ -1232,37 +1232,37 @@ export default function CustomerDashboard() {
 
                         <div>
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-bold text-white text-sm">{visit.carModel || customerUser?.car_model}</span>
-                            <span className="px-2 py-0.5 rounded-md bg-slate-950 border border-slate-800 text-[10px] font-mono font-bold text-cyan-300">
+                            <span className="font-bold text-slate-900 text-sm">{visit.carModel || customerUser?.car_model}</span>
+                            <span className="px-2 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-[10px] font-mono font-bold text-cyan-800">
                               {visit.regNumber || customerUser?.vehicle_registration_number}
                             </span>
                             <span
                               className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                                 visit.status === 'Completed'
-                                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                                   : visit.status === 'In Progress'
-                                  ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+                                  ? 'bg-blue-50 text-blue-700 border border-blue-200'
                                   : visit.status === 'Missed'
-                                  ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                                  : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                                  ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                                  : 'bg-amber-50 text-amber-700 border border-amber-200'
                               }`}
                             >
                               ● {visit.status}
                             </span>
                           </div>
 
-                          <div className="flex items-center gap-3 text-xs text-slate-400 mt-1.5 flex-wrap">
+                          <div className="flex items-center gap-3 text-xs text-slate-500 mt-1.5 flex-wrap">
                             <span className="flex items-center gap-1">
-                              <Calendar className="w-3.5 h-3.5 text-cyan-400" />
+                              <Calendar className="w-3.5 h-3.5 text-cyan-600" />
                               <span>{visit.date || 'Today'}</span>
                             </span>
                             <span className="flex items-center gap-1">
-                              <Clock className="w-3.5 h-3.5 text-cyan-400" />
+                              <Clock className="w-3.5 h-3.5 text-cyan-600" />
                               <span>{visit.timeSlot || '07:00 AM - 08:00 AM'}</span>
                             </span>
                             {visit.employeeName && (
-                              <span className="flex items-center gap-1 text-slate-300">
-                                <User className="w-3.5 h-3.5 text-cyan-400" />
+                              <span className="flex items-center gap-1 text-slate-700">
+                                <User className="w-3.5 h-3.5 text-cyan-600" />
                                 <span>Specialist: <strong>{visit.employeeName}</strong></span>
                               </span>
                             )}
@@ -1270,8 +1270,8 @@ export default function CustomerDashboard() {
 
                           {/* Notes / Reason for missed or completed */}
                           {visit.notes && (
-                            <div className="mt-2.5 p-2.5 rounded-xl bg-slate-950/80 border border-slate-800/80 text-[11px] text-slate-300">
-                              <span className="text-slate-400 font-semibold">Specialist Note: </span>
+                            <div className="mt-2.5 p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-700">
+                              <span className="text-slate-500 font-semibold">Specialist Note: </span>
                               <span>{visit.notes}</span>
                             </div>
                           )}
@@ -1279,12 +1279,12 @@ export default function CustomerDashboard() {
                       </div>
 
                       <div className="sm:text-right shrink-0">
-                        <span className="text-[11px] text-slate-500 block">CleanZX Doorstep Care</span>
+                        <span className="text-[11px] text-slate-400 block">CleanZX Doorstep Care</span>
                         <a
                           href={getWhatsAppLink('issue')}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="mt-1 inline-flex items-center gap-1 text-xs text-cyan-400 hover:underline"
+                          className="mt-1 inline-flex items-center gap-1 text-xs text-cyan-600 hover:underline font-semibold"
                         >
                           <HelpCircle className="w-3 h-3" />
                           <span>Report Issue</span>
@@ -1294,9 +1294,9 @@ export default function CustomerDashboard() {
                   ))}
                 </div>
               ) : (
-                <div className="p-12 text-center rounded-3xl bg-slate-900/60 border border-slate-800 text-slate-400 text-xs">
-                  <Clock className="w-8 h-8 text-slate-500 mx-auto mb-2" />
-                  <p className="font-semibold text-slate-300">No visits matching this filter.</p>
+                <div className="p-12 text-center rounded-3xl bg-white border border-slate-200 text-slate-500 text-xs shadow-sm">
+                  <Clock className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                  <p className="font-semibold text-slate-700">No visits matching this filter.</p>
                   <p className="mt-1">All morning services scheduled between 6:00 AM – 11:30 AM will automatically reflect here.</p>
                 </div>
               )}
@@ -1310,10 +1310,10 @@ export default function CustomerDashboard() {
             <div className="space-y-6 max-w-5xl">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h3 className="text-xl font-black text-white tracking-tight">
+                  <h3 className="text-xl font-black text-slate-900 tracking-tight">
                     Invoice Management & Receipts
                   </h3>
-                  <p className="text-xs text-slate-400 mt-1">
+                  <p className="text-xs text-slate-500 mt-1">
                     Access, view, pay online, and print/download official invoice documents and payment receipts.
                   </p>
                 </div>
@@ -1330,21 +1330,21 @@ export default function CustomerDashboard() {
 
               {/* Billing Summary Banner */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Total Invoiced</span>
-                  <span className="text-xl font-black text-white font-mono mt-0.5 block">
+                <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm">
+                  <span className="text-[10px] uppercase font-bold text-slate-500 block">Total Invoiced</span>
+                  <span className="text-xl font-black text-slate-900 font-mono mt-0.5 block">
                     ₹{customerInvoices.reduce((acc, i) => acc + (i.total || 0), 0).toLocaleString('en-IN')}
                   </span>
                 </div>
-                <div className="p-4 rounded-2xl bg-slate-900 border border-emerald-500/30">
-                  <span className="text-[10px] uppercase font-bold text-emerald-400 block">Total Paid</span>
-                  <span className="text-xl font-black text-emerald-400 font-mono mt-0.5 block">
+                <div className="p-4 rounded-2xl bg-white border border-emerald-200 shadow-sm">
+                  <span className="text-[10px] uppercase font-bold text-emerald-600 block">Total Paid</span>
+                  <span className="text-xl font-black text-emerald-600 font-mono mt-0.5 block">
                     ₹{customerInvoices.reduce((acc, i) => acc + (i.amountPaid || 0), 0).toLocaleString('en-IN')}
                   </span>
                 </div>
-                <div className="p-4 rounded-2xl bg-slate-900 border border-amber-500/30">
-                  <span className="text-[10px] uppercase font-bold text-amber-400 block">Balance Due</span>
-                  <span className="text-xl font-black text-amber-300 font-mono mt-0.5 block">
+                <div className="p-4 rounded-2xl bg-white border border-amber-200 shadow-sm">
+                  <span className="text-[10px] uppercase font-bold text-amber-600 block">Balance Due</span>
+                  <span className="text-xl font-black text-amber-600 font-mono mt-0.5 block">
                     ₹{(totalBalanceDue > 0 ? totalBalanceDue : 0).toLocaleString('en-IN')}
                   </span>
                 </div>
@@ -1355,40 +1355,40 @@ export default function CustomerDashboard() {
                   {customerInvoices.map((inv) => (
                     <div
                       key={inv.id}
-                      className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-slate-700 transition-all shadow-md"
+                      className="p-5 rounded-2xl bg-white border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-slate-300 transition-all shadow-sm"
                     >
                       <div className="flex items-start gap-3.5">
-                        <div className="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center shrink-0 mt-0.5">
+                        <div className="w-10 h-10 rounded-xl bg-cyan-50 text-cyan-700 border border-cyan-200 flex items-center justify-center shrink-0 mt-0.5">
                           <FileText className="w-5 h-5" />
                         </div>
 
                         <div>
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-mono font-bold text-white text-sm">
+                            <span className="font-mono font-bold text-slate-900 text-sm">
                               {inv.invoiceNumber}
                             </span>
                             <span
                               className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                                 inv.status === 'Paid'
-                                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                                  : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                  : 'bg-amber-50 text-amber-700 border border-amber-200'
                               }`}
                             >
                               ● {inv.status}
                             </span>
-                            <span className="text-xs text-slate-400">
-                              Date: <strong className="text-slate-200">{inv.date}</strong>
+                            <span className="text-xs text-slate-500">
+                              Date: <strong className="text-slate-700">{inv.date}</strong>
                             </span>
                           </div>
 
-                          <p className="text-xs font-semibold text-slate-300 mt-1">
+                          <p className="text-xs font-semibold text-slate-700 mt-1">
                             {inv.planName}
                           </p>
 
-                          <div className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-3 flex-wrap">
+                          <div className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-3 flex-wrap">
                             {inv.transactionRef && (
                               <span>
-                                Ref: <code className="text-cyan-400 font-mono">{inv.transactionRef}</code>
+                                Ref: <code className="text-cyan-700 font-mono font-semibold">{inv.transactionRef}</code>
                               </span>
                             )}
                             {inv.paymentMethod && (
@@ -1398,10 +1398,10 @@ export default function CustomerDashboard() {
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-800">
+                      <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100">
                         <div className="text-left sm:text-right mr-1">
-                          <div className="text-[10px] text-slate-400 uppercase">Total Amount</div>
-                          <div className="text-lg font-black text-white font-mono">
+                          <div className="text-[10px] text-slate-500 uppercase">Total Amount</div>
+                          <div className="text-lg font-black text-slate-900 font-mono">
                             ₹{inv.total ? inv.total.toLocaleString('en-IN') : '1,499'}
                           </div>
                         </div>
@@ -1424,7 +1424,7 @@ export default function CustomerDashboard() {
                         <button
                           type="button"
                           onClick={() => setSelectedInvoice(inv)}
-                          className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs flex items-center gap-1.5 border border-slate-700 transition-all cursor-pointer"
+                          className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-1.5 border border-slate-200 transition-all cursor-pointer"
                         >
                           <Printer className="w-3.5 h-3.5" />
                           <span>Receipt</span>
@@ -1434,13 +1434,13 @@ export default function CustomerDashboard() {
                   ))}
                 </div>
               ) : (
-                <div className="p-8 rounded-3xl bg-slate-900/80 border border-slate-800 text-center space-y-4">
-                  <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 flex items-center justify-center mx-auto">
+                <div className="p-8 rounded-3xl bg-white border border-slate-200 text-center space-y-4 shadow-sm">
+                  <div className="w-12 h-12 rounded-2xl bg-cyan-50 text-cyan-600 border border-cyan-200 flex items-center justify-center mx-auto">
                     <FileText className="w-6 h-6" />
                   </div>
                   <div>
-                    <h4 className="text-base font-bold text-white">No Invoices Generated Yet</h4>
-                    <p className="text-xs text-slate-400 mt-1 max-w-md mx-auto">
+                    <h4 className="text-base font-bold text-slate-900">No Invoices Generated Yet</h4>
+                    <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
                       Official invoices for your daily doorstep car care will appear here. You can also pay directly online for your current plan.
                     </p>
                   </div>

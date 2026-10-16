@@ -283,18 +283,18 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
 
 
   return (
-    <div className={`min-h-screen w-full bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950 text-slate-100 flex flex-col ${isForgotPassword ? 'justify-center py-3' : 'justify-start pt-2 sm:pt-4 pb-12'} px-4 sm:px-6 overflow-y-auto antialiased`}>
+    <div className={`min-h-screen w-full bg-white text-slate-800 flex flex-col ${isForgotPassword ? 'justify-center py-3' : 'justify-start pt-2 sm:pt-4 pb-12'} px-4 sm:px-6 overflow-y-auto antialiased`}>
       {/* Top Navigation */}
       <div className="w-full max-w-xl mx-auto flex items-center justify-between">
         <Link
           to="/"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-white transition-colors bg-slate-900/80 px-3 py-1 rounded-full border border-slate-800"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors bg-slate-100 hover:bg-slate-200 px-3 py-1 rounded-full border border-slate-200"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to Home</span>
         </Link>
-        <span className="text-[11px] font-medium text-cyan-400/80 flex items-center gap-1.5">
-          <Clock className="w-3 h-3 text-cyan-400" />
+        <span className="text-[11px] font-medium text-cyan-700 flex items-center gap-1.5 bg-cyan-50/80 px-2.5 py-1 rounded-full border border-cyan-100">
+          <Clock className="w-3 h-3 text-cyan-600" />
           <span>Daily Service: 6:00 AM – 11:30 AM</span>
         </span>
       </div>
@@ -305,21 +305,21 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
           <img
             src="/images/admin-brand-logo.png"
             alt="CLEANZX"
-            className={`${isForgotPassword ? 'h-10 sm:h-12' : 'h-16 sm:h-20'} max-w-[260px] w-auto object-contain drop-shadow-2xl transition-all`}
+            className={`${isForgotPassword ? 'h-10 sm:h-12' : 'h-16 sm:h-20'} max-w-[260px] w-auto object-contain drop-shadow-md transition-all`}
           />
         </div>
 
         {!isForgotPassword ? (
           <>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 text-[10px] font-semibold uppercase tracking-wider mb-1.5">
-              <Sparkles className="w-3 h-3 text-cyan-400" />
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-cyan-50 text-cyan-700 border border-cyan-200 text-[10px] font-semibold uppercase tracking-wider mb-1.5">
+              <Sparkles className="w-3 h-3 text-cyan-600" />
               <span>Customer Self-Service Portal</span>
             </div>
 
-            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight drop-shadow-md">
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
               {activeTab === 'login' ? 'Customer Account Login' : 'Create Customer Account'}
             </h1>
-            <p className="text-xs text-slate-300 mt-0.5 max-w-md mx-auto leading-normal">
+            <p className="text-xs text-slate-600 mt-0.5 max-w-md mx-auto leading-normal">
               {activeTab === 'login'
                 ? 'Access your vehicle care schedule, subscription status, invoice downloads, and request add-on detailing.'
                 : 'Register your apartment, vehicle details, and preferred plan to activate daily morning doorstep car care.'}
@@ -327,7 +327,7 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
 
             {/* Tab Switcher */}
             <div className="flex items-center justify-center mt-2.5">
-              <div className="bg-slate-900/90 border border-slate-800 p-1 rounded-2xl flex items-center gap-1 max-w-xs w-full shadow-inner">
+              <div className="bg-slate-100 border border-slate-200 p-1 rounded-2xl flex items-center gap-1 max-w-xs w-full shadow-inner">
                 <button
                   type="button"
                   onClick={() => {
@@ -339,7 +339,7 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
                   className={`flex-1 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 cursor-pointer ${
                     activeTab === 'login'
                       ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-md shadow-cyan-500/20'
-                      : 'text-slate-400 hover:text-slate-200'
+                      : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   Sign In
@@ -355,7 +355,7 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
                   className={`flex-1 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 cursor-pointer ${
                     activeTab === 'signup'
                       ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-md shadow-cyan-500/20'
-                      : 'text-slate-400 hover:text-slate-200'
+                      : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   New Sign Up
@@ -365,7 +365,7 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
           </>
         ) : (
           <div className="mb-0.5">
-            <h1 className="text-base sm:text-lg font-black text-white tracking-tight">
+            <h1 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
               Reset Customer Password
             </h1>
           </div>
@@ -373,17 +373,17 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
       </div>
 
       {/* Main Card */}
-      <div className={`w-full max-w-xl mx-auto ${isForgotPassword ? 'mt-1 mb-4 p-4 sm:p-5' : 'mt-2.5 mb-5 p-4 sm:p-5'} bg-slate-900/90 border border-slate-800 rounded-3xl shadow-2xl backdrop-blur-md`}>
+      <div className={`w-full max-w-xl mx-auto ${isForgotPassword ? 'mt-1 mb-4 p-4 sm:p-5' : 'mt-2.5 mb-5 p-4 sm:p-5'} bg-white border border-slate-200 rounded-3xl shadow-xl`}>
         {error && (
-          <div className="mb-3.5 p-3 bg-rose-500/15 border border-rose-500/30 rounded-2xl flex items-start gap-2.5 text-xs text-rose-300 animate-fadeIn">
-            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+          <div className="mb-3.5 p-3 bg-rose-50 border border-rose-200 rounded-2xl flex items-start gap-2.5 text-xs text-rose-700 animate-fadeIn">
+            <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
         )}
 
         {successMsg && (
-          <div className="mb-3.5 p-3 bg-emerald-500/15 border border-emerald-500/30 rounded-2xl flex items-start gap-2.5 text-xs text-emerald-300 animate-fadeIn">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+          <div className="mb-3.5 p-3 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-start gap-2.5 text-xs text-emerald-700 animate-fadeIn">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
             <span>{successMsg}</span>
           </div>
         )}
@@ -391,14 +391,14 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
         {/* ---------------- FORGOT PASSWORD VIEW ---------------- */}
         {isForgotPassword ? (
           <div>
-            <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-slate-800">
+            <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-slate-100">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 flex items-center justify-center">
-                  <Lock className="w-3.5 h-3.5 text-cyan-400" />
+                <div className="w-7 h-7 rounded-lg bg-cyan-100 text-cyan-700 border border-cyan-200 flex items-center justify-center">
+                  <Lock className="w-3.5 h-3.5 text-cyan-600" />
                 </div>
                 <div>
-                  <h3 className="text-xs sm:text-sm font-bold text-white">Reset Customer Password</h3>
-                  <p className="text-[10px] text-slate-400">Step {forgotStep} of 2 • 6-Digit OTP Verification</p>
+                  <h3 className="text-xs sm:text-sm font-bold text-slate-900">Reset Customer Password</h3>
+                  <p className="text-[10px] text-slate-500">Step {forgotStep} of 2 • 6-Digit OTP Verification</p>
                 </div>
               </div>
               <button
@@ -408,7 +408,7 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
                   setError('');
                   setSuccessMsg('');
                 }}
-                className="text-xs text-slate-400 hover:text-white flex items-center gap-1 cursor-pointer"
+                className="text-xs text-slate-500 hover:text-slate-800 flex items-center gap-1 cursor-pointer"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
                 <span>Back to Sign In</span>
@@ -418,7 +418,7 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
             {forgotStep === 1 ? (
               <form onSubmit={handleForgotStep1} className="space-y-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
                     Registered Mobile Number or Email
                   </label>
                   <div className="relative">
@@ -430,10 +430,10 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
                       onChange={(e) => setForgotIdentifier(e.target.value)}
                       placeholder="e.g. 8519021491 or your email"
                       autoComplete="off"
-                      className="w-full pl-9 pr-3 py-2 bg-slate-950/80 border border-slate-700/80 rounded-xl text-white text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 font-mono"
+                      className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:bg-white font-mono"
                     />
                   </div>
-                  <p className="text-[10px] text-slate-400 mt-1">
+                  <p className="text-[10px] text-slate-500 mt-1">
                     Enter the phone number or email registered with your CleanZX account.
                   </p>
                 </div>
@@ -454,14 +454,14 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
 
                 {/* Account Found Header Card */}
                 {foundCustomer && (
-                  <div className="p-2.5 bg-slate-950/90 rounded-xl border border-slate-800 text-xs flex items-center justify-between">
+                  <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200 text-xs flex items-center justify-between">
                     <div>
-                      <p className="font-bold text-white text-xs">{foundCustomer.name}</p>
-                      <p className="text-[10px] text-slate-400">
+                      <p className="font-bold text-slate-900 text-xs">{foundCustomer.name}</p>
+                      <p className="text-[10px] text-slate-500">
                         {foundCustomer.apartment} • {foundCustomer.vehicle_registration_number || 'Vehicle'}
                       </p>
                     </div>
-                    <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                    <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">
                       Verified Account
                     </span>
                   </div>
@@ -470,13 +470,13 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
                 {/* OTP Input Box */}
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="block text-[11px] font-semibold text-slate-300">
+                    <label className="block text-[11px] font-semibold text-slate-700">
                       Enter 6-Digit OTP {foundCustomer?.email ? `(Sent to ${foundCustomer.email})` : ''}:
                     </label>
                     <button
                       type="button"
                       onClick={handleForgotStep1}
-                      className="text-[10px] text-cyan-400 hover:text-cyan-300 font-semibold cursor-pointer underline"
+                      className="text-[10px] text-cyan-600 hover:text-cyan-700 font-semibold cursor-pointer underline"
                     >
                       Resend OTP
                     </button>
@@ -492,9 +492,9 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
                     id="cleanzx_customer_otp"
                     autoComplete="one-time-code"
                     inputMode="numeric"
-                    className="w-full px-3 py-2 bg-slate-950/90 border border-slate-700/80 rounded-xl text-white text-base font-mono tracking-widest text-center focus:outline-none focus:ring-2 focus:ring-cyan-500 shadow-inner"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-base font-mono tracking-widest text-center focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:bg-white shadow-inner"
                   />
-                  <p className="text-[10px] text-slate-400 mt-1">
+                  <p className="text-[10px] text-slate-500 mt-1">
                     Please check your email inbox and enter the 6-digit code.
                   </p>
                 </div>
@@ -502,7 +502,7 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
                 {/* New Password Fields */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-0.5">
                   <div>
-                    <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">
                       New Password
                     </label>
                     <div className="relative">
@@ -514,12 +514,12 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
                         onChange={(e) => setNewPassword(e.target.value)}
                         placeholder="Min. 4 chars"
                         autoComplete="new-password"
-                        className="w-full pl-8 pr-8 py-2 bg-slate-950/80 border border-slate-700/80 rounded-xl text-white text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500 font-mono"
+                        className="w-full pl-8 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:bg-white font-mono"
                       />
                       <button
                         type="button"
                         onClick={() => setShowForgotPass(!showForgotPass)}
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200"
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                       >
                         {showForgotPass ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                       </button>
@@ -527,7 +527,7 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">
                       Confirm New Password
                     </label>
                     <div className="relative">
@@ -539,7 +539,7 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
                         onChange={(e) => setConfirmNewPassword(e.target.value)}
                         placeholder="Re-enter password"
                         autoComplete="new-password"
-                        className="w-full pl-8 pr-3 py-2 bg-slate-950/80 border border-slate-700/80 rounded-xl text-white text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500 font-mono"
+                        className="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:bg-white font-mono"
                       />
                     </div>
                   </div>
@@ -556,7 +556,7 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
                   <button
                     type="button"
                     onClick={() => setForgotStep(1)}
-                    className="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold cursor-pointer"
+                    className="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold cursor-pointer border border-slate-200"
                   >
                     Back
                   </button>
@@ -568,7 +568,7 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
           <div>
             <form onSubmit={handleLoginSubmit} noValidate className="space-y-3.5">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   Registered Mobile Number or Email
                 </label>
                 <div className="relative">
@@ -579,13 +579,13 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
                     value={loginIdentifier}
                     onChange={(e) => setLoginIdentifier(e.target.value)}
                     placeholder="Enter registered mobile number or email"
-                    className="w-full pl-10 pr-4 py-2.5 bg-slate-950/80 border border-slate-700/80 rounded-2xl text-white text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all font-mono"
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 focus:bg-white transition-all font-mono"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   Password
                 </label>
                 <div className="relative">
@@ -596,12 +596,12 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
                     placeholder="Enter your password"
-                    className="w-full pl-10 pr-11 py-2.5 bg-slate-950/80 border border-slate-700/80 rounded-2xl text-white text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all font-mono"
+                    className="w-full pl-10 pr-11 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 focus:bg-white transition-all font-mono"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 focus:outline-none"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
                     aria-label="Toggle password view"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -618,7 +618,7 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
                       setError('');
                       setSuccessMsg('');
                     }}
-                    className="text-xs text-cyan-400 hover:text-cyan-300 font-semibold cursor-pointer transition-colors"
+                    className="text-xs text-cyan-600 hover:text-cyan-700 font-semibold cursor-pointer transition-colors"
                   >
                     Forgot Password?
                   </button>
@@ -642,12 +642,12 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
             </form>
 
             <div className="mt-3.5 text-center">
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500">
                 Don't have an account yet?{' '}
                 <button
                   type="button"
                   onClick={() => setActiveTab('signup')}
-                  className="font-semibold text-cyan-400 hover:underline"
+                  className="font-semibold text-cyan-600 hover:underline"
                 >
                   Register here
                 </button>
@@ -661,7 +661,7 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
               {/* Row 1: Full Name & Mobile Number */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">
                     Full Name *
                   </label>
                   <div className="relative">
@@ -672,13 +672,13 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
                       value={signupData.name}
                       onChange={(e) => setSignupData({ ...signupData, name: e.target.value })}
                       placeholder="Enter your full name"
-                      className="w-full pl-9 pr-3 py-2 bg-slate-950/80 border border-slate-700/80 rounded-xl text-white text-xs focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+                      className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs focus:ring-2 focus:ring-cyan-500 focus:bg-white focus:outline-none"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">
                     10-Digit Mobile Number *
                   </label>
                   <div className="relative">
@@ -689,7 +689,7 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
                       value={signupData.phone}
                       onChange={(e) => setSignupData({ ...signupData, phone: e.target.value })}
                       placeholder="Enter 10-digit mobile number"
-                      className="w-full pl-9 pr-3 py-2 bg-slate-950/80 border border-slate-700/80 rounded-xl text-white text-xs focus:ring-2 focus:ring-cyan-500 focus:outline-none font-mono"
+                      className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs focus:ring-2 focus:ring-cyan-500 focus:bg-white focus:outline-none font-mono"
                     />
                   </div>
                 </div>
@@ -698,7 +698,7 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
               {/* Row 2: Apartment / Community, Block & Flat */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="sm:col-span-1">
-                  <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">
                     Apartment / Community *
                   </label>
                   <div className="relative">
@@ -709,13 +709,13 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
                       value={signupData.apartment}
                       onChange={(e) => setSignupData({ ...signupData, apartment: e.target.value })}
                       placeholder="Enter apartment or community name"
-                      className="w-full pl-9 pr-3 py-2 bg-slate-950/80 border border-slate-700/80 rounded-xl text-white text-xs focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+                      className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs focus:ring-2 focus:ring-cyan-500 focus:bg-white focus:outline-none"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">
                     Block / Tower
                   </label>
                   <div className="relative">
@@ -725,13 +725,13 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
                       value={signupData.block}
                       onChange={(e) => setSignupData({ ...signupData, block: e.target.value })}
                       placeholder="e.g. Tower 3 / Block B (Optional)"
-                      className="w-full pl-9 pr-3 py-2 bg-slate-950/80 border border-slate-700/80 rounded-xl text-white text-xs focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+                      className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs focus:ring-2 focus:ring-cyan-500 focus:bg-white focus:outline-none"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">
                     Flat / Unit Number *
                   </label>
                   <div className="relative">
@@ -742,7 +742,7 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
                       value={signupData.flat_number}
                       onChange={(e) => setSignupData({ ...signupData, flat_number: e.target.value })}
                       placeholder="e.g. Flat 804 / Unit 12"
-                      className="w-full pl-9 pr-3 py-2 bg-slate-950/80 border border-slate-700/80 rounded-xl text-white text-xs focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+                      className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs focus:ring-2 focus:ring-cyan-500 focus:bg-white focus:outline-none"
                     />
                   </div>
                 </div>
@@ -751,7 +751,7 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
               {/* Row 3: Car Model & Vehicle Registration Number */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">
                     Car Model *
                   </label>
                   <div className="relative">
@@ -762,13 +762,13 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
                       value={signupData.car_model}
                       onChange={(e) => setSignupData({ ...signupData, car_model: e.target.value })}
                       placeholder="e.g. Creta SX / Honda City / Baleno"
-                      className="w-full pl-9 pr-3 py-2 bg-slate-950/80 border border-slate-700/80 rounded-xl text-white text-xs focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+                      className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs focus:ring-2 focus:ring-cyan-500 focus:bg-white focus:outline-none"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">
                     Vehicle Registration Number *
                   </label>
                   <div className="relative">
@@ -779,7 +779,7 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
                       value={signupData.vehicle_registration_number}
                       onChange={(e) => setSignupData({ ...signupData, vehicle_registration_number: e.target.value })}
                       placeholder="e.g. TS 09 AB 1234"
-                      className="w-full pl-9 pr-3 py-2 bg-slate-950/80 border border-slate-700/80 rounded-xl text-white text-xs focus:ring-2 focus:ring-cyan-500 focus:outline-none font-mono uppercase"
+                      className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs focus:ring-2 focus:ring-cyan-500 focus:bg-white focus:outline-none font-mono uppercase"
                     />
                   </div>
                 </div>
@@ -788,7 +788,7 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
               {/* Row 4: Email (Optional) & Preferred Subscription Plan */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">
                     Email Address (Optional)
                   </label>
                   <div className="relative">
@@ -798,19 +798,19 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
                       value={signupData.email}
                       onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
                       placeholder="Enter email address (Optional)"
-                      className="w-full pl-9 pr-3 py-2 bg-slate-950/80 border border-slate-700/80 rounded-xl text-white text-xs focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+                      className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs focus:ring-2 focus:ring-cyan-500 focus:bg-white focus:outline-none"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">
                     Preferred Subscription Plan
                   </label>
                   <select
                     value={signupData.planName}
                     onChange={(e) => setSignupData({ ...signupData, planName: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-950/80 border border-slate-700/80 rounded-xl text-white text-xs focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs focus:ring-2 focus:ring-cyan-500 focus:bg-white focus:outline-none"
                   >
                     <option value="Monthly Premium Plan">Monthly Premium Plan (₹1,499)</option>
                     <option value="Quarterly Premium Plan">Quarterly Premium Plan (₹4,199)</option>
@@ -823,17 +823,17 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
               </div>
 
               {/* Row 5: Create Password & Confirm Password (AT THE END) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-2.5 rounded-2xl bg-cyan-950/30 border border-cyan-800/40 mt-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-2xl bg-slate-50 border border-slate-200 mt-1">
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="text-[11px] font-bold text-cyan-300 flex items-center gap-1">
-                      <Lock className="w-3 h-3 text-cyan-400" />
+                    <label className="text-[11px] font-bold text-slate-700 flex items-center gap-1">
+                      <Lock className="w-3 h-3 text-cyan-600" />
                       <span>Create Password *</span>
                     </label>
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="text-[10px] text-cyan-400 hover:text-cyan-200"
+                      className="text-[10px] text-cyan-600 hover:text-cyan-700 font-semibold"
                     >
                       {showPassword ? 'Hide' : 'Show'}
                     </button>
@@ -845,13 +845,13 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
                       value={signupData.password}
                       onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
                       placeholder="Min 4 characters"
-                      className="w-full px-3 py-2 bg-slate-950 border border-cyan-700/60 rounded-xl text-white text-xs focus:ring-2 focus:ring-cyan-400 focus:outline-none font-mono"
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-900 text-xs focus:ring-2 focus:ring-cyan-500 focus:outline-none font-mono"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-cyan-300 mb-1">
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
                     Confirm Password *
                   </label>
                   <div className="relative">
@@ -861,7 +861,7 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
                       value={signupData.confirmPassword}
                       onChange={(e) => setSignupData({ ...signupData, confirmPassword: e.target.value })}
                       placeholder="Re-enter password"
-                      className="w-full px-3 py-2 bg-slate-950 border border-cyan-700/60 rounded-xl text-white text-xs focus:ring-2 focus:ring-cyan-400 focus:outline-none font-mono"
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-900 text-xs focus:ring-2 focus:ring-cyan-500 focus:outline-none font-mono"
                     />
                   </div>
                 </div>
@@ -884,12 +884,12 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
             </form>
 
             <div className="mt-4 text-center">
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500">
                 Already registered?{' '}
                 <button
                   type="button"
                   onClick={() => setActiveTab('login')}
-                  className="font-semibold text-cyan-400 hover:underline"
+                  className="font-semibold text-cyan-600 hover:underline"
                 >
                   Sign in to your account
                 </button>
@@ -901,7 +901,7 @@ export default function CustomerAuth({ defaultTab = 'login', onAuthSuccess }) {
 
       {/* Footer Info */}
       <div className="w-full max-w-xl mx-auto text-center pb-2">
-        <p className="text-[11px] text-slate-500">
+        <p className="text-[11px] text-slate-400">
           CleanZX Eco-Friendly Doorstep Car Care • Dedicated Hyderabad Apartment Service
         </p>
       </div>
