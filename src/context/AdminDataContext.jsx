@@ -122,9 +122,7 @@ export const AdminDataProvider = ({ children }) => {
           });
         }
         // Ensure plans
-        if (parsed.plans) {
-          parsed.plans = parsed.plans.filter(p => p.id !== 'plan-20-days-premium' && !(p.name && p.name.toLowerCase().trim() === '20 days plan'));
-        } else {
+        if (!parsed.plans || !Array.isArray(parsed.plans)) {
           parsed.plans = INITIAL_PLANS;
         }
         // Ensure integrations settings merged if missing
@@ -1321,6 +1319,9 @@ export const AdminDataProvider = ({ children }) => {
   // Helper to persist plans to backend server
   const syncPlansToBackend = (updatedPlans) => {
     try {
+      // 1. Immediately sync to Supabase Cloud KV store (visible on Vercel and all clients)
+      saveCloudKV('plans', updatedPlans, Date.now());
+      // 2. Also save to local Express backend if running
       fetch('/api/plans', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
