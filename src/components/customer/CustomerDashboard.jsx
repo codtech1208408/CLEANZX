@@ -561,7 +561,7 @@ export default function CustomerDashboard() {
               <Menu className="w-5 h-5" />
             </button>
 
-            <div>
+            <div className="hidden sm:block">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-medium text-slate-400">Customer Dashboard /</span>
                 <span className="text-xs font-bold text-cyan-700 capitalize">

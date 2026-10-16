@@ -279,8 +279,8 @@ export default function AdminPage() {
                 <Menu className="w-5 h-5" />
               </button>
 
-              <div className="flex items-center gap-2">
-                <span className="text-slate-400 text-xs font-medium hidden sm:inline">Admin /</span>
+              <div className="hidden sm:flex items-center gap-2">
+                <span className="text-slate-400 text-xs font-medium">Admin /</span>
                 <h1 className="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
                   <span>{currentNav.label}</span>
                 </h1>

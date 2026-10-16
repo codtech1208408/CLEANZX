@@ -370,10 +370,10 @@ export default function EmployeeDashboard() {
               <Menu className="w-5 h-5" />
             </button>
 
-            <div>
+            <div className="hidden sm:block">
               <div className="flex items-center gap-2 text-xs">
-                <span className="text-slate-500 font-medium hidden sm:inline">Specialist Staff</span>
-                <span className="text-slate-300 hidden sm:inline">/</span>
+                <span className="text-slate-500 font-medium">Specialist Staff</span>
+                <span className="text-slate-300">/</span>
                 <span className="text-cyan-700 font-bold">
                   {navItems.find(t => t.id === activeTab)?.label || 'Dashboard'}
                 </span>
@@ -388,18 +388,18 @@ export default function EmployeeDashboard() {
           </div>
 
           <div className="flex items-center gap-2.5">
-            <div className="px-3 py-1 bg-cyan-50 border border-cyan-200 rounded-xl text-xs font-bold text-cyan-700 flex items-center gap-1.5 shadow-xs">
+            <div className="hidden sm:flex px-3 py-1 bg-cyan-50 border border-cyan-200 rounded-xl text-xs font-bold text-cyan-700 items-center gap-1.5 shadow-xs">
               <CheckCircle2 className="w-3.5 h-3.5 text-cyan-600" />
               <span>{completedJobs}/{totalJobs} Completed</span>
             </div>
 
             <button
               onClick={employeeLogout}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 rounded-xl text-xs font-semibold transition-colors cursor-pointer border border-slate-200"
+              className="flex items-center gap-1.5 px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 rounded-xl text-xs font-semibold transition-colors cursor-pointer border border-slate-200"
               title="Logout"
             >
               <LogOut className="w-3.5 h-3.5" />
-              <span>Logout</span>
+              <span className="hidden sm:inline">Logout</span>
             </button>
           </div>
         </header>
