@@ -1,38 +1,5 @@
 [
   {
-    "id": "plan-mvaw1k8f",
-    "name": "20 days paln",
-    "displayName": "",
-    "category": "Normal",
-    "duration": "1 month",
-    "price": 1999,
-    "price_display": "₹1999",
-    "priceDisplay": "₹1999",
-    "billing_period": "Monthly",
-    "billingPeriod": "Monthly",
-    "cleaning_frequency": "Daily morning cycle (6:00 AM - 11:30 AM)",
-    "cleaningFrequency": "Daily morning cycle (6:00 AM - 11:30 AM)",
-    "included_services": [
-      "Dust Removal",
-      "Exterior Cleaning",
-      "Glass Cleaning",
-      "Tyre Cleaning"
-    ],
-    "includedServices": [
-      "Dust Removal",
-      "Exterior Cleaning",
-      "Glass Cleaning",
-      "Tyre Cleaning"
-    ],
-    "popular": false,
-    "status": "Active",
-    "highlight": "Convenient morning upkeep for apartment cars",
-    "button_label": "Select Plan",
-    "buttonLabel": "Select Plan",
-    "subscriberCount": 0,
-    "published": true
-  },
-  {
     "id": "normal-15-day",
     "name": "15-Day Normal Plan",
     "price": 549,

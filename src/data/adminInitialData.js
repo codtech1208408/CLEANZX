@@ -115,62 +115,27 @@ export const INITIAL_WEBSITE_CONTENT = {
   trustPoints: [...TRUST_POINTS]
 };
 
-export const INITIAL_PLANS = [
-  {
-    id: "plan-mvaw1k8f",
-    name: "20 days paln",
-    displayName: "20 days paln",
-    category: "Normal",
-    duration: "1 month",
-    price: 1999,
-    price_display: "₹1999",
-    priceDisplay: "₹1999",
-    billing_period: "Monthly",
-    billingPeriod: "Monthly",
-    cleaning_frequency: "Daily morning cycle (6:00 AM - 11:30 AM)",
-    cleaningFrequency: "Daily morning cycle (6:00 AM - 11:30 AM)",
-    included_services: [
-      "Dust Removal",
-      "Exterior Cleaning",
-      "Glass Cleaning",
-      "Tyre Cleaning"
-    ],
-    includedServices: [
-      "Dust Removal",
-      "Exterior Cleaning",
-      "Glass Cleaning",
-      "Tyre Cleaning"
-    ],
-    popular: false,
-    status: "Active",
-    highlight: "Convenient morning upkeep for apartment cars",
-    button_label: "Select Plan",
-    buttonLabel: "Select Plan",
-    subscriberCount: 0,
-    published: true
-  },
-  ...SUBSCRIPTION_PLANS.map(plan => {
-    // Add base numeric pricing for admin and billing calculations
-    let basePrice = 899;
-    if (plan.id === 'normal-15-day') basePrice = 549;
-    else if (plan.id === 'normal-monthly') basePrice = 899;
-    else if (plan.id === 'normal-quarterly') basePrice = 2499;
-    else if (plan.id === 'normal-half-yearly') basePrice = 4699;
-    else if (plan.id === 'premium-15-day') basePrice = 849;
-    else if (plan.id === 'premium-monthly') basePrice = 1499;
-    else if (plan.id === 'premium-quarterly') basePrice = 4199;
-    else if (plan.id === 'premium-half-yearly') basePrice = 7999;
+export const INITIAL_PLANS = SUBSCRIPTION_PLANS.map(plan => {
+  // Add base numeric pricing for admin and billing calculations
+  let basePrice = 899;
+  if (plan.id === 'normal-15-day') basePrice = 549;
+  else if (plan.id === 'normal-monthly') basePrice = 899;
+  else if (plan.id === 'normal-quarterly') basePrice = 2499;
+  else if (plan.id === 'normal-half-yearly') basePrice = 4699;
+  else if (plan.id === 'premium-15-day') basePrice = 849;
+  else if (plan.id === 'premium-monthly') basePrice = 1499;
+  else if (plan.id === 'premium-quarterly') basePrice = 4199;
+  else if (plan.id === 'premium-half-yearly') basePrice = 7999;
 
-    return {
-      ...plan,
-      price: basePrice,
-      priceDisplay: `₹${basePrice}`,
-      status: "Active",
-      published: true,
-      subscriberCount: 0
-    };
-  })
-];
+  return {
+    ...plan,
+    price: basePrice,
+    priceDisplay: `₹${basePrice}`,
+    status: "Active",
+    published: true,
+    subscriberCount: 0
+  };
+});
 
 // Clean initial states: Active specialist harish
 export const INITIAL_EMPLOYEES = [

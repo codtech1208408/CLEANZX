@@ -25,7 +25,8 @@ import {
   deleteCloudBooking,
   saveCloudKV,
   fetchAllCloudKV,
-  fetchCloudKV
+  fetchCloudKV,
+  deleteCloudPlan
 } from '../services/supabaseService';
 
 const AdminDataContext = createContext();
@@ -402,23 +403,11 @@ export const AdminDataProvider = ({ children }) => {
           // 4a. Website Content (Banners, Services, Addons, FAQs, Business Info, About, Announcement)
           if (cloudKVMap['website_content']?.data) {
             const cloudContent = cloudKVMap['website_content'].data;
-            const mergedContent = {
-              ...(prev.websiteContent || {}),
-              ...cloudContent
-            };
-            if (cloudContent.banners) mergedContent.banners = cloudContent.banners;
-            if (cloudContent.services) mergedContent.services = cloudContent.services;
-            if (cloudContent.addons) mergedContent.addons = cloudContent.addons;
-            if (cloudContent.faqs) mergedContent.faqs = cloudContent.faqs;
-            if (cloudContent.businessInfo) mergedContent.businessInfo = { ...(prev.websiteContent?.businessInfo || {}), ...cloudContent.businessInfo };
-            if (cloudContent.about) mergedContent.about = { ...(prev.websiteContent?.about || {}), ...cloudContent.about };
-            if (cloudContent.announcement) mergedContent.announcement = { ...(prev.websiteContent?.announcement || {}), ...cloudContent.announcement };
-
             const localStr = JSON.stringify(prev.websiteContent || {});
-            const mergedStr = JSON.stringify(mergedContent);
-            if (localStr !== mergedStr) {
-              nextState.websiteContent = mergedContent;
-              lastCloudWebsiteContentStr.current = mergedStr;
+            const cloudStr = JSON.stringify(cloudContent || {});
+            if (localStr !== cloudStr) {
+              nextState.websiteContent = cloudContent;
+              lastCloudWebsiteContentStr.current = cloudStr;
               updated = true;
             }
           } else if (prev.websiteContent && Object.keys(prev.websiteContent).length > 0) {
@@ -1416,6 +1405,7 @@ export const AdminDataProvider = ({ children }) => {
     setState(prev => {
       const updatedPlans = prev.plans.filter(p => p.id !== id);
       syncPlansToBackend(updatedPlans);
+      deleteCloudPlan(id);
       return {
         ...prev,
         plans: updatedPlans

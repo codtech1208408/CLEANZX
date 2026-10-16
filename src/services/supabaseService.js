@@ -327,3 +327,14 @@ export const fetchCloudKV = async (key) => {
     return null;
   }
 };
+
+export const deleteCloudPlan = async (id) => {
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/plans?id=eq.${id}`, {
+      method: 'DELETE',
+      headers: getHeaders()
+    });
+  } catch (err) {
+    console.warn('[Supabase] Failed to delete plan:', err);
+  }
+};
