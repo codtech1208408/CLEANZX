@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   CreditCard,
   Plus,
@@ -22,15 +22,15 @@ import { useAdminData } from '../../../context/AdminDataContext';
 
 export default function InvoicesTab({ onOpenWhatsApp }) {
   const {
-    invoices,
+    invoices = [],
     generateInvoice,
     recordPayment,
     cancelInvoice,
     deleteInvoice,
     cleanOrphanedInvoices,
-    customers,
-    plans,
-    websiteContent
+    customers = [],
+    plans = [],
+    websiteContent = {}
   } = useAdminData();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -43,7 +43,7 @@ export default function InvoicesTab({ onOpenWhatsApp }) {
 
   // New Invoice Form
   const [invoiceForm, setInvoiceForm] = useState({
-    customerId: customers[0]?.id || '',
+    customerId: customers?.[0]?.id || '',
     planName: 'Monthly Normal Plan',
     baseAmount: 899,
     addonName: '',
@@ -62,19 +62,22 @@ export default function InvoicesTab({ onOpenWhatsApp }) {
   });
 
   // Filter only records belonging to existing active customers
-  const validCustomerIds = new Set(customers.map(c => c.id).filter(Boolean));
-  const validCustomerNames = new Set(customers.map(c => (c.name || '').trim().toLowerCase()).filter(Boolean));
-  const validPhones = new Set(customers.map(c => (c.phone || '').replace(/\D/g, '')).filter(Boolean));
+  const custList = Array.isArray(customers) ? customers : [];
+  const invList = Array.isArray(invoices) ? invoices : [];
+
+  const validCustomerIds = new Set(custList.map(c => c.id).filter(Boolean));
+  const validCustomerNames = new Set(custList.map(c => (c.name || '').trim().toLowerCase()).filter(Boolean));
+  const validPhones = new Set(custList.map(c => (c.phone || '').replace(/\D/g, '')).filter(Boolean));
 
   const isCustActive = (customerId, customerName, phone) => {
-    if (customers.length === 0) return false;
+    if (custList.length === 0) return false;
     if (customerId && validCustomerIds.has(customerId)) return true;
     if (customerName && validCustomerNames.has((customerName || '').trim().toLowerCase())) return true;
     if (phone && validPhones.has((phone || '').replace(/\D/g, ''))) return true;
     return false;
   };
 
-  const activeInvoices = customers.length === 0 ? [] : invoices.filter(inv => isCustActive(inv.customerId, inv.customerName, inv.phone));
+  const activeInvoices = custList.length === 0 ? [] : invList.filter(inv => isCustActive(inv.customerId, inv.customerName, inv.phone));
 
   // Metrics
   const totalInvoiced = activeInvoices.reduce((acc, i) => acc + (i.total || 0), 0);
@@ -83,10 +86,10 @@ export default function InvoicesTab({ onOpenWhatsApp }) {
   const pendingCount = activeInvoices.filter(i => i.status === 'Pending' || i.status === 'Partially Paid').length;
 
   // Detect invoices belonging to deleted customers and auto-purge
-  const orphanedInvoices = invoices.filter(inv => !isCustActive(inv.customerId, inv.customerName, inv.phone));
+  const orphanedInvoices = invList.filter(inv => !isCustActive(inv.customerId, inv.customerName, inv.phone));
 
   useEffect(() => {
-    if (orphanedInvoices.length > 0) {
+    if (orphanedInvoices.length > 0 && typeof cleanOrphanedInvoices === 'function') {
       cleanOrphanedInvoices();
     }
   }, [orphanedInvoices.length]);
@@ -548,7 +551,7 @@ export default function InvoicesTab({ onOpenWhatsApp }) {
                     }}
                     className="w-full p-2.5 border border-slate-300 rounded-xl bg-white"
                   >
-                    {plans.map(p => (
+                    {(plans || []).map(p => (
                       <option key={p.id} value={p.name}>{p.name}</option>
                     ))}
                   </select>
@@ -570,7 +573,7 @@ export default function InvoicesTab({ onOpenWhatsApp }) {
                   <select
                     value={invoiceForm.addonName}
                     onChange={(e) => {
-                      const add = websiteContent.addons.find(a => a.name === e.target.value);
+                      const add = (websiteContent?.addons || []).find(a => a.name === e.target.value);
                       setInvoiceForm({
                         ...invoiceForm,
                         addonName: e.target.value,
@@ -580,7 +583,7 @@ export default function InvoicesTab({ onOpenWhatsApp }) {
                     className="w-full p-2.5 border border-slate-300 rounded-xl bg-white"
                   >
                     <option value="">None</option>
-                    {websiteContent.addons.map(a => (
+                    {(websiteContent?.addons || []).map(a => (
                       <option key={a.id} value={a.name}>{a.name} (₹{a.price})</option>
                     ))}
                   </select>
