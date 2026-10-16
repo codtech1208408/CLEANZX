@@ -1730,59 +1730,104 @@ export default function CustomerDashboard() {
                     <div className="w-full flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
                       <div className="flex items-center gap-2">
                         <QrCode className="w-5 h-5 text-cyan-600" />
-                        <span className="text-sm font-bold text-slate-900">Instant UPI Scan & Pay</span>
+                        <span className="text-sm font-bold text-slate-900">Official Merchant UPI QR</span>
                       </div>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-50 text-cyan-700 border border-cyan-200">
-                        Zero Surcharge
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+                        <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                        Verified Business
                       </span>
                     </div>
 
-                    {/* QR Code Container */}
-                    <div className="p-3 bg-white rounded-3xl shadow-md border-2 border-cyan-400 flex flex-col items-center max-w-[280px]">
+                    {/* Merchant Details Pill */}
+                    <div className="w-full mb-3 px-3.5 py-2 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between text-xs">
+                      <div className="text-left">
+                        <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-semibold">Payee Name</span>
+                        <span className="font-bold text-slate-900">CleanZX Car Care</span>
+                      </div>
+                      <span className="text-[11px] font-bold text-[#5f259f] bg-purple-50 px-2 py-0.5 rounded-lg border border-purple-200">
+                        PhonePe Merchant
+                      </span>
+                    </div>
+
+                    {/* Professional QR Code Container with Frame */}
+                    <div className="p-4 bg-white rounded-3xl shadow-lg border border-slate-200 relative group flex flex-col items-center max-w-[290px] w-full">
+                      {/* Scanner decorative corner accents */}
+                      <div className="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-cyan-500 rounded-tl-lg" />
+                      <div className="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-cyan-500 rounded-tr-lg" />
+                      <div className="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-cyan-500 rounded-bl-lg" />
+                      <div className="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-cyan-500 rounded-br-lg" />
+
                       <img
-                        src="/images/cleanzx-qr-cropped.png"
-                        alt="CleanZX Official UPI QR Code"
-                        className="w-56 h-auto object-contain rounded-2xl"
+                        src="/images/cleanzx-phonepe-qr.png"
+                        alt="CleanZX Official PhonePe UPI QR Code"
+                        className="w-56 h-auto object-contain rounded-xl"
                         onError={(e) => {
-                          e.target.src = '/images/cleanzx-payment-qr.png';
+                          e.target.src = '/images/cleanzx-qr-cropped.png';
                         }}
                       />
+
+                      <div className="mt-2 text-[11px] font-bold text-slate-500 flex items-center gap-1.5">
+                        <span>Scan & Pay from any UPI App</span>
+                      </div>
                     </div>
 
                     {/* Supported Apps Row */}
-                    <div className="flex items-center justify-center gap-3 mt-4 text-[11px] font-semibold text-slate-500">
-                      <span className="px-2 py-1 rounded-lg bg-slate-100 text-slate-700">PhonePe</span>
-                      <span className="px-2 py-1 rounded-lg bg-slate-100 text-slate-700">GPay</span>
-                      <span className="px-2 py-1 rounded-lg bg-slate-100 text-slate-700">Paytm</span>
-                      <span className="px-2 py-1 rounded-lg bg-slate-100 text-slate-700">BHIM</span>
+                    <div className="flex flex-wrap items-center justify-center gap-1.5 mt-4 text-[11px] font-semibold">
+                      <span className="px-2.5 py-1 rounded-xl bg-purple-50 text-[#5f259f] border border-purple-200 font-bold">PhonePe</span>
+                      <span className="px-2.5 py-1 rounded-xl bg-blue-50 text-blue-700 border border-blue-200 font-bold">GPay</span>
+                      <span className="px-2.5 py-1 rounded-xl bg-sky-50 text-sky-700 border border-sky-200 font-bold">Paytm</span>
+                      <span className="px-2.5 py-1 rounded-xl bg-orange-50 text-orange-700 border border-orange-200 font-bold">BHIM</span>
+                      <span className="px-2.5 py-1 rounded-xl bg-slate-100 text-slate-700 border border-slate-200">Any UPI</span>
                     </div>
 
-                    {/* Official UPI ID */}
+                    {/* Official UPI ID & Actions */}
                     <div className="mt-4 w-full p-3 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                       <div className="text-left">
-                        <div className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Official UPI ID / VPA</div>
+                        <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">UPI ID / VPA</div>
                         <div className="text-xs font-mono font-bold text-cyan-800">9912234252-4@ybl</div>
                       </div>
-                      <button
-                        onClick={() => {
-                          navigator.clipboard?.writeText('9912234252-4@ybl');
-                          showNotice('UPI ID (9912234252-4@ybl) copied to clipboard!');
-                        }}
-                        className="px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 text-[11px] font-semibold flex items-center gap-1 border border-slate-200 cursor-pointer transition-colors"
-                        title="Copy UPI ID"
-                      >
-                        <Copy className="w-3.5 h-3.5" />
-                        <span>Copy</span>
-                      </button>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => {
+                            navigator.clipboard?.writeText('9912234252-4@ybl');
+                            showNotice('UPI ID (9912234252-4@ybl) copied to clipboard!');
+                          }}
+                          className="px-2.5 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 text-[11px] font-semibold flex items-center gap-1 border border-slate-200 cursor-pointer transition-colors shadow-2xs"
+                          title="Copy UPI ID"
+                        >
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>Copy</span>
+                        </button>
+                        <a
+                          href="/images/cleanzx-phonepe-qr.png"
+                          download="CleanZX-PhonePe-QR.png"
+                          className="px-2.5 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 text-[11px] font-semibold flex items-center gap-1 border border-slate-200 cursor-pointer transition-colors shadow-2xs"
+                          title="Download QR Image"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          <span className="hidden sm:inline">Save</span>
+                        </a>
+                      </div>
                     </div>
 
-                    <button
-                      onClick={() => openPaymentCheckout({ amount: totalBalanceDue > 0 ? totalBalanceDue : activePlanPrice })}
-                      className="mt-4 w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 hover:from-emerald-500 hover:to-cyan-400 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 cursor-pointer transition-all"
-                    >
-                      <QrCode className="w-4 h-4" />
-                      <span>Scan & Confirm Payment</span>
-                    </button>
+                    {/* Mobile Direct Pay or Confirm Button */}
+                    <div className="mt-4 w-full space-y-2">
+                      <a
+                        href="upi://pay?pa=9912234252-4@ybl&pn=CleanZX%20Car%20Care&cu=INR"
+                        className="sm:hidden w-full py-2.5 rounded-2xl bg-[#5f259f] hover:bg-[#4d1d82] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        <span>Pay via Installed UPI App</span>
+                      </a>
+
+                      <button
+                        onClick={() => openPaymentCheckout({ amount: totalBalanceDue > 0 ? totalBalanceDue : activePlanPrice })}
+                        className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 hover:from-emerald-500 hover:to-cyan-400 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 cursor-pointer transition-all"
+                      >
+                        <QrCode className="w-4 h-4" />
+                        <span>Confirm Payment with UTR</span>
+                      </button>
+                    </div>
                   </div>
 
                   {/* Safety & Trust Box */}
