@@ -214,8 +214,8 @@ export const AdminDataProvider = ({ children }) => {
         if (Array.isArray(parsed.dailySchedules)) {
           parsed.dailySchedules = parsed.dailySchedules.filter(s => isCustomerActive(s.customerId, s.customerName, s.phone));
         }
-        if (Array.isArray(parsed.bookings)) {
-          parsed.bookings = parsed.bookings.filter(b => isCustomerActive(b.customerId, b.customer_name, b.phone_number));
+        if (!Array.isArray(parsed.bookings) || parsed.bookings.length === 0) {
+          parsed.bookings = INITIAL_BOOKINGS;
         }
         if (Array.isArray(parsed.subscriptionChanges) && Array.isArray(parsed.subscriptions)) {
           const validSubIds = new Set(parsed.subscriptions.map(s => s.id));
@@ -276,15 +276,15 @@ export const AdminDataProvider = ({ children }) => {
       const cleanedInvoices = (prev.invoices || []).filter(inv => isCustomerActive(inv.customerId, inv.customerName, inv.phone));
       const cleanedSubs = (prev.subscriptions || []).filter(s => isCustomerActive(s.customerId, s.customerName, s.phone));
       const cleanedSchedules = (prev.dailySchedules || []).filter(s => isCustomerActive(s.customerId, s.customerName, s.phone));
-      const cleanedBookings = (prev.bookings || []).filter(b => isCustomerActive(b.customerId, b.customer_name, b.phone_number));
       const validSubIds = new Set(cleanedSubs.map(s => s.id));
       const cleanedChanges = (prev.subscriptionChanges || []).filter(sc => validSubIds.has(sc.subscriptionId));
+      const effectiveBookings = (prev.bookings && prev.bookings.length > 0) ? prev.bookings : INITIAL_BOOKINGS;
 
       const hasChange =
         cleanedInvoices.length !== (prev.invoices || []).length ||
         cleanedSubs.length !== (prev.subscriptions || []).length ||
         cleanedSchedules.length !== (prev.dailySchedules || []).length ||
-        cleanedBookings.length !== (prev.bookings || []).length ||
+        effectiveBookings.length !== (prev.bookings || []).length ||
         cleanedChanges.length !== (prev.subscriptionChanges || []).length;
 
       if (!hasChange) return prev;
@@ -294,7 +294,7 @@ export const AdminDataProvider = ({ children }) => {
         invoices: cleanedInvoices,
         subscriptions: cleanedSubs,
         dailySchedules: cleanedSchedules,
-        bookings: cleanedBookings,
+        bookings: effectiveBookings,
         subscriptionChanges: cleanedChanges
       };
 
@@ -352,6 +352,7 @@ export const AdminDataProvider = ({ children }) => {
   const lastCloudSchedulesStr = useRef('');
   const lastCloudInvoicesStr = useRef('');
   const lastCloudIntegrationsStr = useRef('');
+  const lastCloudBookingsStr = useRef('');
 
   // Live Cloud Synchronization with Supabase
   // Ensures changes made on localhost show on Vercel, and changes made on Vercel show on localhost
@@ -400,14 +401,26 @@ export const AdminDataProvider = ({ children }) => {
           }
         }
 
-        // 3. Bookings Table
-        if (cloudBookings && Array.isArray(cloudBookings)) {
-          const localStr = JSON.stringify((prev.bookings || []).map(b => b.id));
-          const cloudStr = JSON.stringify(cloudBookings.map(b => b.id));
+        // 3. Bookings Table & Cloud KV
+        let mergedBookings = (cloudBookings && Array.isArray(cloudBookings) && cloudBookings.length > 0) ? cloudBookings : null;
+        if (cloudKVMap && cloudKVMap['bookings']?.data && Array.isArray(cloudKVMap['bookings'].data) && cloudKVMap['bookings'].data.length > 0) {
+          if (!mergedBookings || mergedBookings.length === 0) {
+            mergedBookings = cloudKVMap['bookings'].data;
+          }
+        }
+        if (mergedBookings && Array.isArray(mergedBookings) && mergedBookings.length > 0) {
+          const localStr = JSON.stringify((prev.bookings || []).map(b => ({ id: b.id, status: b.status, emp: b.assigned_employee })));
+          const cloudStr = JSON.stringify(mergedBookings.map(b => ({ id: b.id, status: b.status, emp: b.assigned_employee })));
           if (localStr !== cloudStr) {
-            nextState.bookings = cloudBookings;
+            nextState.bookings = mergedBookings;
+            lastCloudBookingsStr.current = cloudStr;
             updated = true;
           }
+        } else if ((!prev.bookings || prev.bookings.length === 0) && INITIAL_BOOKINGS.length > 0) {
+          nextState.bookings = INITIAL_BOOKINGS;
+          lastCloudBookingsStr.current = JSON.stringify(INITIAL_BOOKINGS);
+          updated = true;
+          saveCloudKV('bookings', INITIAL_BOOKINGS, Date.now());
         }
 
         // 4. Universal Cloud KV Store (Website Content, Plans, Subscriptions, Schedules, Invoices, Integrations)
@@ -583,6 +596,19 @@ export const AdminDataProvider = ({ children }) => {
       saveCloudKV('integrations_settings', state.integrationsSettings, Date.now());
     }
   }, [state.integrationsSettings]);
+
+  useEffect(() => {
+    if (!state.bookings || state.bookings.length === 0) return;
+    const currentStr = JSON.stringify(state.bookings.map(b => ({ id: b.id, status: b.status, emp: b.assigned_employee })));
+    if (!lastCloudBookingsStr.current) {
+      lastCloudBookingsStr.current = currentStr;
+      return;
+    }
+    if (lastCloudBookingsStr.current !== currentStr) {
+      lastCloudBookingsStr.current = currentStr;
+      saveCloudKV('bookings', state.bookings, Date.now());
+    }
+  }, [state.bookings]);
 
   useEffect(() => {
     // Initial sync
@@ -1710,13 +1736,15 @@ export const AdminDataProvider = ({ children }) => {
   // 5. BOOKING MANAGEMENT
   // ==========================================
   const addBooking = (bookingData) => {
+    const bookingId = bookingData.id || ('BK-' + new Date().getFullYear() + '-' + Math.floor(100 + Math.random() * 900));
     const newBooking = {
-      id: 'BK-' + new Date().getFullYear() + '-' + Math.floor(100 + Math.random() * 900),
-      createdAt: new Date().toISOString(),
-      status: 'Pending',
-      assigned_employee: 'Unassigned',
+      id: bookingId,
+      createdAt: bookingData.createdAt || new Date().toISOString(),
+      status: bookingData.status || 'Pending',
+      assigned_employee: bookingData.assigned_employee || 'Unassigned',
       ...bookingData
     };
+    newBooking.id = bookingId;
 
     setState(prev => {
       // Find or register customer
@@ -1750,11 +1778,13 @@ export const AdminDataProvider = ({ children }) => {
       }
 
       newBooking.customerId = assignedCustId;
+      const updatedBookings = [newBooking, ...(prev.bookings || []).filter(b => b.id !== newBooking.id)];
+      saveCloudKV('bookings', updatedBookings, Date.now());
 
       return {
         ...prev,
         customers: updatedCustomers,
-        bookings: [newBooking, ...prev.bookings]
+        bookings: updatedBookings
       };
     });
     createCloudBooking(newBooking);
@@ -1763,29 +1793,37 @@ export const AdminDataProvider = ({ children }) => {
 
   const deleteBooking = (bookingId) => {
     deleteCloudBooking(bookingId);
-    setState(prev => ({
-      ...prev,
-      bookings: prev.bookings.filter(b => b.id !== bookingId),
-      dailySchedules: prev.dailySchedules.filter(s => s.bookingId !== bookingId && s.id !== 'SCH-' + bookingId)
-    }));
+    setState(prev => {
+      const updatedBookings = (prev.bookings || []).filter(b => b.id !== bookingId);
+      saveCloudKV('bookings', updatedBookings, Date.now());
+      return {
+        ...prev,
+        bookings: updatedBookings,
+        dailySchedules: prev.dailySchedules.filter(s => s.bookingId !== bookingId && s.id !== 'SCH-' + bookingId)
+      };
+    });
   };
 
   const updateBookingStatus = (id, status, notes) => {
-    setState(prev => ({
-      ...prev,
-      bookings: prev.bookings.map(b =>
+    setState(prev => {
+      const updatedBookings = prev.bookings.map(b =>
         b.id === id ? { ...b, status, ...(notes !== undefined ? { adminNotes: notes } : {}) } : b
-      ),
-      dailySchedules: prev.dailySchedules.map(s =>
-        (s.bookingId === id || s.id === 'SCH-' + id)
-          ? {
-              ...s,
-              status: status === 'Confirmed' ? 'Assigned' : status,
-              ...(notes !== undefined ? { notes } : {})
-            }
-          : s
-      )
-    }));
+      );
+      saveCloudKV('bookings', updatedBookings, Date.now());
+      return {
+        ...prev,
+        bookings: updatedBookings,
+        dailySchedules: prev.dailySchedules.map(s =>
+          (s.bookingId === id || s.id === 'SCH-' + id)
+            ? {
+                ...s,
+                status: status === 'Confirmed' ? 'Assigned' : status,
+                ...(notes !== undefined ? { notes } : {})
+              }
+            : s
+        )
+      };
+    });
   };
 
   const assignBookingEmployee = (id, employeeName) => {
@@ -1796,6 +1834,7 @@ export const AdminDataProvider = ({ children }) => {
       const updatedBookings = prev.bookings.map(b =>
         b.id === id ? { ...b, assigned_employee: employeeName, status: b.status === 'Pending' ? 'Confirmed' : b.status } : b
       );
+      saveCloudKV('bookings', updatedBookings, Date.now());
 
       let updatedSchedules = [...prev.dailySchedules];
       const schedIndex = updatedSchedules.findIndex(s => s.bookingId === id || s.id === 'SCH-' + id);

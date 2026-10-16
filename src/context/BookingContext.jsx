@@ -103,6 +103,9 @@ export const BookingProvider = ({ children }) => {
         setBackendAvailable(true);
         if (json.data) {
           setEnquiries(prev => [json.data, ...prev.filter(e => e.id !== json.data.id)]);
+          if (addBooking) {
+            addBooking(json.data);
+          }
         }
         return {
           success: true,

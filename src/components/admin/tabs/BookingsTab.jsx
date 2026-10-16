@@ -34,20 +34,8 @@ export default function BookingsTab({ onOpenWhatsApp }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
 
-  // Filter only records belonging to existing active customers
-  const validCustIds = new Set(customers.map(c => c.id).filter(Boolean));
-  const validCustNames = new Set(customers.map(c => (c.name || '').trim().toLowerCase()).filter(Boolean));
-  const validCustPhones = new Set(customers.map(c => (c.phone || '').replace(/\D/g, '')).filter(Boolean));
-
-  const isCustActive = (customerId, customerName, phone) => {
-    if (customers.length === 0) return false;
-    if (customerId && validCustIds.has(customerId)) return true;
-    if (customerName && validCustNames.has((customerName || '').trim().toLowerCase())) return true;
-    if (phone && validCustPhones.has((phone || '').replace(/\D/g, ''))) return true;
-    return false;
-  };
-
-  const activeBookings = customers.length === 0 ? [] : bookings.filter(b => isCustActive(b.customerId, b.customer_name, b.phone_number));
+  // All active bookings and enquiries
+  const activeBookings = Array.isArray(bookings) ? bookings : [];
 
   // Reschedule Modal State
   const [reschedulingBooking, setReschedulingBooking] = useState(null);
