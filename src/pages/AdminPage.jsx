@@ -279,12 +279,6 @@ export default function AdminPage() {
                 <Menu className="w-5 h-5" />
               </button>
 
-              <img
-                src="/images/admin-brand-logo.jpeg"
-                alt="CLEANZX Logo"
-                className="h-9 w-auto object-contain rounded-lg p-0.5 bg-black lg:hidden"
-              />
-
               <div className="flex items-center gap-2">
                 <span className="text-slate-400 text-xs font-medium hidden sm:inline">Admin /</span>
                 <h1 className="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
