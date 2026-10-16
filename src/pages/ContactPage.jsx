@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
 import { Phone, MessageSquare, MapPin, Clock, Send, CheckCircle2, Sparkles, Shield, ChevronDown, ChevronUp, Mail } from 'lucide-react';
 import { BUSINESS_INFO, FAQS } from '../data/websiteData';
+import { useAdminData } from '../context/AdminDataContext';
 import { InstagramIcon, FacebookIcon } from '../components/SocialIcons';
 
 export default function ContactPage() {
+  const { websiteContent } = useAdminData();
+  const businessInfo = websiteContent?.businessInfo || BUSINESS_INFO;
+  const dynamicFaqs = websiteContent?.faqs?.filter(f => f.published) || FAQS;
+
   const [formData, setFormData] = useState({
     name: '',
     phone: '',

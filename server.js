@@ -1,8 +1,11 @@
+import dotenv from 'dotenv';
+dotenv.config();
 import express from 'express';
 import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import nodemailer from 'nodemailer';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -16,11 +19,32 @@ app.use(express.json());
 const DATA_DIR = path.join(__dirname, 'server', 'data');
 const ENQUIRIES_FILE = path.join(DATA_DIR, 'enquiries.json');
 const PLANS_FILE = path.join(DATA_DIR, 'plans.json');
+const ADMIN_AUTH_FILE = path.join(DATA_DIR, 'admin_auth.json');
 
 // Ensure data directory and files exist
 if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 }
+
+// Nodemailer Transporter Configuration using .env
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  port: parseInt(process.env.SMTP_PORT || '587'),
+  secure: String(process.env.SMTP_PORT) === '465',
+  auth: {
+    user: process.env.SMTP_USER || 'cleanzxcare@gmail.com',
+    pass: (process.env.SMTP_PASSWORD || '').replace(/\s+/g, '')
+  }
+});
+
+// Verify SMTP connection on server startup
+transporter.verify((err) => {
+  if (err) {
+    console.error('❌ [SMTP] Connection verification failed:', err.message);
+  } else {
+    console.log('✅ [SMTP] Connected and verified via ' + (process.env.SMTP_USER || 'cleanzxcare@gmail.com'));
+  }
+});
 
 // Initial default plans data conforming to CLEANZX specification
 const defaultPlans = [
@@ -304,6 +328,9 @@ if (!fs.existsSync(ENQUIRIES_FILE)) {
 // Helpers
 const readJSON = (filePath, fallback = []) => {
   try {
+    if (!fs.existsSync(filePath)) {
+      return fallback;
+    }
     const raw = fs.readFileSync(filePath, 'utf-8');
     return JSON.parse(raw);
   } catch (err) {
@@ -463,6 +490,363 @@ app.patch('/api/enquiries/:id', (req, res) => {
 
   writeJSON(ENQUIRIES_FILE, enquiries);
   res.json({ success: true, message: 'Enquiry updated successfully', data: enquiries[index] });
+});
+
+// ==========================================
+// ADMIN AUTH & PASSWORD RECOVERY (NODEMAILER SMTP)
+// ==========================================
+
+// In-memory admin authentication store (prevents file watcher reload triggers on OTP generation)
+let currentAdminAuth = readJSON(ADMIN_AUTH_FILE, {
+  adminPassword: 'cleanzx@admin2026',
+  adminEmail: process.env.ADMIN_EMAIL || 'cleanzxcare@gmail.com',
+  activeOtp: null,
+  otpExpiresAt: null
+});
+
+const getAdminAuth = () => {
+  return currentAdminAuth;
+};
+
+const saveAdminAuth = (data, persistToDisk = false) => {
+  currentAdminAuth = { ...currentAdminAuth, ...data };
+  // Only persist to disk when explicitly instructed (e.g. password change)
+  if (persistToDisk) {
+    try {
+      const toPersist = {
+        adminPassword: currentAdminAuth.adminPassword,
+        adminEmail: currentAdminAuth.adminEmail
+      };
+      writeJSON(ADMIN_AUTH_FILE, toPersist);
+    } catch (err) {
+      console.error('Error persisting admin auth:', err);
+    }
+  }
+};
+
+// Send OTP Email using cleanzxcare@gmail.com
+const sendOtpEmail = async (toEmail, otpCode) => {
+  const mailOptions = {
+    from: process.env.SMTP_FROM || `"CLEANZX Care" <${process.env.SMTP_USER}>`,
+    to: toEmail,
+    subject: `🔐 ${otpCode} is your CLEANZX Admin Password Reset Code`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #0f172a; margin: 0; padding: 24px; color: #334155; }
+          .container { max-width: 540px; margin: 0 auto; background: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); }
+          .header { background: linear-gradient(135deg, #090e1a 0%, #082f49 100%); padding: 32px 24px; text-align: center; }
+          .logo-text { color: #38bdf8; font-size: 26px; font-weight: 900; letter-spacing: 2px; margin: 0; }
+          .subtitle { color: #94a3b8; font-size: 13px; margin-top: 4px; }
+          .content { padding: 32px 28px; }
+          .title { font-size: 20px; font-weight: 800; color: #0f172a; margin-top: 0; margin-bottom: 12px; }
+          .desc { font-size: 14px; line-height: 1.6; color: #475569; margin-bottom: 24px; }
+          .otp-box { background: #f0fdf4; border: 2px dashed #22c55e; border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 24px; }
+          .otp-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #15803d; margin-bottom: 8px; }
+          .otp-code { font-family: 'Courier New', Courier, monospace; font-size: 38px; font-weight: 900; letter-spacing: 10px; color: #0f172a; margin: 0; }
+          .badge { display: inline-block; background: #e0f2fe; color: #0369a1; font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 9999px; margin-top: 8px; }
+          .warning { background: #fff7ed; border-left: 4px solid #f97316; padding: 12px 16px; border-radius: 8px; font-size: 12px; color: #9a3412; line-height: 1.5; margin-bottom: 24px; }
+          .footer { background: #f8fafc; padding: 20px 28px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #64748b; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1 class="logo-text">CLEANZX</h1>
+            <p class="subtitle">Operations & Security Authentication Service</p>
+          </div>
+          <div class="content">
+            <h2 class="title">Admin Password Reset Request</h2>
+            <p class="desc">A password reset was requested for the CLEANZX Administrator account. Enter the verification code below on the reset page:</p>
+            <div class="otp-box">
+              <div class="otp-label">6-Digit Verification Code</div>
+              <div class="otp-code">${otpCode}</div>
+              <div class="badge">Valid for 15 minutes</div>
+            </div>
+            <div class="warning">
+              <strong>Security Alert:</strong> If you did not make this request, you can safely ignore this email. Your current password remains active and secure.
+            </div>
+            <p class="desc" style="font-size: 12px; color: #94a3b8; margin-bottom: 0;">
+              CLEANZX Automated Care Systems • Mehdipatnam, Hyderabad<br/>
+              Support: 9642734252 | cleanzxcare@gmail.com
+            </p>
+          </div>
+          <div class="footer">
+            © ${new Date().getFullYear()} CLEANZX. Confidential security transmission.
+          </div>
+        </div>
+      </body>
+      </html>
+    `
+  };
+  return transporter.sendMail(mailOptions);
+};
+
+// Send Confirmation Email
+const sendPasswordChangedEmail = async (toEmail) => {
+  const mailOptions = {
+    from: process.env.SMTP_FROM || `"CLEANZX Care" <${process.env.SMTP_USER}>`,
+    to: toEmail,
+    subject: `✅ CLEANZX Admin - Password Successfully Changed`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, sans-serif; background-color: #0f172a; padding: 24px; margin: 0;">
+        <div style="max-width: 500px; margin: 0 auto; background: #ffffff; border-radius: 16px; padding: 32px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <span style="font-size: 24px; font-weight: 900; color: #0284c7;">CLEANZX</span>
+          </div>
+          <h2 style="color: #0f172a; margin-top: 0; font-size: 18px;">Admin Password Updated</h2>
+          <p style="color: #475569; font-size: 14px; line-height: 1.6;">
+            Your administrator password was reset and updated successfully on <strong>${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</strong> IST.
+          </p>
+          <p style="color: #475569; font-size: 14px; line-height: 1.6;">
+            You can now access your CLEANZX operations dashboard with your new credentials.
+          </p>
+          <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #94a3b8;">
+            CLEANZX Operations Portal • cleanzxcare@gmail.com
+          </div>
+        </div>
+      </body>
+      </html>
+    `
+  };
+  return transporter.sendMail(mailOptions);
+};
+
+// 1. Request OTP
+app.post('/api/admin/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    const normalized = (email || '').trim().toLowerCase();
+    const adminEmail = (process.env.ADMIN_EMAIL || 'cleanzxcare@gmail.com').toLowerCase();
+
+    if (!normalized) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please enter your registered administrator email.'
+      });
+    }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = Date.now() + 15 * 60 * 1000; // 15 mins
+
+    const authData = getAdminAuth();
+    authData.activeOtp = otp;
+    authData.otpExpiresAt = expiresAt;
+    authData.otpEmail = adminEmail;
+    saveAdminAuth(authData, false); // pure in-memory, no disk writes
+
+    // Send email via nodemailer SMTP
+    await sendOtpEmail(adminEmail, otp);
+    console.log(`[SMTP] Successfully sent password reset OTP (${otp}) to ${adminEmail}`);
+
+    return res.json({
+      success: true,
+      message: `A 6-digit reset code has been sent to ${adminEmail}. Please check your inbox.`,
+      targetEmail: adminEmail
+    });
+  } catch (err) {
+    console.error('[SMTP] Failed to send password reset email:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to send reset email: ' + (err.message || 'SMTP service error')
+    });
+  }
+});
+
+// 2. Verify OTP
+app.post('/api/admin/verify-otp', (req, res) => {
+  const { otp } = req.body;
+  const authData = getAdminAuth();
+
+  if (!authData.activeOtp || String(authData.activeOtp) !== String(otp || '').trim()) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid verification code. Please check the OTP sent to your email.'
+    });
+  }
+
+  if (Date.now() > authData.otpExpiresAt) {
+    return res.status(400).json({
+      success: false,
+      message: 'This verification code has expired (15-minute limit). Please request a new code.'
+    });
+  }
+
+  return res.json({
+    success: true,
+    message: 'Verification code confirmed.'
+  });
+});
+
+// 3. Reset Password
+app.post('/api/admin/reset-password', async (req, res) => {
+  try {
+    const { otp, newPassword } = req.body;
+    const authData = getAdminAuth();
+
+    if (!authData.activeOtp || String(authData.activeOtp) !== String(otp || '').trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or missing verification code.'
+      });
+    }
+
+    if (Date.now() > authData.otpExpiresAt) {
+      return res.status(400).json({
+        success: false,
+        message: 'Verification code has expired. Please request a new code.'
+      });
+    }
+
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'New password must be at least 6 characters.'
+      });
+    }
+
+    authData.adminPassword = newPassword;
+    authData.activeOtp = null;
+    authData.otpExpiresAt = null;
+    saveAdminAuth(authData, true); // persist to disk only when password changes
+
+    // Send confirmation email asynchronously
+    try {
+      await sendPasswordChangedEmail(authData.adminEmail || 'cleanzxcare@gmail.com');
+    } catch (mailErr) {
+      console.warn('[SMTP] Confirmation email error:', mailErr.message);
+    }
+
+    return res.json({
+      success: true,
+      message: 'Admin password updated successfully! You can now log in with your new password.',
+      newPassword
+    });
+  } catch (err) {
+    console.error('[API] Reset password error:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Error updating password: ' + err.message
+    });
+  }
+});
+
+// 4. Auth Status endpoint for sync
+app.get('/api/admin/auth-status', (req, res) => {
+  const authData = getAdminAuth();
+  res.json({
+    success: true,
+    adminEmail: authData.adminEmail || process.env.ADMIN_EMAIL || 'cleanzxcare@gmail.com',
+    adminPassword: authData.adminPassword || 'cleanzx@admin2026'
+  });
+});
+
+// ==========================================
+// Customer & Employee Password Recovery OTP
+// ==========================================
+const passwordResetOtps = new Map();
+
+app.post('/api/auth/send-recovery-otp', async (req, res) => {
+  try {
+    const { identifier, email, name } = req.body;
+    const targetKey = (identifier || email || '').trim().toLowerCase();
+
+    if (!targetKey) {
+      return res.status(400).json({
+        success: false,
+        message: 'A valid mobile number, username, or email is required.'
+      });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = Date.now() + 15 * 60 * 1000;
+
+    passwordResetOtps.set(targetKey, { otp, expiresAt });
+    if (email) {
+      passwordResetOtps.set(email.trim().toLowerCase(), { otp, expiresAt });
+    }
+
+    let emailSent = false;
+    const targetEmail = (email || (targetKey.includes('@') ? targetKey : '')).trim().toLowerCase();
+
+    if (targetEmail && targetEmail.includes('@')) {
+      try {
+        await transporter.sendMail({
+          from: process.env.SMTP_FROM || 'CLEANZX Care <cleanzxcare@gmail.com>',
+          to: targetEmail,
+          subject: `CLEANZX Password Reset Verification Code: ${otp}`,
+          html: `
+            <div style="font-family: -apple-system, BlinkMacSystemFont, sans-serif; background-color: #0f172a; padding: 24px; color: #f8fafc;">
+              <div style="max-width: 480px; margin: 0 auto; background: #1e293b; border-radius: 16px; padding: 28px; border: 1px solid #334155; text-align: center;">
+                <div style="font-size: 24px; font-weight: 900; color: #38bdf8; margin-bottom: 8px;">CLEANZX</div>
+                <p style="color: #94a3b8; font-size: 13px; margin: 0 0 20px 0;">Doorstep Car Care Automation</p>
+                <h3 style="color: #ffffff; margin: 0 0 8px 0; font-size: 18px;">Password Recovery Code</h3>
+                <p style="color: #cbd5e1; font-size: 14px; margin-bottom: 24px;">
+                  Hello ${name || 'User'}, enter the 6-digit verification code below to reset your password:
+                </p>
+                <div style="margin: 20px 0;">
+                  <span style="font-size: 32px; font-weight: 900; letter-spacing: 6px; color: #38bdf8; background: #0f172a; padding: 12px 24px; border-radius: 12px; border: 1px solid #0284c7; font-family: monospace;">
+                    ${otp}
+                  </span>
+                </div>
+                <p style="color: #94a3b8; font-size: 12px; margin-top: 24px;">
+                  This code is valid for 15 minutes. If you did not request this, your account is safe and you can ignore this email.
+                </p>
+              </div>
+            </div>
+          `
+        });
+        emailSent = true;
+        console.log(`[SMTP] Recovery OTP (${otp}) sent successfully to ${targetEmail}`);
+      } catch (mailErr) {
+        console.error('[SMTP] Email delivery error:', mailErr.message);
+      }
+    }
+
+    return res.json({
+      success: true,
+      otp,
+      emailSent,
+      targetEmail: emailSent ? targetEmail : null,
+      message: emailSent
+        ? `A 6-digit verification code has been sent to your registered email (${targetEmail}).`
+        : `Verification code generated.`
+    });
+  } catch (err) {
+    console.error('[SMTP] Failed to process recovery OTP:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to generate verification OTP: ' + (err.message || 'Server error')
+    });
+  }
+});
+
+app.post('/api/auth/verify-recovery-otp', (req, res) => {
+  const { identifier, email, otp } = req.body;
+  const targetKey = (identifier || email || '').trim().toLowerCase();
+  const record = passwordResetOtps.get(targetKey) || (email ? passwordResetOtps.get(email.trim().toLowerCase()) : null);
+
+  if (!record || String(record.otp) !== String(otp).trim()) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid 6-digit verification code. Please enter the correct OTP.'
+    });
+  }
+
+  if (Date.now() > record.expiresAt) {
+    return res.status(400).json({
+      success: false,
+      message: 'Verification code has expired. Please request a new code.'
+    });
+  }
+
+  return res.json({ success: true, message: 'Verification code confirmed.' });
 });
 
 app.listen(PORT, () => {

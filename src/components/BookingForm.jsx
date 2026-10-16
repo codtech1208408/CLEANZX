@@ -4,7 +4,11 @@ import { useBooking } from '../context/BookingContext';
 import { OPTIONAL_ADDONS, SERVICE_TIME_SLOTS, BUSINESS_INFO } from '../data/websiteData';
 
 export default function BookingForm({ initialPlan = null, title, subtitle }) {
-  const { selectedPlan, setSelectedPlan, selectedAddons, toggleAddon, submitEnquiry, backendAvailable } = useBooking();
+  const { plans, selectedPlan, setSelectedPlan, selectedAddons, toggleAddon, submitEnquiry, backendAvailable } = useBooking();
+
+  const activePlans = (plans && plans.length > 0) ? plans.filter(p => p.status !== 'Inactive') : [];
+  const normalPlans = activePlans.filter(p => p.category === 'Normal');
+  const premiumPlans = activePlans.filter(p => p.category === 'Premium');
 
   const [formData, setFormData] = useState({
     customer_name: '',
@@ -469,18 +473,38 @@ export default function BookingForm({ initialPlan = null, title, subtitle }) {
                     onChange={handleChange}
                     className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#1677FF] transition-all cursor-pointer font-medium"
                   >
-                    <optgroup label="Normal Category">
-                      <option value="15-Day Normal Plan">15-Day Normal Plan (15 Days)</option>
-                      <option value="Monthly Normal Plan">Monthly Normal Plan (1 Month)</option>
-                      <option value="Quarterly Normal Plan">Quarterly Normal Plan (3 Months)</option>
-                      <option value="Half-Yearly Normal Plan">Half-Yearly Normal Plan (6 Months)</option>
-                    </optgroup>
-                    <optgroup label="Premium Category">
-                      <option value="15-Day Premium Plan">15-Day Premium Plan (15 Days)</option>
-                      <option value="Monthly Premium Plan">Monthly Premium Plan (1 Month)</option>
-                      <option value="Quarterly Premium Plan">Quarterly Premium Plan (3 Months)</option>
-                      <option value="Half-Yearly Premium Plan">Half-Yearly Premium Plan (6 Months)</option>
-                    </optgroup>
+                    {normalPlans.length > 0 ? (
+                      <optgroup label="Normal Category">
+                        {normalPlans.map(p => (
+                          <option key={p.id} value={p.name}>
+                            {p.displayName || p.name} ({p.duration || p.billingPeriod || 'Standard'}) {p.price ? `- ₹${p.price}` : ''}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ) : (
+                      <optgroup label="Normal Category">
+                        <option value="15-Day Normal Plan">15-Day Normal Plan (15 Days)</option>
+                        <option value="Monthly Normal Plan">Monthly Normal Plan (1 Month)</option>
+                        <option value="Quarterly Normal Plan">Quarterly Normal Plan (3 Months)</option>
+                        <option value="Half-Yearly Normal Plan">Half-Yearly Normal Plan (6 Months)</option>
+                      </optgroup>
+                    )}
+                    {premiumPlans.length > 0 ? (
+                      <optgroup label="Premium Category">
+                        {premiumPlans.map(p => (
+                          <option key={p.id} value={p.name}>
+                            {p.displayName || p.name} ({p.duration || p.billingPeriod || 'Standard'}) {p.price ? `- ₹${p.price}` : ''}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ) : (
+                      <optgroup label="Premium Category">
+                        <option value="15-Day Premium Plan">15-Day Premium Plan (15 Days)</option>
+                        <option value="Monthly Premium Plan">Monthly Premium Plan (1 Month)</option>
+                        <option value="Quarterly Premium Plan">Quarterly Premium Plan (3 Months)</option>
+                        <option value="Half-Yearly Premium Plan">Half-Yearly Premium Plan (6 Months)</option>
+                      </optgroup>
+                    )}
                   </select>
                   {errors.preferred_plan && (
                     <p className="text-red-500 text-xs mt-1">{errors.preferred_plan}</p>

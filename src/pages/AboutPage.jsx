@@ -2,8 +2,12 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Sparkles, ShieldCheck, HeartHandshake, Eye, Target, MapPin, Clock, Phone, MessageSquare, ArrowRight, CheckCircle2, Mail } from 'lucide-react';
 import { BUSINESS_INFO } from '../data/websiteData';
+import { useAdminData } from '../context/AdminDataContext';
 
 export default function AboutPage() {
+  const { websiteContent } = useAdminData();
+  const aboutData = websiteContent?.about || {};
+  const businessInfo = websiteContent?.businessInfo || BUSINESS_INFO;
   const values = [
     {
       title: "Convenience",
@@ -44,11 +48,10 @@ export default function AboutPage() {
           <span>About CLEANZX</span>
         </div>
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 font-heading max-w-4xl mx-auto leading-tight">
-          A Cleaner Car, <br />
-          <span className="text-[#1677FF]">Without Leaving Home</span>
+          {aboutData.headline || "A Cleaner Car, Without Leaving Home"}
         </h1>
         <p className="mt-5 text-base sm:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
-          CLEANZX provides convenient doorstep car cleaning services for car owners in Hyderabad. Our goal is to make routine vehicle care simpler through accessible cleaning services and flexible subscription options.
+          {aboutData.subheadline || "CLEANZX provides convenient doorstep car cleaning services for car owners in Hyderabad. Our goal is to make routine vehicle care simpler through accessible cleaning services and flexible subscription options."}
         </p>
       </section>
 
@@ -63,10 +66,10 @@ export default function AboutPage() {
               Dedicated Doorstep Vehicle Care in Hyderabad
             </h2>
             <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
-              Operating out of Mehdipatnam, Hyderabad, CLEANZX was built to eliminate the hassle of routine car washing for apartment residents, busy working professionals, and families.
+              {aboutData.story1 || "Operating out of Mehdipatnam, Hyderabad, CLEANZX was built to eliminate the hassle of routine car washing for apartment residents, busy working professionals, and families."}
             </p>
             <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
-              Instead of navigating congested roads to find a washing center or relying on inconsistent roadside cleaning, our customers enjoy systematic morning car maintenance performed right in their allotted parking spaces.
+              {aboutData.story2 || "Instead of navigating congested roads to find a washing center or relying on inconsistent roadside cleaning, our customers enjoy systematic morning car maintenance performed right in their allotted parking spaces."}
             </p>
 
             <div className="pt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -74,9 +77,9 @@ export default function AboutPage() {
                 <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#1677FF] flex items-center justify-center">
                   <Target className="w-5 h-5" />
                 </div>
-                <h3 className="text-base font-bold text-slate-900 font-heading">Our Mission</h3>
+                <h3 className="text-base font-bold text-slate-900 font-heading">{aboutData.missionTitle || "Our Mission"}</h3>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  To make regular car cleaning convenient, accessible, and easy to schedule for residential customers.
+                  {aboutData.missionDescription || "To make regular car cleaning convenient, accessible, and easy to schedule for residential customers."}
                 </p>
               </div>
 
@@ -86,7 +89,7 @@ export default function AboutPage() {
                 </div>
                 <h3 className="text-base font-bold text-slate-900 font-heading">Our Vision</h3>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  To become a trusted doorstep car cleaning service provider in Hyderabad.
+                  To become the most reliable and trusted morning doorstep car cleaning service provider in Hyderabad.
                 </p>
               </div>
             </div>

@@ -1,12 +1,20 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { SUBSCRIPTION_PLANS } from '../data/websiteData';
+import { useAdminData } from './AdminDataContext';
 
 const BookingContext = createContext();
 
 export const BookingProvider = ({ children }) => {
+  const { plans: adminPlans, addBooking } = useAdminData();
   const [selectedPlan, setSelectedPlan] = useState('Monthly Normal Plan');
   const [selectedAddons, setSelectedAddons] = useState([]);
-  const [plans, setPlans] = useState(SUBSCRIPTION_PLANS);
+  const [plans, setPlans] = useState(adminPlans || SUBSCRIPTION_PLANS);
+
+  useEffect(() => {
+    if (adminPlans && adminPlans.length > 0) {
+      setPlans(adminPlans);
+    }
+  }, [adminPlans]);
   const [backendAvailable, setBackendAvailable] = useState(null); // null = checking, true/false
   const [enquiries, setEnquiries] = useState(() => {
     try {
@@ -31,7 +39,9 @@ export const BookingProvider = ({ children }) => {
           if (plansRes.ok && plansRes.headers.get('content-type')?.includes('application/json')) {
             const data = await plansRes.json();
             if (data.success && Array.isArray(data.data) && data.data.length > 0) {
-              if (isMounted) setPlans(data.data);
+              if (isMounted) {
+                setPlans(data.data);
+              }
             }
           }
           // Fetch live enquiries
@@ -116,7 +126,7 @@ export const BookingProvider = ({ children }) => {
       setBackendAvailable(false);
     }
 
-    // Client fallback persistence (LocalStorage)
+    // Client fallback persistence (LocalStorage & Admin Store)
     const localEnquiry = {
       id: 'ENQ-LOC-' + Date.now().toString(36).toUpperCase() + '-' + Math.floor(1000 + Math.random() * 9000),
       ...formData,
@@ -126,6 +136,14 @@ export const BookingProvider = ({ children }) => {
     };
 
     setEnquiries(prev => [localEnquiry, ...prev]);
+
+    // Also register in Admin Data bookings
+    if (addBooking) {
+      addBooking({
+        ...formData,
+        id: localEnquiry.id
+      });
+    }
 
     return {
       success: true,

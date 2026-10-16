@@ -1,10 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Phone, MapPin, Clock, ArrowUp, MessageSquare, Sparkles, Shield, ChevronRight, Mail } from 'lucide-react';
+import { Phone, MapPin, Clock, ArrowUp, MessageSquare, Sparkles, Shield, ChevronRight, Mail, ShieldCheck, UserCheck } from 'lucide-react';
 import { BUSINESS_INFO } from '../data/websiteData';
+import { useAdminData } from '../context/AdminDataContext';
 import { InstagramIcon, FacebookIcon } from './SocialIcons';
 
 export default function Footer() {
+  const { websiteContent } = useAdminData();
+  const businessInfo = websiteContent?.businessInfo || BUSINESS_INFO;
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -97,11 +100,6 @@ export default function Footer() {
                   <ChevronRight className="w-3.5 h-3.5 text-[#00A3FF]" /> Contact Us
                 </Link>
               </li>
-              <li>
-                <Link to="/admin" className="hover:text-[#00A3FF] transition-colors flex items-center gap-1.5 text-xs text-[#AAB4C3]/70">
-                  <ChevronRight className="w-3.5 h-3.5 text-[#00A3FF]" /> Admin Dashboard
-                </Link>
-              </li>
             </ul>
           </div>
 
@@ -176,7 +174,13 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-[#263244] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
-          <p>© {currentYear} CLEANZX. All rights reserved. Operating in Mehdipatnam, Hyderabad, Telangana, India.</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <p>© {currentYear} CLEANZX. All rights reserved. Operating in Mehdipatnam, Hyderabad, Telangana, India.</p>
+            <Link to="/employee" className="px-3 py-1 rounded-full bg-cyan-950/80 hover:bg-cyan-900 text-cyan-300 hover:text-white border border-cyan-500/40 font-semibold flex items-center gap-1.5 transition-all shadow-xs">
+              <UserCheck className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Employee Login (/employee)</span>
+            </Link>
+          </div>
 
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">

@@ -9,7 +9,14 @@ export default function PlansPage() {
   const { plans, selectPlanAndScroll, selectedPlan } = useBooking();
   const [categoryFilter, setCategoryFilter] = useState('ALL'); // 'ALL' | 'Normal' | 'Premium'
 
-  const activePlans = (plans && plans.length > 0) ? plans : SUBSCRIPTION_PLANS;
+  const activePlans = (plans && plans.length > 0)
+    ? plans.filter(p => p.status !== 'Inactive')
+    : SUBSCRIPTION_PLANS.filter(p => p.status !== 'Inactive');
+
+  const allCount = activePlans.length;
+  const normalCount = activePlans.filter(p => p.category === 'Normal').length;
+  const premiumCount = activePlans.filter(p => p.category === 'Premium').length;
+
   const filteredPlans = activePlans.filter((plan) => {
     if (categoryFilter === 'ALL') return true;
     return plan.category === categoryFilter;
@@ -51,7 +58,7 @@ export default function PlansPage() {
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            All Plans (8)
+            All Plans ({allCount})
           </button>
           <button
             onClick={() => setCategoryFilter('Normal')}
@@ -61,7 +68,7 @@ export default function PlansPage() {
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            Normal Category (4)
+            Normal Category ({normalCount})
           </button>
           <button
             onClick={() => setCategoryFilter('Premium')}
@@ -71,7 +78,7 @@ export default function PlansPage() {
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            Premium Category (4)
+            Premium Category ({premiumCount})
           </button>
         </div>
       </section>

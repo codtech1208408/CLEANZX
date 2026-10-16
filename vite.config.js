@@ -10,6 +10,9 @@ export default defineConfig({
   ],
   server: {
     port: 5173,
+    watch: {
+      ignored: ['**/server/**', '**/server/data/**', '**/server.js', '**/.env*', '**/BCM NEWS/**']
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:5050',

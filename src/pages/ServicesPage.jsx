@@ -2,11 +2,15 @@ import React from 'react';
 import { Sparkles, Shield, CheckCircle2, ArrowRight, Layers, Car, Wind, CircleDot, Fan, Gauge, Armchair } from 'lucide-react';
 import { STANDARD_SERVICES, OPTIONAL_ADDONS, BUSINESS_INFO } from '../data/websiteData';
 import { useBooking } from '../context/BookingContext';
+import { useAdminData } from '../context/AdminDataContext';
 import ServiceCard from '../components/ServiceCard';
 import BookingForm from '../components/BookingForm';
 
 export default function ServicesPage() {
   const { selectPlanAndScroll, selectedAddons, toggleAddon } = useBooking();
+  const { websiteContent } = useAdminData();
+  const dynamicServices = websiteContent?.services?.filter(s => s.published) || STANDARD_SERVICES;
+  const dynamicAddons = websiteContent?.addons?.filter(a => a.published) || OPTIONAL_ADDONS;
 
   const scrollToBooking = () => {
     const el = document.getElementById('booking-enquiry-form');
@@ -47,7 +51,7 @@ export default function ServicesPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-          {STANDARD_SERVICES.map((service) => (
+          {dynamicServices.map((service) => (
             <ServiceCard
               key={service.id}
               service={service}
@@ -118,7 +122,7 @@ export default function ServicesPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {OPTIONAL_ADDONS.map((addon) => {
+          {dynamicAddons.map((addon) => {
             const isSelected = selectedAddons.includes(addon.id);
             return (
               <div

@@ -5,19 +5,10 @@
     "displayName": "15-Day Plan",
     "category": "Normal",
     "duration": "15 days",
-    "price": null,
-    "price_display": "Price to be confirmed",
-    "priceDisplay": "Price to be confirmed",
-    "billing_period": "15 days",
+    "price": 549,
+    "priceDisplay": "₹549",
     "billingPeriod": "15 days",
-    "cleaning_frequency": "Scheduled morning service cycles across 15 days",
     "cleaningFrequency": "Scheduled morning service cycles across 15 days",
-    "included_services": [
-      "Dust Removal",
-      "Exterior Cleaning",
-      "Glass Cleaning",
-      "Tyre Cleaning"
-    ],
     "includedServices": [
       "Dust Removal",
       "Exterior Cleaning",
@@ -25,10 +16,12 @@
       "Tyre Cleaning"
     ],
     "popular": false,
-    "status": "Active",
     "highlight": "Essential 15-day trial upkeep for apartment car owners",
-    "button_label": "Select 15-Day Normal Plan",
-    "buttonLabel": "Select 15-Day Normal Plan"
+    "statusBadge": "Enquiry-Only State",
+    "buttonLabel": "Select 15-Day Normal Plan",
+    "status": "Active",
+    "published": true,
+    "subscriberCount": 0
   },
   {
     "id": "normal-monthly",
@@ -36,19 +29,10 @@
     "displayName": "Monthly Plan",
     "category": "Normal",
     "duration": "1 month",
-    "price": null,
-    "price_display": "Price to be confirmed",
-    "priceDisplay": "Price to be confirmed",
-    "billing_period": "Monthly",
+    "price": 899,
+    "priceDisplay": "₹899",
     "billingPeriod": "Monthly",
-    "cleaning_frequency": "Regular morning cycle throughout 30 days",
     "cleaningFrequency": "Regular morning cycle throughout 30 days",
-    "included_services": [
-      "Dust Removal",
-      "Exterior Cleaning",
-      "Glass Cleaning",
-      "Tyre Cleaning"
-    ],
     "includedServices": [
       "Dust Removal",
       "Exterior Cleaning",
@@ -56,10 +40,12 @@
       "Tyre Cleaning"
     ],
     "popular": true,
-    "status": "Active",
     "highlight": "Steady month-long car care before your daily drive",
-    "button_label": "Select Monthly Normal Plan",
-    "buttonLabel": "Select Monthly Normal Plan"
+    "statusBadge": "Enquiry-Only State",
+    "buttonLabel": "Select Monthly Normal Plan",
+    "status": "Active",
+    "published": true,
+    "subscriberCount": 0
   },
   {
     "id": "normal-quarterly",
@@ -67,19 +53,10 @@
     "displayName": "Quarterly Plan",
     "category": "Normal",
     "duration": "3 months",
-    "price": null,
-    "price_display": "Price to be confirmed",
-    "priceDisplay": "Price to be confirmed",
-    "billing_period": "Quarterly",
+    "price": 2499,
+    "priceDisplay": "₹2499",
     "billingPeriod": "Quarterly",
-    "cleaning_frequency": "Continuous routine cleaning for 90 days",
     "cleaningFrequency": "Continuous routine cleaning for 90 days",
-    "included_services": [
-      "Dust Removal",
-      "Exterior Cleaning",
-      "Glass Cleaning",
-      "Tyre Cleaning"
-    ],
     "includedServices": [
       "Dust Removal",
       "Exterior Cleaning",
@@ -87,10 +64,12 @@
       "Tyre Cleaning"
     ],
     "popular": false,
-    "status": "Active",
     "highlight": "Convenient 3-month uninterrupted routine maintenance",
-    "button_label": "Select Quarterly Normal Plan",
-    "buttonLabel": "Select Quarterly Normal Plan"
+    "statusBadge": "Enquiry-Only State",
+    "buttonLabel": "Select Quarterly Normal Plan",
+    "status": "Active",
+    "published": true,
+    "subscriberCount": 0
   },
   {
     "id": "normal-half-yearly",
@@ -98,19 +77,10 @@
     "displayName": "Half-Yearly Plan",
     "category": "Normal",
     "duration": "6 months",
-    "price": null,
-    "price_display": "Price to be confirmed",
-    "priceDisplay": "Price to be confirmed",
-    "billing_period": "Half-yearly",
+    "price": 4699,
+    "priceDisplay": "₹4699",
     "billingPeriod": "Half-yearly",
-    "cleaning_frequency": "Long-term doorstep vehicle maintenance for 180 days",
     "cleaningFrequency": "Long-term doorstep vehicle maintenance for 180 days",
-    "included_services": [
-      "Dust Removal",
-      "Exterior Cleaning",
-      "Glass Cleaning",
-      "Tyre Cleaning"
-    ],
     "includedServices": [
       "Dust Removal",
       "Exterior Cleaning",
@@ -118,10 +88,12 @@
       "Tyre Cleaning"
     ],
     "popular": false,
-    "status": "Active",
     "highlight": "Hassle-free 6-month consistent routine for apartment cars",
-    "button_label": "Select Half-Yearly Normal Plan",
-    "buttonLabel": "Select Half-Yearly Normal Plan"
+    "statusBadge": "Enquiry-Only State",
+    "buttonLabel": "Select Half-Yearly Normal Plan",
+    "status": "Active",
+    "published": true,
+    "subscriberCount": 0
   },
   {
     "id": "premium-15-day",
@@ -129,21 +101,10 @@
     "displayName": "15-Day Plan",
     "category": "Premium",
     "duration": "15 days",
-    "price": null,
-    "price_display": "Price to be confirmed",
-    "priceDisplay": "Price to be confirmed",
-    "billing_period": "15 days",
+    "price": 849,
+    "priceDisplay": "₹849",
     "billingPeriod": "15 days",
-    "cleaning_frequency": "Priority morning service cycles across 15 days",
     "cleaningFrequency": "Priority morning service cycles across 15 days",
-    "included_services": [
-      "Dust Removal",
-      "Exterior Cleaning",
-      "Glass Cleaning",
-      "Tyre Cleaning",
-      "Priority Morning Slot Allocation",
-      "Dedicated Spot Inspection"
-    ],
     "includedServices": [
       "Dust Removal",
       "Exterior Cleaning",
@@ -153,10 +114,12 @@
       "Dedicated Spot Inspection"
     ],
     "popular": false,
-    "status": "Active",
     "highlight": "Intensive 15-day detailing trial with priority morning care",
-    "button_label": "Select 15-Day Premium Plan",
-    "buttonLabel": "Select 15-Day Premium Plan"
+    "statusBadge": "Enquiry-Only State",
+    "buttonLabel": "Select 15-Day Premium Plan",
+    "status": "Active",
+    "published": true,
+    "subscriberCount": 0
   },
   {
     "id": "premium-monthly",
@@ -164,21 +127,10 @@
     "displayName": "Monthly Plan",
     "category": "Premium",
     "duration": "1 month",
-    "price": null,
-    "price_display": "Price to be confirmed",
-    "priceDisplay": "Price to be confirmed",
-    "billing_period": "Monthly",
+    "price": 1499,
+    "priceDisplay": "₹1499",
     "billingPeriod": "Monthly",
-    "cleaning_frequency": "Enhanced morning cycle with priority slot care for 30 days",
     "cleaningFrequency": "Enhanced morning cycle with priority slot care for 30 days",
-    "included_services": [
-      "Dust Removal",
-      "Exterior Cleaning",
-      "Glass Cleaning",
-      "Tyre Cleaning",
-      "Priority Morning Slot Allocation",
-      "Dedicated Spot Inspection"
-    ],
     "includedServices": [
       "Dust Removal",
       "Exterior Cleaning",
@@ -188,10 +140,12 @@
       "Dedicated Spot Inspection"
     ],
     "popular": true,
-    "status": "Active",
     "highlight": "Our most popular comprehensive monthly doorstep car care",
-    "button_label": "Select Monthly Premium Plan",
-    "buttonLabel": "Select Monthly Premium Plan"
+    "statusBadge": "Enquiry-Only State",
+    "buttonLabel": "Select Monthly Premium Plan",
+    "status": "Active",
+    "published": true,
+    "subscriberCount": 0
   },
   {
     "id": "premium-quarterly",
@@ -199,21 +153,10 @@
     "displayName": "Quarterly Plan",
     "category": "Premium",
     "duration": "3 months",
-    "price": null,
-    "price_display": "Price to be confirmed",
-    "priceDisplay": "Price to be confirmed",
-    "billing_period": "Quarterly",
+    "price": 4199,
+    "priceDisplay": "₹4199",
     "billingPeriod": "Quarterly",
-    "cleaning_frequency": "Continuous priority cleaning & detailing assessment for 90 days",
     "cleaningFrequency": "Continuous priority cleaning & detailing assessment for 90 days",
-    "included_services": [
-      "Dust Removal",
-      "Exterior Cleaning",
-      "Glass Cleaning",
-      "Tyre Cleaning",
-      "Priority Slot Scheduling",
-      "Quarterly Detailing Assessment"
-    ],
     "includedServices": [
       "Dust Removal",
       "Exterior Cleaning",
@@ -223,10 +166,12 @@
       "Quarterly Detailing Assessment"
     ],
     "popular": false,
-    "status": "Active",
     "highlight": "Quarterly comprehensive care with dedicated spot checks",
-    "button_label": "Select Quarterly Premium Plan",
-    "buttonLabel": "Select Quarterly Premium Plan"
+    "statusBadge": "Enquiry-Only State",
+    "buttonLabel": "Select Quarterly Premium Plan",
+    "status": "Active",
+    "published": true,
+    "subscriberCount": 0
   },
   {
     "id": "premium-half-yearly",
@@ -234,21 +179,10 @@
     "displayName": "Half-Yearly Plan",
     "category": "Premium",
     "duration": "6 months",
-    "price": null,
-    "price_display": "Price to be confirmed",
-    "priceDisplay": "Price to be confirmed",
-    "billing_period": "Half-yearly",
+    "price": 7999,
+    "priceDisplay": "₹7999",
     "billingPeriod": "Half-yearly",
-    "cleaning_frequency": "Maximum priority long-term doorstep care for 180 days",
     "cleaningFrequency": "Maximum priority long-term doorstep care for 180 days",
-    "included_services": [
-      "Dust Removal",
-      "Exterior Cleaning",
-      "Glass Cleaning",
-      "Tyre Cleaning",
-      "Priority Slot Scheduling",
-      "Extended Service Support"
-    ],
     "includedServices": [
       "Dust Removal",
       "Exterior Cleaning",
@@ -258,9 +192,11 @@
       "Extended Service Support"
     ],
     "popular": false,
-    "status": "Active",
     "highlight": "Complete 6-month peace of mind with premium priority service",
-    "button_label": "Select Half-Yearly Premium Plan",
-    "buttonLabel": "Select Half-Yearly Premium Plan"
+    "statusBadge": "Enquiry-Only State",
+    "buttonLabel": "Select Half-Yearly Premium Plan",
+    "status": "Active",
+    "published": true,
+    "subscriberCount": 0
   }
 ]

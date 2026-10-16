@@ -1,494 +1,369 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Download, Search, Filter, RefreshCw, CheckCircle2, Clock, Phone, Car, Building, Eye, Edit3, Save, X, Server } from 'lucide-react';
-import { useBooking } from '../context/BookingContext';
-import { BUSINESS_INFO } from '../data/websiteData';
+import {
+  ShieldCheck,
+  LayoutDashboard,
+  Globe,
+  Tag,
+  Users,
+  CalendarCheck,
+  Calendar,
+  UserCheck,
+  Clock,
+  CreditCard,
+  MessageSquare,
+  LogOut,
+  ExternalLink,
+  Sparkles,
+  RotateCcw,
+  Menu,
+  X,
+  ChevronRight,
+  Database
+} from 'lucide-react';
+import { useAdminData } from '../context/AdminDataContext';
+import AdminLogin from '../components/admin/AdminLogin';
+import WhatsAppModal from '../components/admin/WhatsAppModal';
+
+// Tabs
+import OverviewTab from '../components/admin/tabs/OverviewTab';
+import ContentManagementTab from '../components/admin/tabs/ContentManagementTab';
+import PlansAddonsTab from '../components/admin/tabs/PlansAddonsTab';
+import CustomersTab from '../components/admin/tabs/CustomersTab';
+import SubscriptionsTab from '../components/admin/tabs/SubscriptionsTab';
+import BookingsTab from '../components/admin/tabs/BookingsTab';
+import EmployeesTab from '../components/admin/tabs/EmployeesTab';
+import DailyScheduleTab from '../components/admin/tabs/DailyScheduleTab';
+import InvoicesTab from '../components/admin/tabs/InvoicesTab';
+import WhatsAppHubTab from '../components/admin/tabs/WhatsAppHubTab';
+import CoreRecordsScopeTab from '../components/admin/tabs/CoreRecordsScopeTab';
 
 export default function AdminPage() {
-  const { enquiries, updateEnquiryStatus, plans, setPlans, backendAvailable } = useBooking();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('ALL');
-  const [selectedEnquiry, setSelectedEnquiry] = useState(null);
-  const [editingPlan, setEditingPlan] = useState(null);
-  const [planForm, setPlanForm] = useState(null);
-  const [activeTab, setActiveTab] = useState('enquiries'); // 'enquiries' | 'plans'
+  const {
+    isAuthenticated,
+    adminUser,
+    logout,
+    resetToDefaults,
+    bookings,
+    subscriptions,
+    dailySchedules,
+    invoices
+  } = useAdminData();
 
-  // Filtered Enquiries
-  const filteredEnquiries = enquiries.filter((e) => {
-    const matchesSearch =
-      (e.customer_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (e.phone_number || '').includes(searchTerm) ||
-      (e.vehicle_registration_number || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (e.apartment || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (e.car_model || '').toLowerCase().includes(searchTerm.toLowerCase());
+  const [activeTab, setActiveTab] = useState('overview');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-    const matchesStatus = statusFilter === 'ALL' || e.status === statusFilter;
-    return matchesSearch && matchesStatus;
+  // Global WhatsApp Modal State
+  const [whatsAppModalData, setWhatsAppModalData] = useState({
+    isOpen: false,
+    initialData: {}
   });
 
-  // Export Enquiries as CSV
-  const exportToCSV = () => {
-    if (enquiries.length === 0) {
-      alert('No enquiries to export.');
-      return;
+  const handleOpenWhatsApp = (data) => {
+    setWhatsAppModalData({
+      isOpen: true,
+      initialData: data || {}
+    });
+  };
+
+  const handleCloseWhatsApp = () => {
+    setWhatsAppModalData(prev => ({ ...prev, isOpen: false }));
+  };
+
+  // If not logged in, show the Admin Login page
+  if (!isAuthenticated) {
+    return <AdminLogin />;
+  }
+
+  // Pending counters for badges
+  const pendingBookings = bookings.filter(b => b.status === 'Pending').length;
+  const pendingInvoices = invoices.filter(i => i.status === 'Pending').length;
+  const expiringSubs = subscriptions.filter(s => s.daysRemaining <= 7 && s.status === 'Active').length;
+
+  const navItems = [
+    { id: 'overview', label: 'Overview & Reports', icon: LayoutDashboard },
+    { id: 'content', label: 'Website Content', icon: Globe },
+    { id: 'plans', label: 'Plans & Add-ons', icon: Tag },
+    { id: 'customers', label: 'Customers', icon: Users },
+    {
+      id: 'subscriptions',
+      label: 'Subscriptions',
+      icon: CalendarCheck,
+      badge: expiringSubs > 0 ? expiringSubs : undefined,
+      badgeColor: 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+    },
+    {
+      id: 'bookings',
+      label: 'Bookings & Enquiries',
+      icon: Calendar,
+      badge: pendingBookings > 0 ? pendingBookings : undefined,
+      badgeColor: 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+    },
+    { id: 'employees', label: 'Employees', icon: UserCheck },
+    { id: 'schedule', label: 'Daily Service Schedule', icon: Clock },
+    {
+      id: 'invoices',
+      label: 'Invoices & Payments',
+      icon: CreditCard,
+      badge: pendingInvoices > 0 ? pendingInvoices : undefined,
+      badgeColor: 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+    },
+    { id: 'whatsapp', label: 'WhatsApp Contact Hub', icon: MessageSquare },
+    {
+      id: 'core-scope',
+      label: 'System Records & Database',
+      icon: Database
     }
-    const headers = [
-      'ID', 'Date', 'Customer Name', 'Phone', 'Apartment', 'Block', 'Flat',
-      'Car Model', 'Registration', 'Plan', 'Preferred Date', 'Time Slot', 'Add-ons', 'Status'
-    ];
-    const rows = enquiries.map((e) => [
-      e.id,
-      new Date(e.createdAt).toLocaleString(),
-      `"${e.customer_name}"`,
-      `"${e.phone_number}"`,
-      `"${e.apartment}"`,
-      `"${e.block}"`,
-      `"${e.flat_number}"`,
-      `"${e.car_model}"`,
-      `"${e.vehicle_registration_number}"`,
-      `"${e.preferred_plan}"`,
-      e.preferred_start_date || 'N/A',
-      `"${e.preferred_time || 'N/A'}"`,
-      `"${(e.selected_addons || []).join('; ')}"`,
-      e.status
-    ]);
+  ];
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `cleanzx_enquiries_${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  // Export Enquiries as JSON
-  const exportToJSON = () => {
-    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(enquiries, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute('href', dataStr);
-    downloadAnchor.setAttribute('download', `cleanzx_enquiries_${new Date().toISOString().slice(0, 10)}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
-  };
-
-  const startEditPlan = (plan) => {
-    setEditingPlan(plan.id);
-    setPlanForm({ ...plan });
-  };
-
-  const savePlanEdit = async () => {
-    if (!planForm) return;
-    const updated = plans.map(p => p.id === planForm.id ? planForm : p);
-    setPlans(updated);
-    setEditingPlan(null);
-
-    // Save to backend API if available
-    try {
-      await fetch('/api/plans', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updated)
-      });
-    } catch (e) {
-      console.log('Saved to local plan state');
-    }
-  };
+  const currentNav = navItems.find(item => item.id === activeTab) || navItems[0];
 
   return (
-    <div className="bg-white text-slate-900 min-h-screen py-10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-        {/* Top Banner / System Status */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-50 border border-slate-200 p-6 rounded-2xl shadow-sm">
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl sm:text-2xl font-bold text-slate-900 font-heading">
-                CLEANZX Business Operations Portal
-              </h1>
-              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-50 text-[#1677FF] border border-blue-200">
-                Admin
-              </span>
-            </div>
-            <p className="text-xs text-slate-600 mt-1">
-              Manage incoming apartment booking enquiries, update customer service statuses, and configure subscription plans.
-            </p>
+    <div className="min-h-screen bg-slate-100/80 text-slate-900 flex font-sans antialiased">
+      {/* Mobile Sidebar Backdrop */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 bg-slate-950/70 z-40 lg:hidden backdrop-blur-xs transition-opacity"
+        />
+      )}
+
+      {/* ======================================================== */}
+      {/* VERTICAL SIDEBAR (Desktop & Mobile Drawer) */}
+      {/* ======================================================== */}
+      <aside
+        className={`fixed top-0 bottom-0 left-0 z-50 w-72 h-screen max-h-screen bg-slate-900 border-r border-slate-800 text-slate-200 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+          sidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
+        }`}
+      >
+        {/* Brand Header (Pinned at top) */}
+        <div className="shrink-0 border-b border-slate-800 bg-slate-950">
+          {/* Logo Container */}
+          <div className="py-3 px-4 flex items-center justify-center relative">
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="lg:hidden absolute right-3 top-3 p-1.5 text-slate-400 hover:text-white rounded-lg cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <img
+              src="/images/admin-brand-logo.png"
+              alt="CLEANZX Logo"
+              className="w-full max-w-[210px] h-14 sm:h-16 object-contain drop-shadow-md transition-all hover:scale-105"
+            />
           </div>
 
-          {/* Backend Connectivity Status */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs shadow-sm">
-              <Server className="w-3.5 h-3.5 text-[#1677FF]" />
-              <span className="text-slate-600">Backend API:</span>
-              <span className={`font-semibold ${backendAvailable ? 'text-emerald-600' : 'text-amber-600'}`}>
-                {backendAvailable ? 'Online (Persistence Enabled)' : 'Offline (LocalStorage Fallback)'}
-              </span>
+          {/* Super Admin Portal Badge */}
+          <div className="pb-2.5 px-4 flex items-center justify-center">
+            <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 text-[10px] font-extrabold tracking-wider uppercase shadow-xs">
+              <ShieldCheck className="w-3.5 h-3.5 text-cyan-400 stroke-[2.5]" />
+              <span>SUPER ADMIN PORTAL</span>
             </div>
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="flex border-b border-slate-200 gap-4">
-          <button
-            onClick={() => setActiveTab('enquiries')}
-            className={`pb-3 text-sm font-semibold transition-colors relative cursor-pointer ${
-              activeTab === 'enquiries' ? 'text-[#1677FF]' : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <span>Booking Enquiries ({enquiries.length})</span>
-            {activeTab === 'enquiries' && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1677FF]"></span>
-            )}
-          </button>
+        {/* Navigation Links (Flex-1 with smooth vertical scrolling) */}
+        <nav className="flex-1 min-h-0 overflow-y-auto p-3 space-y-1 scrollbar-thin scrollbar-thumb-slate-700">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeTab === item.id;
 
-          <button
-            onClick={() => setActiveTab('plans')}
-            className={`pb-3 text-sm font-semibold transition-colors relative cursor-pointer ${
-              activeTab === 'plans' ? 'text-[#1677FF]' : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <span>Manage Plans & Pricing ({plans.length})</span>
-            {activeTab === 'plans' && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1677FF]"></span>
-            )}
-          </button>
-        </div>
-
-        {/* TAB 1: BOOKING ENQUIRIES */}
-        {activeTab === 'enquiries' && (
-          <div className="space-y-6">
-            {/* Controls & Export Bar */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-between items-stretch sm:items-center">
-              {/* Search */}
-              <div className="relative flex-1 max-w-md">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  placeholder="Search by name, phone, car, apartment..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs sm:text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#1677FF]"
-                />
-              </div>
-
-              {/* Filters & Export */}
-              <div className="flex items-center gap-2 flex-wrap">
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs focus:outline-none focus:ring-1 focus:ring-[#1677FF] shadow-sm cursor-pointer"
-                >
-                  <option value="ALL">All Statuses</option>
-                  <option value="Pending">Pending</option>
-                  <option value="Contacted">Contacted</option>
-                  <option value="Confirmed">Confirmed</option>
-                  <option value="Completed">Completed</option>
-                </select>
-
-                <button
-                  onClick={exportToCSV}
-                  className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-800 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
-                >
-                  <Download className="w-3.5 h-3.5 text-[#1677FF]" />
-                  <span>Export CSV</span>
-                </button>
-
-                <button
-                  onClick={exportToJSON}
-                  className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-800 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
-                >
-                  <Download className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>JSON</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Enquiries Table */}
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-              {filteredEnquiries.length === 0 ? (
-                <div className="p-12 text-center text-slate-500 space-y-3">
-                  <Car className="w-12 h-12 mx-auto text-slate-300" />
-                  <p className="text-base font-semibold text-slate-800">No booking enquiries found</p>
-                  <p className="text-xs">
-                    {searchTerm || statusFilter !== 'ALL'
-                      ? 'Try clearing your filters or search query.'
-                      : 'Customer enquiries submitted on the website will appear here in real-time.'}
-                  </p>
+            return (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setActiveTab(item.id);
+                  setSidebarOpen(false);
+                }}
+                className={`w-full px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between transition-all cursor-pointer group ${
+                  isActive
+                    ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg shadow-cyan-600/30 font-bold'
+                    : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
+                }`}
+              >
+                <div className="flex items-center gap-2.5 truncate">
+                  <Icon
+                    className={`w-4 h-4 shrink-0 transition-colors ${
+                      isActive ? 'text-white' : 'text-slate-400 group-hover:text-cyan-400'
+                    }`}
+                  />
+                  <span className="truncate">{item.label}</span>
                 </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-50 border-b border-slate-200 text-slate-700">
-                      <tr>
-                        <th className="py-3 px-4 font-bold">Ref ID & Date</th>
-                        <th className="py-3 px-4 font-bold">Customer</th>
-                        <th className="py-3 px-4 font-bold">Apartment & Flat</th>
-                        <th className="py-3 px-4 font-bold">Vehicle</th>
-                        <th className="py-3 px-4 font-bold">Plan & Slot</th>
-                        <th className="py-3 px-4 font-bold">Status</th>
-                        <th className="py-3 px-4 font-bold text-right">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {filteredEnquiries.map((enq) => (
-                        <tr key={enq.id} className="hover:bg-slate-50/70 transition-colors">
-                          <td className="py-3.5 px-4 font-mono">
-                            <span className="text-[#1677FF] font-semibold">{enq.id}</span>
-                            <span className="block text-[10px] text-slate-500 mt-0.5">
-                              {new Date(enq.createdAt).toLocaleDateString()}
-                            </span>
-                          </td>
-                          <td className="py-3.5 px-4">
-                            <p className="font-bold text-slate-900">{enq.customer_name}</p>
-                            <a
-                              href={`tel:${enq.phone_number}`}
-                              className="text-[#1677FF] hover:underline flex items-center gap-1 mt-0.5 font-medium"
-                            >
-                              <Phone className="w-3 h-3" />
-                              {enq.phone_number}
-                            </a>
-                          </td>
-                          <td className="py-3.5 px-4">
-                            <p className="text-slate-900 font-medium">{enq.apartment}</p>
-                            <p className="text-[11px] text-slate-500">
-                              Block {enq.block}, Flat {enq.flat_number}
-                            </p>
-                          </td>
-                          <td className="py-3.5 px-4">
-                            <p className="text-slate-900 font-medium">{enq.car_model}</p>
-                            <p className="font-mono text-[11px] text-slate-600">
-                              {enq.vehicle_registration_number}
-                            </p>
-                          </td>
-                          <td className="py-3.5 px-4">
-                            <span className="font-semibold text-slate-900">{enq.preferred_plan}</span>
-                            <span className="block text-[11px] text-slate-500">
-                              {enq.preferred_time || 'Morning Slot'}
-                            </span>
-                          </td>
-                          <td className="py-3.5 px-4">
-                            <select
-                              value={enq.status || 'Pending'}
-                              onChange={(e) => updateEnquiryStatus(enq.id, e.target.value)}
-                              className={`px-2.5 py-1 rounded-lg text-xs font-semibold border cursor-pointer ${
-                                enq.status === 'Confirmed'
-                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
-                                  : enq.status === 'Contacted'
-                                  ? 'bg-blue-50 text-blue-700 border-blue-300'
-                                  : enq.status === 'Completed'
-                                  ? 'bg-purple-50 text-purple-700 border-purple-300'
-                                  : 'bg-amber-50 text-amber-700 border-amber-300'
-                              }`}
-                            >
-                              <option value="Pending">Pending</option>
-                              <option value="Contacted">Contacted</option>
-                              <option value="Confirmed">Confirmed</option>
-                              <option value="Completed">Completed</option>
-                            </select>
-                          </td>
-                          <td className="py-3.5 px-4 text-right">
-                            <button
-                              onClick={() => setSelectedEnquiry(enq)}
-                              className="p-1.5 rounded-lg bg-slate-100 hover:bg-[#1677FF] hover:text-white border border-slate-200 text-slate-700 transition-colors cursor-pointer"
-                              title="View Full Details"
-                            >
-                              <Eye className="w-3.5 h-3.5" />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
 
-        {/* TAB 2: PLANS CONFIGURATION */}
-        {activeTab === 'plans' && (
-          <div className="space-y-6">
-            <div className="bg-slate-50 border border-slate-200 p-5 rounded-2xl flex justify-between items-center shadow-sm">
-              <div>
-                <h2 className="text-base font-bold text-slate-900 font-heading">
-                  Subscription Plan Customizer
-                </h2>
-                <p className="text-xs text-slate-600">
-                  Prices and cleaning frequencies configured here are displayed throughout the website.
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {plans.map((plan) => {
-                const isEditing = editingPlan === plan.id;
-                return (
-                  <div
-                    key={plan.id}
-                    className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4"
+                {item.badge !== undefined && (
+                  <span
+                    className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
+                      isActive
+                        ? 'bg-white text-cyan-700 shadow-xs'
+                        : item.badgeColor || 'bg-slate-800 text-slate-300'
+                    }`}
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold uppercase text-[#1677FF]">
-                        {plan.category} Category
-                      </span>
-                      <span className="text-[10px] bg-slate-100 px-2 py-0.5 rounded border border-slate-200 text-slate-600 font-medium">
-                        Duration: {plan.duration}
-                      </span>
-                    </div>
-
-                    {isEditing ? (
-                      <div className="space-y-3 text-xs">
-                        <div>
-                          <label className="text-slate-700 font-semibold block mb-1">Plan Name:</label>
-                          <input
-                            type="text"
-                            value={planForm.name}
-                            onChange={(e) => setPlanForm({ ...planForm, name: e.target.value })}
-                            className="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-slate-700 font-semibold block mb-1">Price (₹ or empty for enquiry):</label>
-                          <input
-                            type="number"
-                            placeholder="Leave empty for 'Price to be confirmed'"
-                            value={planForm.price || ''}
-                            onChange={(e) => setPlanForm({ ...planForm, price: e.target.value ? Number(e.target.value) : null })}
-                            className="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-slate-700 font-semibold block mb-1">Cleaning Frequency:</label>
-                          <input
-                            type="text"
-                            value={planForm.cleaningFrequency}
-                            onChange={(e) => setPlanForm({ ...planForm, cleaningFrequency: e.target.value })}
-                            className="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-900"
-                          />
-                        </div>
-                        <div className="flex gap-2 pt-2">
-                          <button
-                            onClick={savePlanEdit}
-                            className="flex-1 py-1.5 rounded-lg bg-emerald-600 text-white font-semibold flex items-center justify-center gap-1 cursor-pointer"
-                          >
-                            <Save className="w-3.5 h-3.5" /> Save
-                          </button>
-                          <button
-                            onClick={() => setEditingPlan(null)}
-                            className="px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-200 text-slate-700 cursor-pointer"
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <>
-                        <h3 className="text-lg font-bold text-slate-900 font-heading">{plan.name}</h3>
-                        <div className="text-xs text-slate-600 space-y-1">
-                          <p>
-                            <strong className="text-slate-900">Price:</strong>{' '}
-                            {plan.price ? `₹${plan.price.toLocaleString('en-IN')}` : 'Price to be confirmed'}
-                          </p>
-                          <p>
-                            <strong className="text-slate-900">Frequency:</strong> {plan.cleaningFrequency}
-                          </p>
-                          <p>
-                            <strong className="text-slate-900">Inclusions:</strong> {(plan.includedServices || []).join(', ')}
-                          </p>
-                        </div>
-                        <button
-                          onClick={() => startEditPlan(plan)}
-                          className="w-full py-2 rounded-xl bg-slate-100 hover:bg-[#1677FF] border border-slate-200 hover:border-[#1677FF] text-slate-800 hover:text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                        >
-                          <Edit3 className="w-3.5 h-3.5" />
-                          <span>Edit Plan Details</span>
-                        </button>
-                      </>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* DETAIL MODAL */}
-        {selectedEnquiry && (
-          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 max-w-lg w-full space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
-              <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-                <div>
-                  <h3 className="text-lg font-bold text-slate-900 font-heading">
-                    Enquiry Details: {selectedEnquiry.id}
-                  </h3>
-                  <span className="text-xs text-slate-500">
-                    Submitted on {new Date(selectedEnquiry.createdAt).toLocaleString()}
+                    {item.badge}
                   </span>
-                </div>
-                <button
-                  onClick={() => setSelectedEnquiry(null)}
-                  className="p-1.5 rounded-lg bg-slate-100 text-slate-600 hover:text-slate-900"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <div className="space-y-3 text-xs sm:text-sm">
-                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1">
-                  <p className="text-slate-500 font-medium">Customer:</p>
-                  <p className="text-slate-900 font-semibold">{selectedEnquiry.customer_name}</p>
-                  <p className="text-[#1677FF] font-semibold">{selectedEnquiry.phone_number}</p>
-                </div>
-
-                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1">
-                  <p className="text-slate-500 font-medium">Apartment Address:</p>
-                  <p className="text-slate-900 font-semibold">{selectedEnquiry.apartment}</p>
-                  <p className="text-slate-700">Block: {selectedEnquiry.block}, Flat: {selectedEnquiry.flat_number}</p>
-                </div>
-
-                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1">
-                  <p className="text-slate-500 font-medium">Vehicle & Plan:</p>
-                  <p className="text-slate-900 font-semibold">{selectedEnquiry.car_model} ({selectedEnquiry.vehicle_registration_number})</p>
-                  <p className="text-[#1677FF] font-semibold">{selectedEnquiry.preferred_plan}</p>
-                  <p className="text-slate-600">Time Slot: {selectedEnquiry.preferred_time || 'Morning'}</p>
-                  <p className="text-slate-600">Preferred Date: {selectedEnquiry.preferred_start_date || 'Flexible'}</p>
-                </div>
-
-                {selectedEnquiry.selected_addons && selectedEnquiry.selected_addons.length > 0 && (
-                  <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1">
-                    <p className="text-slate-500 font-medium">Selected Add-ons:</p>
-                    <p className="text-slate-800 font-medium">{selectedEnquiry.selected_addons.join(', ')}</p>
-                  </div>
                 )}
+              </button>
+            );
+          })}
+        </nav>
 
-                {selectedEnquiry.additional_message && (
-                  <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1">
-                    <p className="text-slate-500 font-medium">Special Requirements:</p>
-                    <p className="text-slate-800 italic">{selectedEnquiry.additional_message}</p>
-                  </div>
-                )}
+        {/* Sidebar Footer (Pinned at bottom, ALWAYS VISIBLE) */}
+        <div className="shrink-0 p-3.5 border-t border-slate-800 bg-slate-950/90 space-y-2.5">
+          {/* Public Website Link */}
+          <a
+            href="/"
+            target="_blank"
+            rel="noreferrer"
+            className="w-full px-3 py-1.5 bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl text-xs font-semibold border border-slate-700/60 flex items-center justify-between transition-colors"
+          >
+            <span className="flex items-center gap-2">
+              <Globe className="w-3.5 h-3.5 text-cyan-400" />
+              <span>View Public Website</span>
+            </span>
+            <ExternalLink className="w-3 h-3 text-slate-400" />
+          </a>
+
+          {/* User Profile & Logout */}
+          <div className="flex items-center justify-between pt-0.5">
+            <div className="flex items-center gap-2.5 truncate">
+              <div className="w-8 h-8 rounded-xl bg-cyan-600/20 text-cyan-400 border border-cyan-500/30 font-bold text-xs flex items-center justify-center shrink-0">
+                A
               </div>
-
-              <div className="pt-3 flex gap-3">
-                <a
-                  href={`https://wa.me/91${(selectedEnquiry.phone_number || '').replace(/[^0-9]/g, '')}?text=Hello%20${encodeURIComponent(selectedEnquiry.customer_name)}%2C%20thank%20you%20for%20your%20CLEANZX%20car%20cleaning%20enquiry.`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 py-2.5 rounded-xl bg-[#25D366] text-white font-semibold text-xs text-center shadow-md"
-                >
-                  Message Customer on WhatsApp
-                </a>
-                <button
-                  onClick={() => setSelectedEnquiry(null)}
-                  className="px-4 py-2.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 text-xs cursor-pointer"
-                >
-                  Close
-                </button>
+              <div className="truncate">
+                <span className="text-xs font-bold text-white block truncate leading-tight">
+                  {adminUser?.username || 'admin@cleanzx.com'}
+                </span>
+                <span className="text-[10px] text-slate-400 block truncate">
+                  Super Administrator
+                </span>
               </div>
             </div>
+
+            <button
+              type="button"
+              onClick={logout}
+              className="p-2 text-rose-400 hover:text-rose-300 hover:bg-rose-500/20 rounded-xl transition-colors cursor-pointer shrink-0"
+              title="Log out of Admin Portal"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
-        )}
+        </div>
+      </aside>
+
+      {/* ======================================================== */}
+      {/* MAIN CONTENT AREA */}
+      {/* ======================================================== */}
+      <div className="flex-1 flex flex-col min-w-0 lg:pl-72 h-screen overflow-hidden">
+        {/* Pinned Top Header Bar (Never moves on scroll) */}
+        <header className="bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-40 shadow-xs shrink-0">
+          <div className="px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+            {/* Left: Mobile Toggle & Page Title */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="lg:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl cursor-pointer"
+                aria-label="Open navigation menu"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+
+              <img
+                src="/images/admin-brand-logo.jpeg"
+                alt="CLEANZX Logo"
+                className="h-9 w-auto object-contain rounded-lg p-0.5 bg-black lg:hidden"
+              />
+
+              <div className="flex items-center gap-2">
+                <span className="text-slate-400 text-xs font-medium hidden sm:inline">Admin /</span>
+                <h1 className="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+                  <span>{currentNav.label}</span>
+                </h1>
+              </div>
+            </div>
+
+            {/* Right: Actions */}
+            <div className="flex items-center gap-2 sm:gap-3">
+              {/* WhatsApp Quick Chat */}
+              <button
+                onClick={() => handleOpenWhatsApp({ templateType: 'support' })}
+                className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm shadow-emerald-600/30 transition-all cursor-pointer"
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">WhatsApp Chat</span>
+              </button>
+
+              {/* Reset Demo Data */}
+              <button
+                onClick={() => {
+                  if (confirm('Reset all admin and website data back to factory demo defaults?')) {
+                    resetToDefaults();
+                  }
+                }}
+                title="Reset to default mock dataset"
+                className="p-2 text-slate-500 hover:text-cyan-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+              >
+                <RotateCcw className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {/* Tab Content Display - Independently scrollable while header stays fixed */}
+        <main className="p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto flex-1 overflow-y-auto">
+          {activeTab === 'overview' && (
+            <OverviewTab
+              setActiveTab={setActiveTab}
+              onOpenWhatsApp={handleOpenWhatsApp}
+            />
+          )}
+
+          {activeTab === 'content' && <ContentManagementTab />}
+
+          {activeTab === 'plans' && (
+            <PlansAddonsTab onOpenWhatsApp={handleOpenWhatsApp} />
+          )}
+
+          {activeTab === 'customers' && (
+            <CustomersTab onOpenWhatsApp={handleOpenWhatsApp} />
+          )}
+
+          {activeTab === 'subscriptions' && (
+            <SubscriptionsTab onOpenWhatsApp={handleOpenWhatsApp} />
+          )}
+
+          {activeTab === 'bookings' && (
+            <BookingsTab onOpenWhatsApp={handleOpenWhatsApp} />
+          )}
+
+          {activeTab === 'employees' && <EmployeesTab />}
+
+          {activeTab === 'schedule' && (
+            <DailyScheduleTab onOpenWhatsApp={handleOpenWhatsApp} />
+          )}
+
+          {activeTab === 'invoices' && (
+            <InvoicesTab onOpenWhatsApp={handleOpenWhatsApp} />
+          )}
+
+          {activeTab === 'whatsapp' && (
+            <WhatsAppHubTab onOpenWhatsApp={handleOpenWhatsApp} />
+          )}
+
+          {activeTab === 'core-scope' && (
+            <CoreRecordsScopeTab
+              setActiveTab={setActiveTab}
+              onOpenWhatsApp={handleOpenWhatsApp}
+            />
+          )}
+        </main>
       </div>
+
+      {/* Global WhatsApp Contact Modal */}
+      <WhatsAppModal
+        isOpen={whatsAppModalData.isOpen}
+        onClose={handleCloseWhatsApp}
+        initialData={whatsAppModalData.initialData}
+      />
     </div>
   );
 }

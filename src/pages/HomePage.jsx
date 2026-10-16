@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Sparkles, Calendar, ArrowRight, ShieldCheck, Clock, MessageSquare, CheckCircle2, ChevronDown, ChevronUp, MapPin, Phone, Car, Mail } from 'lucide-react';
+import { Sparkles, Calendar, ArrowRight, ShieldCheck, Clock, MessageSquare, CheckCircle2, ChevronDown, ChevronUp, MapPin, Phone, Car, Mail, Megaphone } from 'lucide-react';
 import { BUSINESS_INFO, STANDARD_SERVICES, OPTIONAL_ADDONS, HOW_IT_WORKS, TRUST_POINTS, FAQS, SUBSCRIPTION_PLANS } from '../data/websiteData';
 import { useBooking } from '../context/BookingContext';
+import { useAdminData } from '../context/AdminDataContext';
 import ServiceCard from '../components/ServiceCard';
 import SubscriptionCard from '../components/SubscriptionCard';
 import BookingForm from '../components/BookingForm';
@@ -10,12 +11,13 @@ import BookingForm from '../components/BookingForm';
 export default function HomePage() {
   const navigate = useNavigate();
   const { plans, selectPlanAndScroll } = useBooking();
+  const { websiteContent } = useAdminData();
   const [openFaq, setOpenFaq] = useState(0);
 
-  // 4 Banners with user provided automotive detailing imagery
-  const banners = [
+  // Fallback banners
+  const defaultBanners = [
     {
-      id: 1,
+      id: "b1",
       image: "/images/banner-1.png",
       badge: "Serving Overall Hyderabad",
       titleLine1: "Premium Car Cleaning.",
@@ -24,9 +26,10 @@ export default function HomePage() {
       primaryCtaText: "Explore Subscription Plans",
       primaryCtaLink: "/plans",
       secondaryCtaText: "Book Your Cleaning",
+      published: true
     },
     {
-      id: 2,
+      id: "b2",
       image: "/images/banner-2.jpg",
       badge: "Apartment-Safe Microfiber Detailing",
       titleLine1: "Scratch-Free Exterior Wash.",
@@ -35,9 +38,10 @@ export default function HomePage() {
       primaryCtaText: "View Exterior Services",
       primaryCtaLink: "/services",
       secondaryCtaText: "Book Your Cleaning",
+      published: true
     },
     {
-      id: 3,
+      id: "b3",
       image: "/images/banner-3.png",
       badge: "High-Clarity Glass & Windscreen Polish",
       titleLine1: "Crystal-Clear Windscreen.",
@@ -46,9 +50,10 @@ export default function HomePage() {
       primaryCtaText: "Explore Detailing Services",
       primaryCtaLink: "/services",
       secondaryCtaText: "Book Your Cleaning",
+      published: true
     },
     {
-      id: 4,
+      id: "b4",
       image: "/images/banner-4.jpg",
       badge: "Deep Tyre & Alloy Wheel Cleaning",
       titleLine1: "Impeccable Tyre Gloss.",
@@ -57,18 +62,27 @@ export default function HomePage() {
       primaryCtaText: "Compare All 8 Subscription Plans",
       primaryCtaLink: "/plans",
       secondaryCtaText: "Book Your Cleaning",
+      published: true
     }
   ];
+
+  const rawBanners = websiteContent?.banners?.filter(b => b.published) || [];
+  const banners = rawBanners.length > 0 ? rawBanners : defaultBanners;
 
   const [currentBanner, setCurrentBanner] = useState(0);
 
   // Auto-scroll automatically every 4 seconds
   useEffect(() => {
+    if (banners.length <= 1) return;
     const interval = setInterval(() => {
       setCurrentBanner((prev) => (prev + 1) % banners.length);
     }, 4000);
     return () => clearInterval(interval);
   }, [banners.length]);
+
+  // Bound index safely
+  const safeBannerIndex = currentBanner < banners.length ? currentBanner : 0;
+  const activeBanner = banners[safeBannerIndex] || defaultBanners[0];
 
   const scrollToBooking = () => {
     const el = document.getElementById('booking-enquiry-form');
@@ -79,14 +93,37 @@ export default function HomePage() {
 
   return (
     <div className="bg-white text-slate-900 space-y-16 sm:space-y-24 lg:space-y-32 w-full max-w-full overflow-x-hidden">
-      {/* 1. HERO SECTION WITH 4 AUTO-ROTATING BANNERS */}
+      {/* PROMOTIONAL ANNOUNCEMENT BAR (MANAGED VIA ADMIN PANEL) */}
+      {websiteContent?.announcement?.enabled && (
+        <div className="bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 text-white text-xs font-semibold py-2.5 px-4 text-center flex flex-wrap items-center justify-center gap-2 shadow-md">
+          <span className="bg-white/20 text-white px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider">
+            {websiteContent.announcement.badge || 'Special Offer'}
+          </span>
+          <span>{websiteContent.announcement.text}</span>
+          {websiteContent.announcement.discountCode && (
+            <span className="font-mono bg-black/30 px-2 py-0.5 rounded font-bold text-cyan-200">
+              Code: {websiteContent.announcement.discountCode}
+            </span>
+          )}
+          {websiteContent.announcement.linkUrl && (
+            <Link
+              to={websiteContent.announcement.linkUrl}
+              className="underline text-cyan-200 hover:text-white font-bold ml-1"
+            >
+              {websiteContent.announcement.linkText || 'Learn More →'}
+            </Link>
+          )}
+        </div>
+      )}
+
+      {/* 1. HERO SECTION WITH AUTO-ROTATING BANNERS */}
       <section className="relative min-h-[92vh] sm:min-h-[85vh] lg:min-h-[90vh] flex items-center justify-center overflow-hidden pt-8 sm:pt-14 pb-12 sm:pb-20 bg-slate-950">
         {/* Carousel Background Images (Smooth Crossfade) */}
         {banners.map((banner, index) => {
-          const isActive = index === currentBanner;
+          const isActive = index === safeBannerIndex;
           return (
             <div
-              key={banner.id}
+              key={banner.id || index}
               className={`absolute inset-0 z-0 transition-opacity duration-500 ease-in-out ${
                 isActive ? 'opacity-80' : 'opacity-0 pointer-events-none'
               }`}
@@ -108,31 +145,31 @@ export default function HomePage() {
           {/* Badge */}
           <div className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-slate-900/90 border border-[#00A3FF]/40 text-[#00A3FF] text-[11px] sm:text-sm font-semibold mb-4 sm:mb-6 shadow-xl shadow-black/40 backdrop-blur-md animate-in fade-in duration-300 max-w-[95%] sm:max-w-none mx-auto">
             <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#00A3FF] shrink-0" />
-            <span className="truncate">{banners[currentBanner].badge}</span>
+            <span className="truncate">{activeBanner.badge}</span>
           </div>
 
           {/* Headline */}
           <h1 className="text-2xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight font-heading max-w-5xl mx-auto leading-snug sm:leading-[1.15] animate-in fade-in duration-500">
             <span className="block text-white drop-shadow-[0_4px_20px_rgba(0,0,0,0.95)]">
-              {banners[currentBanner].titleLine1}
+              {activeBanner.titleLine1}
             </span>
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-[#00A3FF] to-[#00A3FF] drop-shadow-[0_4px_20px_rgba(0,0,0,0.95)]">
-              {banners[currentBanner].titleLine2}
+              {activeBanner.titleLine2}
             </span>
           </h1>
 
           {/* Subheadline */}
           <p className="mt-3.5 sm:mt-6 text-xs sm:text-lg lg:text-xl text-white/85 max-w-md sm:max-w-3xl mx-auto leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)] font-medium animate-in fade-in duration-500 px-2 sm:px-0">
-            {banners[currentBanner].subtitle}
+            {activeBanner.subtitle}
           </p>
 
           {/* Call to Actions */}
           <div className="mt-6 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5 max-w-[300px] sm:max-w-none mx-auto">
             <Link
-              to={banners[currentBanner].primaryCtaLink}
+              to={activeBanner.primaryCtaLink || '/plans'}
               className="w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-4 rounded-full bg-gradient-to-r from-[#1677FF] to-[#00A3FF] hover:from-[#00A3FF] hover:to-[#1677FF] text-white font-bold text-xs sm:text-base shadow-lg sm:shadow-xl shadow-[#1677FF]/40 hover:shadow-[#00A3FF]/60 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2 group cursor-pointer"
             >
-              <span>{banners[currentBanner].primaryCtaText}</span>
+              <span>{activeBanner.primaryCtaText || 'Explore Plans'}</span>
               <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
 
@@ -141,17 +178,17 @@ export default function HomePage() {
               className="w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-4 rounded-full bg-slate-900/90 hover:bg-slate-800 border border-slate-700 hover:border-[#00A3FF]/60 text-white font-semibold text-xs sm:text-base transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 cursor-pointer shadow-md sm:shadow-lg backdrop-blur-sm"
             >
               <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#00A3FF]" />
-              <span>{banners[currentBanner].secondaryCtaText}</span>
+              <span>{activeBanner.secondaryCtaText || 'Book Cleaning'}</span>
             </button>
           </div>
 
           {/* Slide Progress Indicators */}
           <div className="mt-6 sm:mt-8 flex items-center justify-center gap-2 sm:gap-2.5">
             {banners.map((banner, idx) => {
-              const isActive = idx === currentBanner;
+              const isActive = idx === safeBannerIndex;
               return (
                 <button
-                  key={banner.id}
+                  key={banner.id || idx}
                   onClick={() => setCurrentBanner(idx)}
                   aria-label={`Go to slide ${idx + 1}`}
                   className={`h-1.5 sm:h-2 rounded-full transition-all duration-300 cursor-pointer ${
@@ -224,7 +261,7 @@ export default function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-          {STANDARD_SERVICES.map((service) => (
+          {(websiteContent?.services?.filter(s => s.published) || STANDARD_SERVICES).map((service) => (
             <ServiceCard
               key={service.id}
               service={service}
@@ -301,13 +338,10 @@ export default function HomePage() {
         {/* Featured Plans Preview */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
           {(() => {
-            const list = plans && plans.length > 0 ? plans : SUBSCRIPTION_PLANS;
-            const featuredList = [
-              list.find(p => p.id === 'normal-15-day'),
-              list.find(p => p.id === 'normal-monthly'),
-              list.find(p => p.id === 'premium-monthly')
-            ].filter(Boolean);
-            const displayList = featuredList.length >= 3 ? featuredList : list.slice(0, 3);
+            const list = (plans && plans.length > 0 ? plans : SUBSCRIPTION_PLANS).filter(p => p.status !== 'Inactive');
+            const popularPlans = list.filter(p => p.popular);
+            const otherPlans = list.filter(p => !p.popular);
+            const displayList = [...popularPlans, ...otherPlans].slice(0, 3);
             return displayList.map((plan) => (
               <SubscriptionCard
                 key={plan.id}
@@ -323,7 +357,7 @@ export default function HomePage() {
             to="/plans"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-900 font-semibold text-sm transition-all shadow-sm"
           >
-            <span>Compare All 8 Subscription Plans & Inclusions</span>
+            <span>Compare All {(plans && plans.length > 0 ? plans : SUBSCRIPTION_PLANS).filter(p => p.status !== 'Inactive').length} Subscription Plans & Inclusions</span>
             <ArrowRight className="w-4 h-4 text-[#1677FF]" />
           </Link>
         </div>
@@ -468,7 +502,7 @@ export default function HomePage() {
         </div>
 
         <div className="space-y-4">
-          {FAQS.map((faq, index) => {
+          {(websiteContent?.faqs?.filter(f => f.published) || FAQS).map((faq, index) => {
             const isOpen = openFaq === index;
             return (
               <div
