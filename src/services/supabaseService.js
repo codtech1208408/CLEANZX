@@ -128,27 +128,41 @@ export const fetchCloudCustomers = async () => {
     const rows = await res.json();
     if (!Array.isArray(rows)) return null;
 
-    return rows.map(r => ({
-      id: r.id,
-      name: r.name,
-      phone: r.phone,
-      email: r.email,
-      apartment: r.apartment,
-      block: r.block,
-      flat_number: r.flat_number,
-      car_model: r.car_model,
-      vehicle_registration_number: r.vehicle_registration_number,
-      carType: r.car_type || 'Sedan',
-      activePlan: r.active_plan,
-      planId: r.plan_id,
-      subscriptionStatus: r.subscription_status,
-      paymentStatus: r.payment_status,
-      totalSpent: parseFloat(r.total_spent) || 0,
-      balanceDue: parseFloat(r.balance_due) || 0,
-      joinDate: r.join_date,
-      notes: r.notes || '',
-      password: 'clean@2026'
-    }));
+    return rows.map(r => {
+      let pwd = 'clean@2026';
+      let originalNotes = r.notes || '';
+      if (r.notes) {
+        try {
+          const parsed = JSON.parse(r.notes);
+          if (parsed && typeof parsed === 'object' && parsed.pwd) {
+            pwd = parsed.pwd;
+            originalNotes = parsed.note || '';
+          }
+        } catch {}
+      }
+
+      return {
+        id: r.id,
+        name: r.name,
+        phone: r.phone,
+        email: r.email,
+        apartment: r.apartment,
+        block: r.block,
+        flat_number: r.flat_number,
+        car_model: r.car_model,
+        vehicle_registration_number: r.vehicle_registration_number,
+        carType: r.car_type || 'Sedan',
+        activePlan: r.active_plan,
+        planId: r.plan_id,
+        subscriptionStatus: r.subscription_status,
+        paymentStatus: r.payment_status,
+        totalSpent: parseFloat(r.total_spent) || 0,
+        balanceDue: parseFloat(r.balance_due) || 0,
+        joinDate: r.join_date,
+        notes: originalNotes,
+        password: pwd
+      };
+    });
   } catch (err) {
     console.warn('[Supabase] Failed to fetch customers:', err);
     return null;
@@ -157,6 +171,11 @@ export const fetchCloudCustomers = async () => {
 
 export const createCloudCustomer = async (cust) => {
   try {
+    const notesPayload = JSON.stringify({
+      pwd: cust.password || 'clean@2026',
+      note: cust.notes || ''
+    });
+
     await fetch(`${SUPABASE_URL}/rest/v1/customers`, {
       method: 'POST',
       headers: getHeaders(true),
@@ -178,7 +197,7 @@ export const createCloudCustomer = async (cust) => {
         total_spent: cust.totalSpent || 0,
         balance_due: cust.balanceDue || 0,
         join_date: cust.joinDate || new Date().toISOString().slice(0, 10),
-        notes: cust.notes || ''
+        notes: notesPayload
       })
     });
   } catch (err) {

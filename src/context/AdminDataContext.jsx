@@ -378,12 +378,24 @@ export const AdminDataProvider = ({ children }) => {
           }
         }
 
-        // 2. Customers Table
+        // 2. Customers Table & Credentials Sync
         if (cloudCustomers && Array.isArray(cloudCustomers)) {
-          const localStr = JSON.stringify(prev.customers.map(c => ({ id: c.id, name: c.name, phone: c.phone })));
-          const cloudStr = JSON.stringify(cloudCustomers.map(c => ({ id: c.id, name: c.name, phone: c.phone })));
+          let mergedCustomers = cloudCustomers;
+          if (cloudKVMap && cloudKVMap['customers']?.data && Array.isArray(cloudKVMap['customers'].data)) {
+            const kvCusts = cloudKVMap['customers'].data;
+            mergedCustomers = cloudCustomers.map(c => {
+              const match = kvCusts.find(k => k.id === c.id || k.email === c.email || k.phone === c.phone);
+              return {
+                ...c,
+                password: match?.password || c.password || 'clean@2026'
+              };
+            });
+          }
+
+          const localStr = JSON.stringify(prev.customers.map(c => ({ id: c.id, name: c.name, phone: c.phone, password: c.password })));
+          const cloudStr = JSON.stringify(mergedCustomers.map(c => ({ id: c.id, name: c.name, phone: c.phone, password: c.password })));
           if (localStr !== cloudStr) {
-            nextState.customers = cloudCustomers;
+            nextState.customers = mergedCustomers;
             updated = true;
           }
         }
@@ -803,10 +815,15 @@ export const AdminDataProvider = ({ children }) => {
       notes: formData.notes || 'Registered through Customer Portal.'
     };
 
-    setState(prev => ({
-      ...prev,
-      customers: [newCust, ...prev.customers]
-    }));
+    setState(prev => {
+      const updatedCusts = [newCust, ...prev.customers];
+      createCloudCustomer(newCust);
+      saveCloudKV('customers', updatedCusts, Date.now());
+      return {
+        ...prev,
+        customers: updatedCusts
+      };
+    });
 
     setIsCustomerAuthenticated(true);
     setCustomerUser(newCust);
@@ -849,6 +866,20 @@ export const AdminDataProvider = ({ children }) => {
       ...prev,
       customers: updatedCustomers
     }));
+
+    // Update in Supabase Cloud
+    saveCloudKV('customers', updatedCustomers, Date.now());
+    fetch(`${SUPABASE_URL}/rest/v1/customers?id=eq.${updatedCustomer.id}`, {
+      method: 'PATCH',
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        notes: JSON.stringify({ pwd: newPassword.trim(), note: updatedCustomer.notes || '' })
+      })
+    }).catch(() => {});
 
     // Update customer in backend server if running
     fetch(`/api/customers/${updatedCustomer.id}`, {
