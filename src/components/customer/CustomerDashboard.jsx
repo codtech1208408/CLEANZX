@@ -561,6 +561,10 @@ export default function CustomerDashboard() {
               <Menu className="w-5 h-5" />
             </button>
 
+            <span className="sm:hidden text-base font-black text-slate-900 tracking-tight">
+              Customer Portal
+            </span>
+
             <div className="hidden sm:block">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-medium text-slate-400">Customer Dashboard /</span>
@@ -587,17 +591,6 @@ export default function CustomerDashboard() {
               <Car className="w-3.5 h-3.5 text-cyan-600" />
               <span>{customerUser?.vehicle_registration_number || 'TS VEHICLE'}</span>
             </div>
-
-            {/* Quick WhatsApp Support Button */}
-            <a
-              href={getWhatsAppLink('support')}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
-            >
-              <MessageCircle className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">WhatsApp Help</span>
-            </a>
           </div>
         </header>
 

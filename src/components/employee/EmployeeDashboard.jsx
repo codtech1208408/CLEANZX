@@ -370,6 +370,10 @@ export default function EmployeeDashboard() {
               <Menu className="w-5 h-5" />
             </button>
 
+            <span className="sm:hidden text-base font-black text-slate-900 tracking-tight">
+              Employee Portal
+            </span>
+
             <div className="hidden sm:block">
               <div className="flex items-center gap-2 text-xs">
                 <span className="text-slate-500 font-medium">Specialist Staff</span>

@@ -14,8 +14,6 @@ import {
   LogOut,
   ExternalLink,
   Sparkles,
-  RotateCcw,
-  RefreshCw,
   Menu,
   X,
   ChevronRight,
@@ -43,8 +41,6 @@ export default function AdminPage() {
     isAuthenticated,
     adminUser,
     logout,
-    resetToDefaults,
-    syncWithCloud,
     bookings,
     subscriptions,
     dailySchedules,
@@ -53,16 +49,6 @@ export default function AdminPage() {
 
   const [activeTab, setActiveTab] = useState('overview');
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isSyncing, setIsSyncing] = useState(false);
-
-  const handleCloudSync = async () => {
-    setIsSyncing(true);
-    try {
-      await syncWithCloud();
-    } finally {
-      setTimeout(() => setIsSyncing(false), 600);
-    }
-  };
 
   // Global WhatsApp Modal State
   const [whatsAppModalData, setWhatsAppModalData] = useState({
@@ -279,48 +265,16 @@ export default function AdminPage() {
                 <Menu className="w-5 h-5" />
               </button>
 
+              <span className="sm:hidden text-base font-black text-slate-900 tracking-tight">
+                Admin Panel
+              </span>
+
               <div className="hidden sm:flex items-center gap-2">
                 <span className="text-slate-400 text-xs font-medium">Admin /</span>
                 <h1 className="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
                   <span>{currentNav.label}</span>
                 </h1>
               </div>
-            </div>
-
-            {/* Right: Actions */}
-            <div className="flex items-center gap-2 sm:gap-3">
-              {/* Cloud Sync Button */}
-              <button
-                onClick={handleCloudSync}
-                disabled={isSyncing}
-                title="Sync database with Cloud Supabase"
-                className="px-3 py-1.5 bg-slate-100 hover:bg-cyan-50 text-slate-700 hover:text-cyan-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 border border-slate-200 transition-all cursor-pointer shadow-2xs"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-cyan-600' : 'text-slate-500'}`} />
-                <span className="hidden sm:inline">{isSyncing ? 'Syncing...' : 'Sync Cloud'}</span>
-              </button>
-
-              {/* WhatsApp Quick Chat */}
-              <button
-                onClick={() => handleOpenWhatsApp({ templateType: 'support' })}
-                className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm shadow-emerald-600/30 transition-all cursor-pointer"
-              >
-                <MessageSquare className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">WhatsApp Chat</span>
-              </button>
-
-              {/* Reset Demo Data */}
-              <button
-                onClick={() => {
-                  if (confirm('Reset all admin and website data back to factory demo defaults?')) {
-                    resetToDefaults();
-                  }
-                }}
-                title="Reset to default mock dataset"
-                className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
-              >
-                <RotateCcw className="w-4 h-4" />
-              </button>
             </div>
           </div>
         </header>
