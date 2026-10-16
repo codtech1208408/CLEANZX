@@ -125,8 +125,29 @@ export const INITIAL_PLANS = SUBSCRIPTION_PLANS.map(plan => {
   };
 });
 
-// Clean initial states: No hardcoded demo data
-export const INITIAL_EMPLOYEES = [];
+// Clean initial states: Active specialist harish
+export const INITIAL_EMPLOYEES = [
+  {
+    id: "EMP-01",
+    name: "harish",
+    phone: "8519821491",
+    email: "harishneela060@gmail.com",
+    role: "Doorstep Cleaning Specialist",
+    zone: "Mehdipatnam & Tolichowki",
+    assignedApartments: [
+      "Prestige High Fields",
+      "Skyline Towers"
+    ],
+    status: "Active",
+    rating: 5.0,
+    jobsCompleted: 0,
+    activeScheduleCount: 0,
+    joinDate: "2025-08-10",
+    username: "harish",
+    password: "cleanzx@2026",
+    canLogin: true
+  }
+];
 export const INITIAL_CUSTOMERS = [];
 export const INITIAL_SUBSCRIPTIONS = [];
 export const INITIAL_BOOKINGS = [];

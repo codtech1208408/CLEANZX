@@ -12,6 +12,18 @@ import {
   INITIAL_SUBSCRIPTION_CHANGES,
   DEFAULT_INTEGRATIONS_SETTINGS
 } from '../data/adminInitialData';
+import {
+  fetchCloudEmployees,
+  createCloudEmployee,
+  updateCloudEmployee,
+  deleteCloudEmployee,
+  fetchCloudCustomers,
+  createCloudCustomer,
+  deleteCloudCustomer,
+  fetchCloudBookings,
+  createCloudBooking,
+  deleteCloudBooking
+} from '../services/supabaseService';
 
 const AdminDataContext = createContext();
 
@@ -329,6 +341,77 @@ export const AdminDataProvider = ({ children }) => {
         }
       })
       .catch(() => {});
+  }, []);
+
+  // Live Cloud Synchronization with Supabase
+  // Ensures changes made on localhost show on Vercel, and changes made on Vercel show on localhost
+  const syncWithCloud = async () => {
+    try {
+      const [cloudEmployees, cloudCustomers, cloudBookings] = await Promise.all([
+        fetchCloudEmployees(),
+        fetchCloudCustomers(),
+        fetchCloudBookings()
+      ]);
+
+      setState(prev => {
+        let updated = false;
+        const nextState = { ...prev };
+
+        if (cloudEmployees && Array.isArray(cloudEmployees)) {
+          const localStr = JSON.stringify(prev.employees.map(e => ({ id: e.id, name: e.name, phone: e.phone, status: e.status })));
+          const cloudStr = JSON.stringify(cloudEmployees.map(e => ({ id: e.id, name: e.name, phone: e.phone, status: e.status })));
+          if (localStr !== cloudStr) {
+            nextState.employees = cloudEmployees;
+            updated = true;
+          }
+        }
+
+        if (cloudCustomers && Array.isArray(cloudCustomers)) {
+          const localStr = JSON.stringify(prev.customers.map(c => ({ id: c.id, name: c.name, phone: c.phone })));
+          const cloudStr = JSON.stringify(cloudCustomers.map(c => ({ id: c.id, name: c.name, phone: c.phone })));
+          if (localStr !== cloudStr) {
+            nextState.customers = cloudCustomers;
+            updated = true;
+          }
+        }
+
+        if (cloudBookings && Array.isArray(cloudBookings)) {
+          const localStr = JSON.stringify((prev.bookings || []).map(b => b.id));
+          const cloudStr = JSON.stringify(cloudBookings.map(b => b.id));
+          if (localStr !== cloudStr) {
+            nextState.bookings = cloudBookings;
+            updated = true;
+          }
+        }
+
+        if (updated) {
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(nextState));
+          } catch {}
+          return nextState;
+        }
+        return prev;
+      });
+    } catch (err) {
+      console.warn('Cloud sync error:', err);
+    }
+  };
+
+  useEffect(() => {
+    // Initial sync
+    syncWithCloud();
+
+    // Sync on window focus (when switching tabs between localhost and Vercel)
+    const onFocus = () => syncWithCloud();
+    window.addEventListener('focus', onFocus);
+
+    // Periodic sync every 6 seconds
+    const interval = setInterval(syncWithCloud, 6000);
+
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      clearInterval(interval);
+    };
   }, []);
 
   // Auth Methods
@@ -1227,6 +1310,7 @@ export const AdminDataProvider = ({ children }) => {
       ...prev,
       customers: [newCust, ...prev.customers]
     }));
+    createCloudCustomer(newCust);
     return newCust;
   };
 
@@ -1247,6 +1331,7 @@ export const AdminDataProvider = ({ children }) => {
   };
 
   const deleteCustomer = (id) => {
+    deleteCloudCustomer(id);
     setState(prev => {
       const targetCustomer = prev.customers.find(c => c.id === id);
       const targetName = targetCustomer ? (targetCustomer.name || '').trim().toLowerCase() : '';
@@ -1462,10 +1547,12 @@ export const AdminDataProvider = ({ children }) => {
         bookings: [newBooking, ...prev.bookings]
       };
     });
+    createCloudBooking(newBooking);
     return newBooking;
   };
 
   const deleteBooking = (bookingId) => {
+    deleteCloudBooking(bookingId);
     setState(prev => ({
       ...prev,
       bookings: prev.bookings.filter(b => b.id !== bookingId),
@@ -1594,6 +1681,7 @@ export const AdminDataProvider = ({ children }) => {
       ...prev,
       employees: [...prev.employees, newEmp]
     }));
+    createCloudEmployee(newEmp);
     return newEmp;
   };
 
@@ -1602,6 +1690,7 @@ export const AdminDataProvider = ({ children }) => {
       ...prev,
       employees: prev.employees.map(e => e.id === id ? { ...e, ...updatedFields } : e)
     }));
+    updateCloudEmployee(id, updatedFields);
   };
 
   const updateEmployeeCredentials = (employeeId, { username, password, canLogin }) => {
@@ -1621,6 +1710,7 @@ export const AdminDataProvider = ({ children }) => {
   };
 
   const deleteEmployee = (id) => {
+    deleteCloudEmployee(id);
     setState(prev => {
       const emp = prev.employees.find(e => e.id === id);
       const empName = emp?.name;
@@ -1642,12 +1732,15 @@ export const AdminDataProvider = ({ children }) => {
   };
 
   const toggleEmployeeStatus = (id) => {
+    const current = state.employees.find(e => e.id === id);
+    const newStatus = current?.status === 'Active' ? 'On Leave' : 'Active';
     setState(prev => ({
       ...prev,
       employees: prev.employees.map(e =>
-        e.id === id ? { ...e, status: e.status === 'Active' ? 'On Leave' : 'Active' } : e
+        e.id === id ? { ...e, status: newStatus } : e
       )
     }));
+    updateCloudEmployee(id, { status: newStatus });
   };
 
   // ==========================================
@@ -2175,6 +2268,9 @@ export const AdminDataProvider = ({ children }) => {
         deleteInvoice,
         cleanOrphanedInvoices,
         cleanOrphanedData,
+
+        // Cloud Sync
+        syncWithCloud,
 
         // Integrations & Scope Actions
         updateIntegrationsSettings,

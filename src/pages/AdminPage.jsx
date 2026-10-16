@@ -15,6 +15,7 @@ import {
   ExternalLink,
   Sparkles,
   RotateCcw,
+  RefreshCw,
   Menu,
   X,
   ChevronRight,
@@ -43,6 +44,7 @@ export default function AdminPage() {
     adminUser,
     logout,
     resetToDefaults,
+    syncWithCloud,
     bookings,
     subscriptions,
     dailySchedules,
@@ -51,6 +53,16 @@ export default function AdminPage() {
 
   const [activeTab, setActiveTab] = useState('overview');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  const handleCloudSync = async () => {
+    setIsSyncing(true);
+    try {
+      await syncWithCloud();
+    } finally {
+      setTimeout(() => setIsSyncing(false), 600);
+    }
+  };
 
   // Global WhatsApp Modal State
   const [whatsAppModalData, setWhatsAppModalData] = useState({
@@ -283,6 +295,17 @@ export default function AdminPage() {
 
             {/* Right: Actions */}
             <div className="flex items-center gap-2 sm:gap-3">
+              {/* Cloud Sync Button */}
+              <button
+                onClick={handleCloudSync}
+                disabled={isSyncing}
+                title="Sync database with Cloud Supabase"
+                className="px-3 py-1.5 bg-slate-100 hover:bg-cyan-50 text-slate-700 hover:text-cyan-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 border border-slate-200 transition-all cursor-pointer shadow-2xs"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-cyan-600' : 'text-slate-500'}`} />
+                <span className="hidden sm:inline">{isSyncing ? 'Syncing...' : 'Sync Cloud'}</span>
+              </button>
+
               {/* WhatsApp Quick Chat */}
               <button
                 onClick={() => handleOpenWhatsApp({ templateType: 'support' })}
@@ -300,7 +323,7 @@ export default function AdminPage() {
                   }
                 }}
                 title="Reset to default mock dataset"
-                className="p-2 text-slate-500 hover:text-cyan-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+                className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
               >
                 <RotateCcw className="w-4 h-4" />
               </button>
