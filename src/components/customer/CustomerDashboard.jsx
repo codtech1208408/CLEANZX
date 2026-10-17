@@ -126,15 +126,68 @@ export default function CustomerDashboard() {
   // Match customer's daily schedules / visits
   const customerVisits = useMemo(() => {
     if (!customerUser) return [];
-    const userPhoneDigits = (customerUser.phone || '').replace(/\D/g, '');
-    return dailySchedules.filter((sch) => {
-      const schPhoneDigits = (sch.phone || '').replace(/\D/g, '');
+    const userPhoneDigits = (customerUser.phone || '').replace(/\D/g, '').slice(-10);
+    const userName = (customerUser.name || '').toLowerCase().trim();
+    const userVehicleReg = (customerUser.vehicle_registration_number || '').replace(/\s+/g, '').toUpperCase();
+    const userId = customerUser.id;
+
+    // 1. Gather all visits from dailySchedules
+    const fromSchedules = (dailySchedules || []).filter((sch) => {
+      const schPhoneDigits = (sch.phone || '').replace(/\D/g, '').slice(-10);
+      const schName = (sch.customerName || '').toLowerCase().trim();
+      const schReg = (sch.regNumber || '').replace(/\s+/g, '').toUpperCase();
+      const schCustId = sch.customerId;
+
       return (
+        (userId && schCustId && userId === schCustId) ||
         (userPhoneDigits && schPhoneDigits && userPhoneDigits === schPhoneDigits) ||
-        (sch.customerName && sch.customerName.toLowerCase() === customerUser.name?.toLowerCase())
+        (userVehicleReg && schReg && userVehicleReg === schReg) ||
+        (userName && schName && userName === schName)
       );
     });
-  }, [dailySchedules, customerUser]);
+
+    // 2. Also check bookings if not in schedules
+    const fromBookings = (bookings || [])
+      .filter((b) => {
+        const bPhoneDigits = (b.phone_number || '').replace(/\D/g, '').slice(-10);
+        const bName = (b.customer_name || '').toLowerCase().trim();
+        const bReg = (b.vehicle_registration_number || '').replace(/\s+/g, '').toUpperCase();
+        const isMatched = (userPhoneDigits && bPhoneDigits && userPhoneDigits === bPhoneDigits) ||
+                          (userVehicleReg && bReg && userVehicleReg === bReg) ||
+                          (userName && bName && userName === bName);
+        return isMatched && !fromSchedules.some(s => s.bookingId === b.id || s.id === 'SCH-' + b.id || s.id === b.id);
+      })
+      .map(b => ({
+        id: 'SCH-' + b.id,
+        bookingId: b.id,
+        timeSlot: b.preferred_time || '07:00 AM - 08:00 AM',
+        customerName: b.customer_name || customerUser.name,
+        phone: b.phone_number || customerUser.phone,
+        apartment: b.apartment || customerUser.apartment,
+        block: b.block || customerUser.block,
+        flat: b.flat_number || customerUser.flat_number,
+        carModel: b.car_model || customerUser.car_model,
+        regNumber: b.vehicle_registration_number || customerUser.vehicle_registration_number,
+        planName: b.preferred_plan || customerUser.activePlan,
+        employeeName: b.assigned_employee,
+        date: b.preferred_start_date || new Date().toISOString().slice(0, 10),
+        status: b.status === 'Confirmed' ? 'Assigned' : b.status,
+        notes: b.adminNotes || 'Confirmed Booking Service',
+        updatedAt: b.updatedAt,
+        source: 'booking'
+      }));
+
+    return [...fromSchedules, ...fromBookings];
+  }, [dailySchedules, bookings, customerUser]);
+
+  // Today's or latest visit for the prominent daily work card
+  const latestVisit = useMemo(() => {
+    if (!customerVisits || customerVisits.length === 0) return null;
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const todayVisit = customerVisits.find(v => v.date === todayStr);
+    if (todayVisit) return todayVisit;
+    return customerVisits[0];
+  }, [customerVisits]);
 
   // Match customer's invoices
   const customerInvoices = useMemo(() => {
@@ -637,6 +690,129 @@ export default function CustomerDashboard() {
                   >
                     <CreditCard className="w-4 h-4" />
                     <span>Pay ₹{(totalBalanceDue > 0 ? totalBalanceDue : activePlanPrice).toLocaleString('en-IN')} Now</span>
+                  </button>
+                </div>
+              )}
+
+              {/* ========================================================= */}
+              {/* LIVE DAILY CAR CARE & SPECIALIST WORK UPDATES CARD */}
+              {/* ========================================================= */}
+              {latestVisit ? (
+                <div
+                  className={`p-6 rounded-3xl border transition-all shadow-sm relative overflow-hidden ${
+                    latestVisit.status === 'Completed'
+                      ? 'bg-gradient-to-br from-emerald-500/5 via-white to-emerald-500/10 border-emerald-300'
+                      : latestVisit.status === 'In Progress'
+                      ? 'bg-gradient-to-br from-cyan-500/10 via-white to-blue-500/10 border-cyan-400 ring-2 ring-cyan-500/20'
+                      : latestVisit.status === 'Missed'
+                      ? 'bg-gradient-to-br from-rose-500/5 via-white to-rose-500/10 border-rose-300'
+                      : 'bg-gradient-to-br from-slate-50 via-white to-cyan-500/5 border-slate-200'
+                  }`}
+                >
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap mb-2">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-50 text-cyan-800 border border-cyan-200 text-xs font-bold">
+                          <Sparkles className="w-3.5 h-3.5 text-cyan-600" />
+                          <span>Daily Service Update • {latestVisit.date || 'Today'}</span>
+                        </span>
+
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider ${
+                            latestVisit.status === 'Completed'
+                              ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                              : latestVisit.status === 'In Progress'
+                              ? 'bg-cyan-100 text-cyan-800 border border-cyan-300 animate-pulse'
+                              : latestVisit.status === 'Missed'
+                              ? 'bg-rose-100 text-rose-800 border border-rose-300'
+                              : 'bg-amber-100 text-amber-800 border border-amber-300'
+                          }`}
+                        >
+                          ● {latestVisit.status === 'Completed' ? 'Service Completed' : latestVisit.status === 'In Progress' ? 'Currently Being Cleaned' : latestVisit.status}
+                        </span>
+
+                        {latestVisit.updatedAt && (
+                          <span className="text-[11px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
+                            Updated {new Date(latestVisit.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        )}
+                      </div>
+
+                      <h3 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                        <span>{latestVisit.carModel || customerUser?.car_model || 'Vehicle'}</span>
+                        <span className="font-mono text-xs font-bold text-cyan-800 bg-cyan-50 px-2.5 py-0.5 rounded-lg border border-cyan-200">
+                          {latestVisit.regNumber || customerUser?.vehicle_registration_number || 'TS Vehicle'}
+                        </span>
+                      </h3>
+
+                      <div className="flex items-center gap-4 text-xs text-slate-600 mt-2 flex-wrap">
+                        <span className="flex items-center gap-1.5">
+                          <Clock className="w-3.5 h-3.5 text-cyan-600" />
+                          <span className="font-semibold text-slate-800">{latestVisit.timeSlot || '07:00 AM - 08:00 AM'}</span>
+                        </span>
+
+                        {latestVisit.employeeName && (
+                          <span className="flex items-center gap-1.5">
+                            <User className="w-3.5 h-3.5 text-cyan-600" />
+                            <span>Cleaning Specialist: <strong className="text-cyan-800">{latestVisit.employeeName}</strong></span>
+                          </span>
+                        )}
+
+                        <span className="flex items-center gap-1.5">
+                          <Building className="w-3.5 h-3.5 text-cyan-600" />
+                          <span>{latestVisit.apartment || customerUser?.apartment} (Flat {latestVisit.flat || customerUser?.flat_number})</span>
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 self-start md:self-auto">
+                      <button
+                        onClick={() => setActiveTab('history')}
+                        className="px-4 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs border border-slate-200 transition-all flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <Calendar className="w-3.5 h-3.5 text-cyan-600" />
+                        <span>All Service Logs ({customerVisits.length})</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Specialist Service Notes Box */}
+                  <div className="mt-4 pt-3 border-t border-slate-200/80">
+                    <div className="p-3.5 rounded-2xl bg-white/90 border border-slate-200 text-xs">
+                      <p className="font-bold text-slate-800 flex items-center gap-1.5 mb-1">
+                        <FileText className="w-3.5 h-3.5 text-cyan-600" />
+                        <span>Latest Specialist Daily Work Report & Notes:</span>
+                      </p>
+                      <p className="text-slate-700 leading-relaxed pl-5 font-medium">
+                        {latestVisit.notes
+                          ? latestVisit.notes
+                          : latestVisit.status === 'Completed'
+                          ? 'Spotless morning clean completed: exterior body wipe, windshield treatment, and alloy polish executed.'
+                          : latestVisit.status === 'In Progress'
+                          ? 'Specialist is currently at your basement parking bay executing morning cleaning service.'
+                          : 'Specialist is scheduled to complete doorstep care during morning service window (6:00 AM – 11:30 AM).'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-5 rounded-3xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-4 text-xs shadow-xs">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-cyan-50 border border-cyan-200 flex items-center justify-center text-cyan-600 shrink-0">
+                      <Clock className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-slate-900">Daily Service & Morning Visits</p>
+                      <p className="text-slate-500 text-[11px] mt-0.5">
+                        Your assigned doorstep cleaning specialist will log morning service visits and notes between 6:00 AM – 11:30 AM.
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setActiveTab('history')}
+                    className="px-3.5 py-2 bg-white hover:bg-slate-100 text-cyan-700 font-bold rounded-xl border border-slate-200 text-xs shrink-0 cursor-pointer"
+                  >
+                    View History
                   </button>
                 </div>
               )}
@@ -1265,6 +1441,12 @@ export default function CustomerDashboard() {
                               <span className="text-slate-500 font-semibold">Specialist Note: </span>
                               <span>{visit.notes}</span>
                             </div>
+                          )}
+
+                          {visit.updatedAt && (
+                            <span className="text-[10px] text-slate-400 font-mono mt-1.5 block">
+                              Last updated: {new Date(visit.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ({visit.date || 'Today'})
+                            </span>
                           )}
                         </div>
                       </div>

@@ -160,11 +160,59 @@ export const INITIAL_EMPLOYEES = [
     canLogin: true
   }
 ];
-export const INITIAL_CUSTOMERS = [];
-export const INITIAL_SUBSCRIPTIONS = [];
+export const INITIAL_CUSTOMERS = [
+  {
+    id: "CUST-01",
+    name: "Santhosh Kumar",
+    phone: "9642734252",
+    email: "santhosh@cleanzx.com",
+    apartment: "Skyline Heights",
+    block: "Tower A",
+    flat_number: "402",
+    car_model: "Hyundai i20",
+    vehicle_registration_number: "TS09AB1234",
+    carType: "Hatchback",
+    activePlan: "Monthly Premium Plan",
+    planId: "premium-monthly",
+    subscriptionStatus: "Active",
+    paymentStatus: "Paid",
+    totalSpent: 1499,
+    balanceDue: 0,
+    joinDate: "2026-10-12",
+    password: "clean@2026",
+    notes: "Assigned morning doorstep care."
+  }
+];
+
+export const INITIAL_SUBSCRIPTIONS = [
+  {
+    id: "SUB-2026-01",
+    customerId: "CUST-01",
+    customerName: "Santhosh Kumar",
+    phone: "9642734252",
+    apartment: "Skyline Heights",
+    flat: "Tower A - Flat 402",
+    car: "Hyundai i20 (TS09AB1234)",
+    planId: "premium-monthly",
+    planName: "Monthly Premium Plan",
+    category: "Premium",
+    startDate: "2026-10-12",
+    expiryDate: "2026-11-12",
+    amount: 1499,
+    timeSlot: "07:00 AM - 08:00 AM",
+    assignedEmployee: "harish",
+    status: "Active",
+    daysRemaining: 26,
+    autoRenew: true,
+    renewalCount: 0,
+    authorizedChanges: []
+  }
+];
+
 export const INITIAL_BOOKINGS = [
   {
     id: "ENQ-MV4ZO6OW-7072",
+    customerId: "CUST-01",
     customer_name: "Santhosh Kumar",
     phone_number: "9642734252",
     apartment: "Skyline Heights",
@@ -179,12 +227,35 @@ export const INITIAL_BOOKINGS = [
       "interior-vacuuming"
     ],
     additional_message: "Please focus on morning dust clearing before 8 AM.",
-    status: "Pending",
-    assigned_employee: "Unassigned",
+    status: "Confirmed",
+    assigned_employee: "harish",
     createdAt: "2026-10-12T08:27:22.208Z"
   }
 ];
-export const INITIAL_DAILY_SCHEDULE = [];
+
+export const INITIAL_DAILY_SCHEDULE = [
+  {
+    id: "SCH-ENQ-MV4ZO6OW-7072",
+    bookingId: "ENQ-MV4ZO6OW-7072",
+    customerId: "CUST-01",
+    timeSlot: "07:00 AM - 08:00 AM",
+    customerName: "Santhosh Kumar",
+    phone: "9642734252",
+    apartment: "Skyline Heights",
+    block: "Tower A",
+    flat: "402",
+    carModel: "Hyundai i20",
+    regNumber: "TS09AB1234",
+    planName: "Monthly Premium Plan",
+    employeeId: "EMP-01",
+    employeeName: "harish",
+    date: new Date().toISOString().slice(0, 10),
+    status: "Assigned",
+    notes: "Assigned for 07:00 AM morning doorstep cleaning",
+    updatedAt: new Date().toISOString(),
+    source: "booking"
+  }
+];
 export const INITIAL_INVOICES = [];
 export const INITIAL_SUBSCRIPTION_CHANGES = [];
 

@@ -38,6 +38,8 @@ export default function EmployeeDashboard() {
     employeeLogout,
     dailySchedules,
     bookings,
+    subscriptions,
+    customers,
     updateScheduleStatus,
     reassignScheduleEmployee
   } = useAdminData();
@@ -57,7 +59,7 @@ export default function EmployeeDashboard() {
 
   const showToast = (msg) => {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(''), 3000);
+    setTimeout(() => setToastMessage(''), 3500);
   };
 
   const todayStr = new Date().toISOString().slice(0, 10);
@@ -65,7 +67,7 @@ export default function EmployeeDashboard() {
   tomorrowObj.setDate(tomorrowObj.getDate() + 1);
   const tomorrowStr = tomorrowObj.toISOString().slice(0, 10);
 
-  // Filter jobs strictly assigned to this logged-in employee (from dailySchedules AND bookings)
+  // Filter jobs strictly assigned to this logged-in employee (from dailySchedules, bookings, and subscriptions)
   const myAssignedJobs = React.useMemo(() => {
     if (!employeeUser) return [];
     const empName = (employeeUser.name || '').toLowerCase().trim();
@@ -83,10 +85,11 @@ export default function EmployeeDashboard() {
     // 2. From bookings (ensure no duplicate if already present in dailySchedules)
     const bookingJobs = (bookings || [])
       .filter(b => b.assigned_employee && b.assigned_employee !== 'Unassigned' && matchesEmp(b.assigned_employee, null))
-      .filter(b => !scheduleJobs.some(s => s.bookingId === b.id || s.id === 'SCH-' + b.id))
+      .filter(b => !scheduleJobs.some(s => s.bookingId === b.id || s.id === 'SCH-' + b.id || s.id === b.id))
       .map(b => ({
         id: 'SCH-' + b.id,
         bookingId: b.id,
+        customerId: b.customerId || null,
         timeSlot: b.preferred_time || '07:00 AM - 08:00 AM',
         customerName: b.customer_name || 'Customer',
         phone: b.phone_number || '',
@@ -104,8 +107,33 @@ export default function EmployeeDashboard() {
         source: 'booking'
       }));
 
-    return [...scheduleJobs, ...bookingJobs];
-  }, [dailySchedules, bookings, employeeUser, todayStr]);
+    // 3. From active subscriptions assigned to this employee
+    const subJobs = (subscriptions || [])
+      .filter(s => (s.status === 'Active' || s.status === 'Renewed') && matchesEmp(s.assignedEmployee || s.employeeName, null))
+      .filter(s => !scheduleJobs.some(sch => sch.subscriptionId === s.id || sch.id === 'SCH-SUB-' + s.id || (sch.phone && s.phone && sch.phone.replace(/\D/g, '') === s.phone.replace(/\D/g, ''))))
+      .map(s => ({
+        id: 'SCH-SUB-' + s.id,
+        subscriptionId: s.id,
+        customerId: s.customerId || null,
+        timeSlot: s.timeSlot || '07:00 AM - 08:00 AM',
+        customerName: s.customerName || 'Subscriber',
+        phone: s.phone || '',
+        apartment: s.apartment || 'Prestige High Fields',
+        block: s.block || 'Tower 1',
+        flat: s.flat || '',
+        carModel: s.car?.split('(')[0]?.trim() || 'Car',
+        regNumber: s.car?.match(/\(([^)]+)\)/)?.[1] || 'TS-REG',
+        planName: s.planName || 'Doorstep Plan',
+        employeeId: employeeUser.id,
+        employeeName: s.assignedEmployee || employeeUser.name,
+        date: todayStr,
+        status: 'Assigned',
+        notes: 'Doorstep Subscription Care',
+        source: 'subscription'
+      }));
+
+    return [...scheduleJobs, ...bookingJobs, ...subJobs];
+  }, [dailySchedules, bookings, subscriptions, employeeUser, todayStr]);
 
   // Specialist jobs display source
   const displaySource = showAllCityVisits ? dailySchedules : myAssignedJobs;
@@ -162,16 +190,19 @@ export default function EmployeeDashboard() {
       updatingJob.id,
       updateForm.status,
       notesToSave,
-      updateForm.status === 'Missed' ? updateForm.reason : null
+      updateForm.status === 'Missed' ? updateForm.reason : null,
+      updatingJob
     );
 
-    showToast(`Visit marked as ${updateForm.status}`);
+    showToast(`Visit marked as ${updateForm.status} • Live in Admin & Customer Dashboards`);
     setUpdatingJob(null);
   };
 
-  const handleQuickStatusChange = (jobId, newStatus) => {
-    updateScheduleStatus(jobId, newStatus);
-    showToast(`Status updated to ${newStatus}`);
+  const handleQuickStatusChange = (jobOrId, newStatus) => {
+    const jobObj = typeof jobOrId === 'object' ? jobOrId : myAssignedJobs.find(j => j.id === jobOrId);
+    const jobId = jobObj ? jobObj.id : jobOrId;
+    updateScheduleStatus(jobId, newStatus, undefined, undefined, jobObj);
+    showToast(`Status updated to ${newStatus} • Reflected in both dashboards`);
   };
 
   const todayDate = new Date().toLocaleDateString('en-IN', {
@@ -737,7 +768,7 @@ export default function EmployeeDashboard() {
                               {!isInProgress && (
                                 <button
                                   type="button"
-                                  onClick={() => handleQuickStatusChange(job.id, 'In Progress')}
+                                  onClick={() => handleQuickStatusChange(job, 'In Progress')}
                                   className="flex-1 py-2 px-3 bg-cyan-50 hover:bg-cyan-100 text-cyan-700 border border-cyan-200 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                                 >
                                   <Play className="w-3.5 h-3.5 fill-cyan-600 text-cyan-600" />
@@ -803,9 +834,18 @@ export default function EmployeeDashboard() {
                           {job.notes && <p className="text-[10px] text-emerald-700 mt-0.5">Notes: {job.notes}</p>}
                         </div>
                       </div>
-                      <span className="font-mono text-xs text-slate-700 shrink-0 font-bold bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
-                        {job.timeSlot}
-                      </span>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="font-mono text-xs text-slate-700 font-bold bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
+                          {job.timeSlot}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenUpdateModal(job, job.status)}
+                          className="px-2.5 py-1 bg-cyan-50 hover:bg-cyan-100 text-cyan-700 border border-cyan-200 rounded-lg text-xs font-semibold cursor-pointer transition-colors"
+                        >
+                          Edit Update
+                        </button>
+                      </div>
                     </div>
                   ))
                 )}

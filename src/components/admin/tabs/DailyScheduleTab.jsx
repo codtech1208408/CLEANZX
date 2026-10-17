@@ -42,17 +42,18 @@ export default function DailyScheduleTab({ onOpenWhatsApp }) {
   // Filter only records belonging to existing active customers
   const validCustIds = new Set(customers.map(c => c.id).filter(Boolean));
   const validCustNames = new Set(customers.map(c => (c.name || '').trim().toLowerCase()).filter(Boolean));
-  const validCustPhones = new Set(customers.map(c => (c.phone || '').replace(/\D/g, '')).filter(Boolean));
+  const validCustPhones = new Set(customers.map(c => (c.phone || '').replace(/\D/g, '').slice(-10)).filter(Boolean));
 
   const isCustActive = (customerId, customerName, phone) => {
-    if (customers.length === 0) return false;
+    if (customers.length === 0) return true;
     if (customerId && validCustIds.has(customerId)) return true;
     if (customerName && validCustNames.has((customerName || '').trim().toLowerCase())) return true;
-    if (phone && validCustPhones.has((phone || '').replace(/\D/g, ''))) return true;
-    return false;
+    const cleanPh = (phone || '').replace(/\D/g, '').slice(-10);
+    if (cleanPh && validCustPhones.has(cleanPh)) return true;
+    return true; // Keep all schedules visible to Admin
   };
 
-  const activeDailySchedules = customers.length === 0 ? [] : dailySchedules.filter(s => isCustActive(s.customerId, s.customerName, s.phone));
+  const activeDailySchedules = Array.isArray(dailySchedules) ? dailySchedules : [];
 
   // New Schedule Modal
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -274,23 +275,36 @@ export default function DailyScheduleTab({ onOpenWhatsApp }) {
                       </select>
                     </td>
 
-                    {/* Status Chip */}
+                    {/* Status Chip & Work Notes */}
                     <td className="py-3 px-4">
-                      <span
-                        className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                          item.status === 'Completed'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : item.status === 'In Progress'
-                            ? 'bg-blue-100 text-blue-800'
-                            : item.status === 'Assigned'
-                            ? 'bg-amber-100 text-amber-800'
-                            : item.status === 'Missed'
-                            ? 'bg-rose-100 text-rose-800'
-                            : 'bg-slate-200 text-slate-700'
-                        }`}
-                      >
-                        {item.status}
-                      </span>
+                      <div>
+                        <span
+                          className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                            item.status === 'Completed'
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : item.status === 'In Progress'
+                              ? 'bg-blue-100 text-blue-800 animate-pulse'
+                              : item.status === 'Assigned'
+                              ? 'bg-amber-100 text-amber-800'
+                              : item.status === 'Missed'
+                              ? 'bg-rose-100 text-rose-800'
+                              : 'bg-slate-200 text-slate-700'
+                          }`}
+                        >
+                          ● {item.status}
+                        </span>
+                        {item.notes && (
+                          <p className="text-[11px] text-slate-600 mt-1 max-w-[200px] leading-tight" title={item.notes}>
+                            <span className="font-semibold text-slate-500">Note: </span>
+                            {item.notes}
+                          </p>
+                        )}
+                        {item.updatedAt && (
+                          <span className="text-[9px] text-slate-400 block font-mono mt-0.5">
+                            Updated {new Date(item.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        )}
+                      </div>
                     </td>
 
                     {/* Quick Status Changers & WhatsApp */}

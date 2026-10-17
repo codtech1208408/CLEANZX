@@ -30,19 +30,20 @@ export default function OverviewTab({ setActiveTab, onOpenWhatsApp }) {
   // Filter only records belonging to existing active customers
   const validCustIds = new Set(customers.map(c => c.id).filter(Boolean));
   const validCustNames = new Set(customers.map(c => (c.name || '').trim().toLowerCase()).filter(Boolean));
-  const validCustPhones = new Set(customers.map(c => (c.phone || '').replace(/\D/g, '')).filter(Boolean));
+  const validCustPhones = new Set(customers.map(c => (c.phone || '').replace(/\D/g, '').slice(-10)).filter(Boolean));
 
   const isCustActive = (customerId, customerName, phone) => {
-    if (customers.length === 0) return false;
+    if (customers.length === 0) return true;
     if (customerId && validCustIds.has(customerId)) return true;
     if (customerName && validCustNames.has((customerName || '').trim().toLowerCase())) return true;
-    if (phone && validCustPhones.has((phone || '').replace(/\D/g, ''))) return true;
-    return false;
+    const cleanPh = (phone || '').replace(/\D/g, '').slice(-10);
+    if (cleanPh && validCustPhones.has(cleanPh)) return true;
+    return true;
   };
 
-  const activeCustomerSubs = customers.length === 0 ? [] : subscriptions.filter(s => isCustActive(s.customerId, s.customerName, s.phone));
-  const activeCustomerSchedules = customers.length === 0 ? [] : dailySchedules.filter(s => isCustActive(s.customerId, s.customerName, s.phone));
-  const activeCustomerInvoices = customers.length === 0 ? [] : invoices.filter(inv => isCustActive(inv.customerId, inv.customerName, inv.phone));
+  const activeCustomerSubs = Array.isArray(subscriptions) ? subscriptions : [];
+  const activeCustomerSchedules = Array.isArray(dailySchedules) ? dailySchedules : [];
+  const activeCustomerInvoices = Array.isArray(invoices) ? invoices : [];
 
   // Metrics calculations
   const totalCustomers = customers.length;
