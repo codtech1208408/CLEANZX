@@ -84,7 +84,10 @@ export default function PlansAddonsTab({ onOpenWhatsApp }) {
 
   // Customers enrolled in selected plan
   const enrolledCustomers = selectedPlanForCustomers
-    ? subscriptions.filter(s => s.planId === selectedPlanForCustomers.id)
+    ? subscriptions.filter(s =>
+        s.planId === selectedPlanForCustomers.id ||
+        (s.planName && s.planName.toLowerCase() === selectedPlanForCustomers.name.toLowerCase())
+      )
     : [];
 
   return (
@@ -171,7 +174,10 @@ export default function PlansAddonsTab({ onOpenWhatsApp }) {
       {activeView === 'plans' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
           {plans.map(plan => {
-            const customerCount = subscriptions.filter(s => s.planId === plan.id).length;
+            const customerCount = subscriptions.filter(s =>
+              s.planId === plan.id ||
+              (s.planName && s.planName.toLowerCase() === plan.name.toLowerCase())
+            ).length;
 
             return (
               <div

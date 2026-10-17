@@ -39,17 +39,19 @@ export default function SubscriptionsTab({ onOpenWhatsApp }) {
   // Filter only records belonging to existing active customers
   const validCustIds = new Set(customers.map(c => c.id).filter(Boolean));
   const validCustNames = new Set(customers.map(c => (c.name || '').trim().toLowerCase()).filter(Boolean));
-  const validCustPhones = new Set(customers.map(c => (c.phone || '').replace(/\D/g, '')).filter(Boolean));
+  const validCustPhones = new Set(customers.map(c => (c.phone || '').replace(/\D/g, '').slice(-10)).filter(Boolean));
 
   const isCustActive = (customerId, customerName, phone) => {
-    if (customers.length === 0) return false;
+    if (!customers || customers.length === 0) return true;
     if (customerId && validCustIds.has(customerId)) return true;
     if (customerName && validCustNames.has((customerName || '').trim().toLowerCase())) return true;
-    if (phone && validCustPhones.has((phone || '').replace(/\D/g, ''))) return true;
-    return false;
+    const cleanPh = (phone || '').replace(/\D/g, '').slice(-10);
+    if (cleanPh && validCustPhones.has(cleanPh)) return true;
+    // Always preserve recorded subscriptions that have customer information
+    return Boolean(customerName || customerId || phone);
   };
 
-  const activeSubscriptions = customers.length === 0 ? [] : subscriptions.filter(s => isCustActive(s.customerId, s.customerName, s.phone));
+  const activeSubscriptions = subscriptions.filter(s => isCustActive(s.customerId, s.customerName, s.phone));
 
   // Modals
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);

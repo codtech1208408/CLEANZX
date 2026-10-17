@@ -2432,9 +2432,11 @@ export const AdminDataProvider = ({ children }) => {
   }) => {
     const finalRef = transactionRef || 'TXN-' + Date.now().toString(36).toUpperCase() + '-' + Math.floor(1000 + Math.random() * 9000);
     const numAmount = parseFloat(amount) || 1499;
+    const phoneLast10 = (phone || '').replace(/\D/g, '').slice(-10);
+    const todayStr = new Date().toISOString().slice(0, 10);
 
     setState(prev => {
-      let updatedInvoices = [...prev.invoices];
+      let updatedInvoices = [...(prev.invoices || [])];
       let targetInvoice = updatedInvoices.find(inv => inv.id === invoiceId || (customerId && inv.customerId === customerId && inv.status !== 'Paid'));
 
       if (targetInvoice) {
@@ -2447,7 +2449,7 @@ export const AdminDataProvider = ({ children }) => {
               amountPaid: totalPaid,
               balance: newBalance,
               status: newBalance === 0 ? 'Paid' : 'Partially Paid',
-              paymentDate: new Date().toISOString().slice(0, 10),
+              paymentDate: todayStr,
               paymentMethod,
               transactionRef: finalRef,
               notes: notes || inv.notes
@@ -2466,15 +2468,15 @@ export const AdminDataProvider = ({ children }) => {
           phone: phone || '',
           apartment: apartment || 'Prestige High Fields',
           planName: planName || 'Monthly Subscription Plan',
-          date: new Date().toISOString().slice(0, 10),
-          dueDate: new Date().toISOString().slice(0, 10),
+          date: todayStr,
+          dueDate: todayStr,
           subtotal: Math.round(numAmount / 1.18),
           tax: Math.round(numAmount - (numAmount / 1.18)),
           total: numAmount,
           amountPaid: numAmount,
           balance: 0,
           status: 'Paid',
-          paymentDate: new Date().toISOString().slice(0, 10),
+          paymentDate: todayStr,
           paymentMethod,
           transactionRef: finalRef,
           notes: notes
@@ -2482,37 +2484,174 @@ export const AdminDataProvider = ({ children }) => {
         updatedInvoices = [newInv, ...updatedInvoices];
       }
 
-      // Update customer payment status
-      const updatedCustomers = prev.customers.map(c => {
-        if (c.id === customerId || (phone && c.phone?.replace(/\D/g, '') === phone.replace(/\D/g, ''))) {
-          return {
-            ...c,
-            paymentStatus: 'Paid',
-            activePlan: planName || c.activePlan,
-            subscriptionStatus: 'Active'
-          };
-        }
-        return c;
-      });
+      // Update or create customer record
+      let updatedCustomers = [...(prev.customers || [])];
+      const custIdx = updatedCustomers.findIndex(c => 
+        c.id === customerId || 
+        (phoneLast10 && (c.phone || '').replace(/\D/g, '').slice(-10) === phoneLast10) ||
+        (customerName && (c.name || '').trim().toLowerCase() === customerName.trim().toLowerCase())
+      );
 
-      // Update subscriptions
-      const updatedSubscriptions = prev.subscriptions.map(s => {
-        if (s.customerId === customerId || (phone && s.phone?.replace(/\D/g, '') === phone.replace(/\D/g, ''))) {
-          return {
-            ...s,
-            status: 'Active',
-            paymentStatus: 'Paid'
-          };
-        }
-        return s;
-      });
+      let effectiveCust = null;
+      if (custIdx >= 0) {
+        updatedCustomers[custIdx] = {
+          ...updatedCustomers[custIdx],
+          paymentStatus: 'Paid',
+          activePlan: planName || updatedCustomers[custIdx].activePlan,
+          subscriptionStatus: 'Active',
+          totalSpent: (updatedCustomers[custIdx].totalSpent || 0) + numAmount,
+          balanceDue: 0
+        };
+        effectiveCust = updatedCustomers[custIdx];
+      } else {
+        effectiveCust = {
+          id: customerId || ('CUST-' + Math.floor(200 + Math.random() * 800)),
+          name: customerName || 'Valued Customer',
+          phone: phone || '',
+          email: `${(customerName || 'customer').toLowerCase().replace(/\s+/g, '')}@gmail.com`,
+          apartment: apartment || 'Prestige High Fields',
+          block: 'Tower A',
+          flat_number: '101',
+          car_model: 'Car',
+          vehicle_registration_number: '',
+          carType: 'Sedan/Hatchback',
+          activePlan: planName || 'Monthly Normal Plan',
+          subscriptionStatus: 'Active',
+          paymentStatus: 'Paid',
+          totalSpent: numAmount,
+          balanceDue: 0,
+          password: 'clean@2026',
+          joinDate: todayStr,
+          notes: 'Customer subscribed via Customer Portal'
+        };
+        updatedCustomers = [effectiveCust, ...updatedCustomers];
+      }
 
-      return {
+      // Find matched plan details
+      const matchedPlan = (prev.plans || []).find(p => 
+        p.name?.toLowerCase() === (planName || '').toLowerCase() || 
+        p.id === planName
+      );
+      const planCategory = matchedPlan?.category || (planName?.toLowerCase().includes('premium') ? 'Premium' : 'Normal');
+      let durationDays = 30;
+      if (planName?.includes('15')) durationDays = 15;
+      else if (planName?.includes('Quarterly') || planName?.includes('3 month')) durationDays = 90;
+      else if (planName?.includes('Half') || planName?.includes('6 month')) durationDays = 180;
+
+      const expDate = new Date();
+      expDate.setDate(expDate.getDate() + durationDays);
+      const expiryDateStr = expDate.toISOString().slice(0, 10);
+
+      // Update or create subscription record
+      let updatedSubscriptions = [...(prev.subscriptions || [])];
+      const subIdx = updatedSubscriptions.findIndex(s =>
+        s.customerId === (effectiveCust.id || customerId) ||
+        (phoneLast10 && (s.phone || '').replace(/\D/g, '').slice(-10) === phoneLast10) ||
+        (customerName && (s.customerName || '').trim().toLowerCase() === customerName.trim().toLowerCase())
+      );
+
+      if (subIdx >= 0) {
+        updatedSubscriptions[subIdx] = {
+          ...updatedSubscriptions[subIdx],
+          planId: matchedPlan?.id || updatedSubscriptions[subIdx].planId || 'normal-monthly',
+          planName: planName || updatedSubscriptions[subIdx].planName,
+          category: planCategory,
+          amount: numAmount,
+          startDate: todayStr,
+          expiryDate: expiryDateStr,
+          status: 'Active',
+          paymentStatus: 'Paid',
+          daysRemaining: durationDays
+        };
+      } else {
+        const newSub = {
+          id: 'SUB-' + new Date().getFullYear() + '-' + String(updatedSubscriptions.length + 1).padStart(2, '0'),
+          customerId: effectiveCust.id || customerId || 'CUST-01',
+          customerName: effectiveCust.name || customerName || 'Valued Customer',
+          phone: effectiveCust.phone || phone || '',
+          apartment: effectiveCust.apartment || apartment || 'Prestige High Fields',
+          flat: effectiveCust.flat_number ? `${effectiveCust.block || ''} ${effectiveCust.flat_number}`.trim() : 'Apartment Unit',
+          car: `${effectiveCust.car_model || 'Vehicle'} ${effectiveCust.vehicle_registration_number ? `(${effectiveCust.vehicle_registration_number})` : ''}`.trim(),
+          planId: matchedPlan?.id || 'normal-monthly',
+          planName: planName || 'Monthly Normal Plan',
+          category: planCategory,
+          startDate: todayStr,
+          expiryDate: expiryDateStr,
+          amount: numAmount,
+          timeSlot: '07:00 AM - 08:00 AM',
+          assignedEmployee: 'harish',
+          status: 'Active',
+          paymentStatus: 'Paid',
+          daysRemaining: durationDays,
+          autoRenew: true,
+          renewalCount: 0,
+          authorizedChanges: []
+        };
+        updatedSubscriptions = [newSub, ...updatedSubscriptions];
+      }
+
+      // Ensure daily schedule exists for employee morning run
+      let updatedSchedules = [...(prev.dailySchedules || [])];
+      const schedIdx = updatedSchedules.findIndex(s =>
+        s.customerId === (effectiveCust.id || customerId) ||
+        (phoneLast10 && (s.phone || '').replace(/\D/g, '').slice(-10) === phoneLast10) ||
+        (customerName && (s.customerName || '').trim().toLowerCase() === customerName.trim().toLowerCase())
+      );
+
+      if (schedIdx >= 0) {
+        updatedSchedules[schedIdx] = {
+          ...updatedSchedules[schedIdx],
+          planName: planName || updatedSchedules[schedIdx].planName,
+          status: 'Assigned',
+          assignedEmployee: 'harish',
+          employeeName: 'harish',
+          employeeId: 'EMP-01'
+        };
+      } else {
+        const newSchedule = {
+          id: 'SCH-SUB-' + Date.now().toString().slice(-6),
+          bookingId: 'BK-' + Date.now().toString().slice(-6),
+          customerId: effectiveCust.id || customerId || 'CUST-01',
+          customerName: effectiveCust.name || customerName || 'Valued Customer',
+          phone: effectiveCust.phone || phone || '',
+          apartment: effectiveCust.apartment || apartment || 'Prestige High Fields',
+          block: effectiveCust.block || 'Tower 1',
+          flat: effectiveCust.flat_number || '101',
+          carModel: effectiveCust.car_model || 'Car',
+          regNumber: effectiveCust.vehicle_registration_number || '',
+          planName: planName || 'Monthly Normal Plan',
+          employeeId: 'EMP-01',
+          employeeName: 'harish',
+          assignedEmployee: 'harish',
+          date: todayStr,
+          timeSlot: '07:00 AM - 08:00 AM',
+          status: 'Assigned',
+          notes: 'New active subscription doorstep care',
+          updatedAt: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+        };
+        updatedSchedules = [newSchedule, ...updatedSchedules];
+      }
+
+      const nextState = {
         ...prev,
         invoices: updatedInvoices,
         customers: updatedCustomers,
-        subscriptions: updatedSubscriptions
+        subscriptions: updatedSubscriptions,
+        dailySchedules: updatedSchedules
       };
+
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(nextState));
+        window.dispatchEvent(new CustomEvent('cleanzx_live_update', { detail: { type: 'payment_completed' } }));
+        saveCloudKV('subscriptions', updatedSubscriptions, Date.now());
+        saveCloudKV('customers', updatedCustomers, Date.now());
+        saveCloudKV('invoices', updatedInvoices, Date.now());
+        saveCloudKV('daily_schedules', updatedSchedules, Date.now());
+      } catch (err) {
+        console.warn('Storage sync error:', err);
+      }
+
+      return nextState;
     });
 
     return {
@@ -2520,7 +2659,7 @@ export const AdminDataProvider = ({ children }) => {
       transactionRef: finalRef,
       amount: numAmount,
       paymentMethod,
-      date: new Date().toISOString().slice(0, 10)
+      date: todayStr
     };
   };
 

@@ -67,17 +67,18 @@ export default function InvoicesTab({ onOpenWhatsApp }) {
 
   const validCustomerIds = new Set(custList.map(c => c.id).filter(Boolean));
   const validCustomerNames = new Set(custList.map(c => (c.name || '').trim().toLowerCase()).filter(Boolean));
-  const validPhones = new Set(custList.map(c => (c.phone || '').replace(/\D/g, '')).filter(Boolean));
+  const validPhones = new Set(custList.map(c => (c.phone || '').replace(/\D/g, '').slice(-10)).filter(Boolean));
 
   const isCustActive = (customerId, customerName, phone) => {
-    if (custList.length === 0) return false;
+    if (custList.length === 0) return true;
     if (customerId && validCustomerIds.has(customerId)) return true;
     if (customerName && validCustomerNames.has((customerName || '').trim().toLowerCase())) return true;
-    if (phone && validPhones.has((phone || '').replace(/\D/g, ''))) return true;
-    return false;
+    const cleanPh = (phone || '').replace(/\D/g, '').slice(-10);
+    if (cleanPh && validPhones.has(cleanPh)) return true;
+    return Boolean(customerName || customerId || phone);
   };
 
-  const activeInvoices = custList.length === 0 ? [] : invList.filter(inv => isCustActive(inv.customerId, inv.customerName, inv.phone));
+  const activeInvoices = invList.filter(inv => isCustActive(inv.customerId, inv.customerName, inv.phone));
 
   // Metrics
   const totalInvoiced = activeInvoices.reduce((acc, i) => acc + (i.total || 0), 0);
