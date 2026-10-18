@@ -95,6 +95,9 @@ export const AdminDataProvider = ({ children }) => {
     }
   });
 
+  // 10-Car Daily Assignments State
+  const [carAssignments, setCarAssignments] = useState([]);
+
   // Load persistent store or defaults
   const loadInitialState = () => {
     try {
@@ -382,6 +385,60 @@ export const AdminDataProvider = ({ children }) => {
         }
       })
       .catch(() => {});
+
+    // Sync 10-car assignments from backend on mount
+    fetch('/api/car-assignments')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.success && Array.isArray(data.data) && data.data.length > 0) {
+          setCarAssignments(data.data);
+          // Mirror into dailySchedules for consistent view across all existing tabs
+          setState(prev => {
+            const currentSchedules = [...(prev.dailySchedules || [])];
+            data.data.forEach(car => {
+              const idx = currentSchedules.findIndex(s => s.id === car.id || (s.regNumber === car.regNumber && s.date === car.date));
+              const scheduleItem = {
+                id: car.id,
+                carNumber: car.carNumber,
+                bookingId: car.id,
+                customerId: car.customerId || `CUST-${car.regNumber}`,
+                timeSlot: car.timeSlot,
+                customerName: car.customerName,
+                phone: car.phone,
+                apartment: car.apartment,
+                block: car.block,
+                flat: car.flat,
+                parkingBay: car.parkingBay,
+                carModel: car.carModel,
+                regNumber: car.regNumber,
+                planName: car.planName,
+                employeeId: car.employeeId,
+                employeeName: car.employeeName,
+                date: car.date,
+                status: car.status,
+                completedAt: car.completedAt,
+                notes: car.notes,
+                missedReason: car.missedReason,
+                beforePhoto: car.beforePhoto,
+                afterPhoto: car.afterPhoto,
+                updatedAt: car.updatedAt || new Date().toISOString(),
+                source: 'car_assignment'
+              };
+
+              if (idx >= 0) {
+                currentSchedules[idx] = { ...currentSchedules[idx], ...scheduleItem };
+              } else {
+                currentSchedules.unshift(scheduleItem);
+              }
+            });
+            return {
+              ...prev,
+              dailySchedules: currentSchedules
+            };
+          });
+        }
+      })
+      .catch(err => console.warn('Car assignments fetch warning:', err));
   }, []);
 
   // Tracking refs to differentiate local changes from incoming cloud updates
@@ -2361,6 +2418,228 @@ export const AdminDataProvider = ({ children }) => {
   };
 
   // ==========================================
+  // 10-CAR ASSIGNMENTS & PHOTO INSPECTION METHODS
+  // ==========================================
+  const syncCarAssignmentsToSchedules = (assignments) => {
+    if (!Array.isArray(assignments) || assignments.length === 0) return;
+    setState(prev => {
+      const existingSchedules = [...(prev.dailySchedules || [])];
+      assignments.forEach(car => {
+        const idx = existingSchedules.findIndex(s => s.id === car.id || (s.regNumber === car.regNumber && s.date === car.date));
+        const scheduleItem = {
+          id: car.id,
+          carNumber: car.carNumber,
+          bookingId: car.id,
+          customerId: car.customerId || `CUST-${car.regNumber}`,
+          timeSlot: car.timeSlot,
+          customerName: car.customerName,
+          phone: car.phone,
+          apartment: car.apartment,
+          block: car.block,
+          flat: car.flat,
+          parkingBay: car.parkingBay,
+          carModel: car.carModel,
+          regNumber: car.regNumber,
+          planName: car.planName,
+          employeeId: car.employeeId,
+          employeeName: car.employeeName,
+          date: car.date,
+          status: car.status,
+          completedAt: car.completedAt,
+          notes: car.notes,
+          missedReason: car.missedReason,
+          beforePhoto: car.beforePhoto,
+          afterPhoto: car.afterPhoto,
+          updatedAt: car.updatedAt || new Date().toISOString(),
+          source: 'car_assignment'
+        };
+
+        if (idx >= 0) {
+          existingSchedules[idx] = { ...existingSchedules[idx], ...scheduleItem };
+        } else {
+          existingSchedules.unshift(scheduleItem);
+        }
+      });
+
+      return {
+        ...prev,
+        dailySchedules: existingSchedules
+      };
+    });
+  };
+
+  const fetchCarAssignments = async (employeeId = null, date = null) => {
+    try {
+      let url = '/api/car-assignments';
+      const params = new URLSearchParams();
+      if (employeeId) params.append('employeeId', employeeId);
+      if (date) params.append('date', date);
+      if (params.toString()) url += `?${params.toString()}`;
+
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data && data.success && Array.isArray(data.data)) {
+        setCarAssignments(data.data);
+        syncCarAssignmentsToSchedules(data.data);
+        return data.data;
+      }
+    } catch (err) {
+      console.warn('Error fetching car assignments:', err);
+    }
+    return [];
+  };
+
+  const assignCarsToEmployee = async (employeeId, employeeName, cars = null, date = null) => {
+    try {
+      const res = await fetch('/api/car-assignments/assign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          employeeId,
+          employeeName: employeeName || 'Specialist Staff',
+          cars,
+          date: date || new Date().toISOString().slice(0, 10)
+        })
+      });
+      const data = await res.json();
+      if (data && data.success && Array.isArray(data.data)) {
+        const assignedCars = data.data;
+        setCarAssignments(prev => {
+          const cleanEmp = employeeId.trim().toLowerCase();
+          const targetDate = data.date;
+          const remaining = prev.filter(r => !((r.employeeId || '').toLowerCase() === cleanEmp && r.date === targetDate));
+          return [...assignedCars, ...remaining];
+        });
+        syncCarAssignmentsToSchedules(assignedCars);
+
+        setState(prev => ({
+          ...prev,
+          employees: prev.employees.map(e =>
+            (e.id === employeeId || e.name === employeeName)
+              ? { ...e, activeScheduleCount: assignedCars.length }
+              : e
+          )
+        }));
+
+        try {
+          window.dispatchEvent(new CustomEvent('cleanzx_live_update', {
+            detail: { type: 'cars_assigned', employeeId, count: assignedCars.length }
+          }));
+        } catch {}
+
+        return { success: true, message: data.message, data: assignedCars };
+      }
+      return { success: false, message: data?.message || 'Failed to assign cars.' };
+    } catch (err) {
+      console.error('assignCarsToEmployee error:', err);
+      return { success: false, message: err.message };
+    }
+  };
+
+  const assignTenCarsToEmployee = assignCarsToEmployee;
+
+  const updateCarAssignmentStatus = async (id, status, notes = '', missedReason = null) => {
+    const nowIso = new Date().toISOString();
+    setCarAssignments(prev =>
+      prev.map(c =>
+        c.id === id || c.regNumber === id
+          ? {
+              ...c,
+              status,
+              notes: notes !== undefined ? notes : c.notes,
+              missedReason: missedReason !== undefined ? missedReason : c.missedReason,
+              completedAt: status === 'Completed' ? (c.completedAt || nowIso) : null,
+              updatedAt: nowIso
+            }
+          : c
+      )
+    );
+
+    updateScheduleStatus(id, status, notes, missedReason);
+
+    try {
+      const res = await fetch(`/api/car-assignments/${encodeURIComponent(id)}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status,
+          notes,
+          missedReason,
+          completedAt: status === 'Completed' ? nowIso : null
+        })
+      });
+      const data = await res.json();
+      if (data && data.success) {
+        window.dispatchEvent(new CustomEvent('cleanzx_live_update', {
+          detail: { type: 'car_status_updated', id, status }
+        }));
+        return { success: true, data: data.data };
+      }
+    } catch (err) {
+      console.warn('Backend updateCarAssignmentStatus error:', err);
+    }
+    return { success: true };
+  };
+
+  const uploadCarAssignmentPhoto = async (id, photoType, photoData, caption = '') => {
+    const nowIso = new Date().toISOString();
+    const photoPayload = {
+      url: photoData,
+      uploadedAt: nowIso,
+      caption: caption || `${photoType === 'before' ? 'Before' : 'After'} cleaning photo`
+    };
+
+    setCarAssignments(prev =>
+      prev.map(c => {
+        if (c.id === id || c.regNumber === id) {
+          return {
+            ...c,
+            [photoType === 'before' ? 'beforePhoto' : 'afterPhoto']: photoPayload,
+            updatedAt: nowIso
+          };
+        }
+        return c;
+      })
+    );
+
+    setState(prev => ({
+      ...prev,
+      dailySchedules: (prev.dailySchedules || []).map(s => {
+        if (s.id === id || s.regNumber === id || s.bookingId === id) {
+          return {
+            ...s,
+            [photoType === 'before' ? 'beforePhoto' : 'afterPhoto']: photoPayload,
+            updatedAt: nowIso
+          };
+        }
+        return s;
+      })
+    }));
+
+    try {
+      const res = await fetch(`/api/car-assignments/${encodeURIComponent(id)}/photos`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          photoType,
+          photoData,
+          caption
+        })
+      });
+      const data = await res.json();
+      if (data && data.success) {
+        window.dispatchEvent(new CustomEvent('cleanzx_live_update', {
+          detail: { type: 'photo_uploaded', id, photoType }
+        }));
+        return { success: true, data: data.data };
+      }
+    } catch (err) {
+      console.warn('Backend uploadCarAssignmentPhoto error:', err);
+    }
+    return { success: true };
+  };
+
+  // ==========================================
   // 8. INVOICES & PAYMENTS
   // ==========================================
   const generateInvoice = (invoiceData) => {
@@ -2891,6 +3170,14 @@ export const AdminDataProvider = ({ children }) => {
         rescheduleSlot,
         addScheduleItem,
         deleteScheduleItem,
+
+        // Car Assignments & Photo Inspection Actions
+        carAssignments,
+        assignCarsToEmployee,
+        assignTenCarsToEmployee,
+        updateCarAssignmentStatus,
+        uploadCarAssignmentPhoto,
+        fetchCarAssignments,
 
         // Invoices Actions
         generateInvoice,

@@ -28,7 +28,11 @@ import {
   TrendingUp,
   Award,
   Zap,
-  Info
+  Info,
+  Camera,
+  Image as ImageIcon,
+  UploadCloud,
+  Eye
 } from 'lucide-react';
 import { useAdminData } from '../../context/AdminDataContext';
 
@@ -41,7 +45,10 @@ export default function EmployeeDashboard() {
     subscriptions,
     customers,
     updateScheduleStatus,
-    reassignScheduleEmployee
+    reassignScheduleEmployee,
+    uploadCarAssignmentPhoto,
+    updateCarAssignmentStatus,
+    carAssignments
   } = useAdminData();
 
   const [activeTab, setActiveTab] = useState('runs');
@@ -56,6 +63,9 @@ export default function EmployeeDashboard() {
     reason: 'Vehicle not parked in bay'
   });
   const [toastMessage, setToastMessage] = useState('');
+  const [photoModalJob, setPhotoModalJob] = useState(null);
+  const [activePhotoTab, setActivePhotoTab] = useState('both');
+  const [uploadingFor, setUploadingFor] = useState(null); // { id, type }
 
   const showToast = (msg) => {
     setToastMessage(msg);
@@ -132,8 +142,52 @@ export default function EmployeeDashboard() {
         source: 'subscription'
       }));
 
-    return [...scheduleJobs, ...bookingJobs, ...subJobs];
-  }, [dailySchedules, bookings, subscriptions, employeeUser, todayStr]);
+    // 4. Merge with carAssignments from backend
+    const enrichedScheduleJobs = scheduleJobs.map(job => {
+      const match = (carAssignments || []).find(ca => ca.id === job.id || (ca.regNumber === job.regNumber && ca.date === job.date));
+      return {
+        ...job,
+        carNumber: job.carNumber || match?.carNumber || null,
+        parkingBay: job.parkingBay || match?.parkingBay || null,
+        beforePhoto: job.beforePhoto || match?.beforePhoto || null,
+        afterPhoto: job.afterPhoto || match?.afterPhoto || null,
+        completedAt: job.completedAt || match?.completedAt || null
+      };
+    });
+
+    (carAssignments || []).filter(ca => matchesEmp(ca.employeeName, ca.employeeId)).forEach(ca => {
+      if (!enrichedScheduleJobs.some(j => j.id === ca.id || (j.regNumber === ca.regNumber && j.date === ca.date))) {
+        enrichedScheduleJobs.push({
+          id: ca.id,
+          carNumber: ca.carNumber,
+          bookingId: ca.id,
+          customerId: ca.customerId || null,
+          timeSlot: ca.timeSlot,
+          customerName: ca.customerName,
+          phone: ca.phone,
+          apartment: ca.apartment,
+          block: ca.block,
+          flat: ca.flat,
+          parkingBay: ca.parkingBay,
+          carModel: ca.carModel,
+          regNumber: ca.regNumber,
+          planName: ca.planName,
+          employeeId: ca.employeeId,
+          employeeName: ca.employeeName,
+          date: ca.date,
+          status: ca.status,
+          completedAt: ca.completedAt,
+          notes: ca.notes,
+          missedReason: ca.missedReason,
+          beforePhoto: ca.beforePhoto,
+          afterPhoto: ca.afterPhoto,
+          source: 'car_assignment'
+        });
+      }
+    });
+
+    return [...enrichedScheduleJobs, ...bookingJobs, ...subJobs];
+  }, [dailySchedules, bookings, subscriptions, carAssignments, employeeUser, todayStr]);
 
   // Specialist jobs display source
   const displaySource = showAllCityVisits ? dailySchedules : myAssignedJobs;
@@ -201,8 +255,48 @@ export default function EmployeeDashboard() {
   const handleQuickStatusChange = (jobOrId, newStatus) => {
     const jobObj = typeof jobOrId === 'object' ? jobOrId : myAssignedJobs.find(j => j.id === jobOrId);
     const jobId = jobObj ? jobObj.id : jobOrId;
-    updateScheduleStatus(jobId, newStatus, undefined, undefined, jobObj);
-    showToast(`Status updated to ${newStatus} • Reflected in both dashboards`);
+    if (updateCarAssignmentStatus) {
+      updateCarAssignmentStatus(jobId, newStatus, jobObj?.notes || '');
+    } else {
+      updateScheduleStatus(jobId, newStatus, undefined, undefined, jobObj);
+    }
+    showToast(`Status updated to ${newStatus} • Live in Admin & Specialist portals`);
+  };
+
+  const handlePhotoFileUpload = (e, job, photoType) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload an image file (JPEG, PNG, WEBP).');
+      return;
+    }
+
+    setUploadingFor({ id: job.id, type: photoType });
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result;
+      if (dataUrl && uploadCarAssignmentPhoto) {
+        uploadCarAssignmentPhoto(job.id, photoType, dataUrl, `${photoType === 'before' ? 'Before' : 'After'} cleaning photo of ${job.carModel} (${job.regNumber})`);
+        showToast(`✅ ${photoType === 'before' ? 'Before' : 'After'} photo uploaded for ${job.regNumber}!`);
+      }
+      setUploadingFor(null);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const handleAttachSamplePhoto = (job, photoType) => {
+    const sampleUrl = photoType === 'before' ? '/images/exterior-wash.jpg' : '/images/hero-car.jpg';
+    if (uploadCarAssignmentPhoto) {
+      uploadCarAssignmentPhoto(
+        job.id,
+        photoType,
+        sampleUrl,
+        `Demo ${photoType === 'before' ? 'Before' : 'After'} photo for ${job.carModel}`
+      );
+      showToast(`📸 Sample ${photoType} photo attached to ${job.regNumber}`);
+    }
   };
 
   const todayDate = new Date().toLocaleDateString('en-IN', {
@@ -749,7 +843,11 @@ export default function EmployeeDashboard() {
 
                             <div className="flex items-center justify-between pt-1 text-[11px] text-slate-500 border-t border-slate-200">
                               <span>Plan: <strong className="text-slate-700">{job.planName}</strong></span>
-                              <span className="text-[10px] text-slate-400 font-mono">ID: {job.id}</span>
+                              {job.parkingBay && (
+                                <span className="font-semibold text-cyan-700 bg-cyan-50 px-1.5 py-0.5 rounded text-[10px]">
+                                  Bay: {job.parkingBay}
+                                </span>
+                              )}
                             </div>
 
                             {job.notes && (
@@ -759,44 +857,194 @@ export default function EmployeeDashboard() {
                               </div>
                             )}
                           </div>
-                        </div>
 
-                        {/* Interactive Status Update Actions */}
-                        <div className="mt-4 pt-3 border-t border-slate-200 flex items-center gap-2">
-                          {!isDone && (
-                            <>
-                              {!isInProgress && (
+                          {/* ======================================================== */}
+                          {/* BEFORE & AFTER PHOTO UPLOADS (CUSTOMER & ADMIN VISIBLE) */}
+                          {/* ======================================================== */}
+                          <div className="mt-3 p-3 bg-slate-50/80 rounded-2xl border border-slate-200 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[11px] font-bold text-slate-700 flex items-center gap-1.5">
+                                <Camera className="w-3.5 h-3.5 text-cyan-600" />
+                                <span>Car Cleaning Photos (Required)</span>
+                              </span>
+                              {(job.beforePhoto?.url || job.afterPhoto?.url) && (
                                 <button
                                   type="button"
-                                  onClick={() => handleQuickStatusChange(job, 'In Progress')}
-                                  className="flex-1 py-2 px-3 bg-cyan-50 hover:bg-cyan-100 text-cyan-700 border border-cyan-200 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                                  onClick={() => setPhotoModalJob(job)}
+                                  className="text-[10px] text-cyan-600 hover:text-cyan-700 font-bold flex items-center gap-1 cursor-pointer"
                                 >
-                                  <Play className="w-3.5 h-3.5 fill-cyan-600 text-cyan-600" />
-                                  <span>Start Job</span>
+                                  <Eye className="w-3 h-3" />
+                                  <span>Compare Photos</span>
                                 </button>
                               )}
+                            </div>
 
-                              <button
-                                type="button"
-                                onClick={() => handleOpenUpdateModal(job, 'Completed')}
-                                className="flex-1 py-2 px-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-md shadow-emerald-600/25 cursor-pointer"
-                              >
-                                <Check className="w-3.5 h-3.5 stroke-[3]" />
-                                <span>Mark Done</span>
-                              </button>
-                            </>
-                          )}
+                            <div className="grid grid-cols-2 gap-2 text-xs">
+                              {/* Before Photo Box */}
+                              <div className="bg-white p-2.5 rounded-xl border border-slate-200 flex flex-col justify-between min-h-[110px]">
+                                <div>
+                                  <div className="flex items-center justify-between mb-1.5">
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                                      Before Clean
+                                    </span>
+                                    {job.beforePhoto?.url && (
+                                      <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
+                                        Uploaded
+                                      </span>
+                                    )}
+                                  </div>
 
-                          <button
-                            type="button"
-                            onClick={() => handleOpenUpdateModal(job, job.status)}
-                            className={`py-2 px-3 text-xs font-semibold rounded-xl border border-slate-200 transition-colors cursor-pointer flex items-center justify-center gap-1 ${
-                              isDone ? 'w-full bg-slate-100 text-slate-700 hover:bg-slate-200' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                            }`}
-                          >
-                            <span>Update Status</span>
-                            <ChevronDown className="w-3 h-3" />
-                          </button>
+                                  {job.beforePhoto?.url ? (
+                                    <div
+                                      onClick={() => setPhotoModalJob(job)}
+                                      className="relative group rounded-lg overflow-hidden border border-slate-200 aspect-video bg-slate-100 cursor-pointer"
+                                    >
+                                      <img
+                                        src={job.beforePhoto.url}
+                                        alt="Before Cleaning"
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                                      />
+                                      <div className="absolute inset-0 bg-slate-950/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                                        <Eye className="w-4 h-4 drop-shadow" />
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="border border-dashed border-slate-300 rounded-lg p-2 text-center bg-slate-50">
+                                      <Camera className="w-5 h-5 text-slate-400 mx-auto mb-1" />
+                                      <span className="text-[10px] text-slate-400 block font-medium">No photo yet</span>
+                                    </div>
+                                  )}
+                                </div>
+
+                                <div className="mt-2 pt-1.5 border-t border-slate-100 flex items-center gap-1">
+                                  <label className="flex-1 py-1 px-1.5 bg-cyan-50 hover:bg-cyan-100 text-cyan-700 rounded-lg text-[10px] font-bold text-center cursor-pointer transition-colors border border-cyan-200 flex items-center justify-center gap-1">
+                                    <UploadCloud className="w-3 h-3" />
+                                    <span>{job.beforePhoto?.url ? 'Change' : 'Upload'}</span>
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      capture="environment"
+                                      className="hidden"
+                                      onChange={(e) => handlePhotoFileUpload(e, job, 'before')}
+                                    />
+                                  </label>
+                                  {!job.beforePhoto?.url && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleAttachSamplePhoto(job, 'before')}
+                                      className="py-1 px-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-[9px] font-semibold cursor-pointer"
+                                      title="Use sample before photo for testing"
+                                    >
+                                      Sample
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* After Photo Box */}
+                              <div className="bg-white p-2.5 rounded-xl border border-slate-200 flex flex-col justify-between min-h-[110px]">
+                                <div>
+                                  <div className="flex items-center justify-between mb-1.5">
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                                      After Clean
+                                    </span>
+                                    {job.afterPhoto?.url && (
+                                      <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
+                                        Uploaded
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  {job.afterPhoto?.url ? (
+                                    <div
+                                      onClick={() => setPhotoModalJob(job)}
+                                      className="relative group rounded-lg overflow-hidden border border-slate-200 aspect-video bg-slate-100 cursor-pointer"
+                                    >
+                                      <img
+                                        src={job.afterPhoto.url}
+                                        alt="After Cleaning"
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                                      />
+                                      <div className="absolute inset-0 bg-slate-950/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                                        <Eye className="w-4 h-4 drop-shadow" />
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="border border-dashed border-slate-300 rounded-lg p-2 text-center bg-slate-50">
+                                      <Sparkles className="w-5 h-5 text-slate-400 mx-auto mb-1" />
+                                      <span className="text-[10px] text-slate-400 block font-medium">No photo yet</span>
+                                    </div>
+                                  )}
+                                </div>
+
+                                <div className="mt-2 pt-1.5 border-t border-slate-100 flex items-center gap-1">
+                                  <label className="flex-1 py-1 px-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-[10px] font-bold text-center cursor-pointer transition-colors border border-emerald-200 flex items-center justify-center gap-1">
+                                    <UploadCloud className="w-3 h-3" />
+                                    <span>{job.afterPhoto?.url ? 'Change' : 'Upload'}</span>
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      capture="environment"
+                                      className="hidden"
+                                      onChange={(e) => handlePhotoFileUpload(e, job, 'after')}
+                                    />
+                                  </label>
+                                  {!job.afterPhoto?.url && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleAttachSamplePhoto(job, 'after')}
+                                      className="py-1 px-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-[9px] font-semibold cursor-pointer"
+                                      title="Use sample after photo for testing"
+                                    >
+                                      Sample
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Interactive Status Update Actions (Completed vs Pending) */}
+                        <div className="mt-4 pt-3 border-t border-slate-200 space-y-2">
+                          <div className="flex items-center gap-2">
+                            {/* 1-Click Completed Button */}
+                            <button
+                              type="button"
+                              onClick={() => handleQuickStatusChange(job, 'Completed')}
+                              className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                                isDone
+                                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
+                                  : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200'
+                              }`}
+                            >
+                              <Check className="w-3.5 h-3.5 stroke-[3]" />
+                              <span>{isDone ? 'Completed ✓' : 'Mark Completed'}</span>
+                            </button>
+
+                            {/* 1-Click Pending Button */}
+                            <button
+                              type="button"
+                              onClick={() => handleQuickStatusChange(job, 'Pending')}
+                              className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                                !isDone && (job.status === 'Pending' || job.status === 'Assigned')
+                                  ? 'bg-amber-500 text-white shadow-md shadow-amber-500/30'
+                                  : 'bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200'
+                              }`}
+                            >
+                              <Clock className="w-3.5 h-3.5" />
+                              <span>{!isDone && (job.status === 'Pending' || job.status === 'Assigned') ? 'Pending ●' : 'Mark Pending'}</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleOpenUpdateModal(job, job.status)}
+                              className="py-2 px-2.5 text-xs font-semibold rounded-xl border border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer flex items-center justify-center gap-1"
+                              title="Add service remarks or reason"
+                            >
+                              <ChevronDown className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     );
@@ -1159,6 +1407,272 @@ export default function EmployeeDashboard() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* PHOTO INSPECTION & SIDE-BY-SIDE COMPARISON LIGHTBOX MODAL */}
+      {photoModalJob && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
+          <div className="bg-white border border-slate-200 w-full max-w-3xl rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-slate-900 text-white">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-cyan-400 font-black text-xs px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-800">
+                    {photoModalJob.regNumber}
+                  </span>
+                  <span className="text-xs text-slate-300 font-bold">
+                    {photoModalJob.carModel}
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  {photoModalJob.customerName} • {photoModalJob.apartment} ({photoModalJob.block || ''} Flat {photoModalJob.flat || ''})
+                  {photoModalJob.parkingBay ? ` • Bay ${photoModalJob.parkingBay}` : ''}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                  photoModalJob.status === 'Completed'
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                    : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                }`}>
+                  ● {photoModalJob.status}
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() => setPhotoModalJob(null)}
+                  className="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center cursor-pointer transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Mode Switcher */}
+            <div className="px-5 py-2.5 bg-slate-100 border-b border-slate-200 flex items-center justify-between text-xs">
+              <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                Photo Inspection View
+              </span>
+              <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200">
+                {[
+                  { id: 'both', label: 'Side-by-Side (Before & After)' },
+                  { id: 'before', label: 'Before Only' },
+                  { id: 'after', label: 'After Only' }
+                ].map(tab => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setActivePhotoTab(tab.id)}
+                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      activePhotoTab === tab.id
+                        ? 'bg-cyan-600 text-white shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Modal Body - Photos */}
+            <div className="p-4 sm:p-6 overflow-y-auto space-y-4">
+              <div className={`grid gap-4 ${activePhotoTab === 'both' ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}>
+                {/* Before Photo */}
+                {(activePhotoTab === 'both' || activePhotoTab === 'before') && (
+                  <div className="bg-slate-50 rounded-2xl border border-slate-200 p-3.5 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                          <Camera className="w-3.5 h-3.5 text-cyan-600" />
+                          <span>Before Cleaning Photo</span>
+                        </span>
+                        {photoModalJob.beforePhoto?.uploadedAt && (
+                          <span className="text-[10px] text-slate-500 font-mono">
+                            {new Date(photoModalJob.beforePhoto.uploadedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="rounded-xl overflow-hidden border border-slate-200 aspect-video bg-slate-900 relative">
+                        {photoModalJob.beforePhoto?.url ? (
+                          <img
+                            src={photoModalJob.beforePhoto.url}
+                            alt="Before Cleaning"
+                            className="w-full h-full object-contain"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 p-4 text-center">
+                            <Camera className="w-8 h-8 mb-2 opacity-50" />
+                            <span className="text-xs font-medium">No Before cleaning photo uploaded yet</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {photoModalJob.beforePhoto?.caption && (
+                        <p className="text-[11px] text-slate-600 mt-2 italic">
+                          "{photoModalJob.beforePhoto.caption}"
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="mt-3 pt-2.5 border-t border-slate-200 flex items-center gap-2">
+                      <label className="flex-1 py-1.5 px-3 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold text-center cursor-pointer transition-colors flex items-center justify-center gap-1.5">
+                        <UploadCloud className="w-3.5 h-3.5" />
+                        <span>{photoModalJob.beforePhoto?.url ? 'Re-upload Before Photo' : 'Upload Before Photo'}</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          capture="environment"
+                          className="hidden"
+                          onChange={(e) => {
+                            handlePhotoFileUpload(e, photoModalJob, 'before');
+                            setPhotoModalJob(prev => ({
+                              ...prev,
+                              beforePhoto: { url: URL.createObjectURL(e.target.files[0]), uploadedAt: new Date().toISOString() }
+                            }));
+                          }}
+                        />
+                      </label>
+                      {!photoModalJob.beforePhoto?.url && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleAttachSamplePhoto(photoModalJob, 'before');
+                            setPhotoModalJob(prev => ({
+                              ...prev,
+                              beforePhoto: { url: '/images/exterior-wash.jpg', uploadedAt: new Date().toISOString() }
+                            }));
+                          }}
+                          className="py-1.5 px-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-semibold cursor-pointer"
+                        >
+                          Use Sample
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* After Photo */}
+                {(activePhotoTab === 'both' || activePhotoTab === 'after') && (
+                  <div className="bg-slate-50 rounded-2xl border border-slate-200 p-3.5 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                          <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>After Cleaning Photo</span>
+                        </span>
+                        {photoModalJob.afterPhoto?.uploadedAt && (
+                          <span className="text-[10px] text-slate-500 font-mono">
+                            {new Date(photoModalJob.afterPhoto.uploadedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="rounded-xl overflow-hidden border border-slate-200 aspect-video bg-slate-900 relative">
+                        {photoModalJob.afterPhoto?.url ? (
+                          <img
+                            src={photoModalJob.afterPhoto.url}
+                            alt="After Cleaning"
+                            className="w-full h-full object-contain"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 p-4 text-center">
+                            <Sparkles className="w-8 h-8 mb-2 opacity-50" />
+                            <span className="text-xs font-medium">No After cleaning photo uploaded yet</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {photoModalJob.afterPhoto?.caption && (
+                        <p className="text-[11px] text-slate-600 mt-2 italic">
+                          "{photoModalJob.afterPhoto.caption}"
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="mt-3 pt-2.5 border-t border-slate-200 flex items-center gap-2">
+                      <label className="flex-1 py-1.5 px-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold text-center cursor-pointer transition-colors flex items-center justify-center gap-1.5">
+                        <UploadCloud className="w-3.5 h-3.5" />
+                        <span>{photoModalJob.afterPhoto?.url ? 'Re-upload After Photo' : 'Upload After Photo'}</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          capture="environment"
+                          className="hidden"
+                          onChange={(e) => {
+                            handlePhotoFileUpload(e, photoModalJob, 'after');
+                            setPhotoModalJob(prev => ({
+                              ...prev,
+                              afterPhoto: { url: URL.createObjectURL(e.target.files[0]), uploadedAt: new Date().toISOString() }
+                            }));
+                          }}
+                        />
+                      </label>
+                      {!photoModalJob.afterPhoto?.url && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleAttachSamplePhoto(photoModalJob, 'after');
+                            setPhotoModalJob(prev => ({
+                              ...prev,
+                              afterPhoto: { url: '/images/hero-car.jpg', uploadedAt: new Date().toISOString() }
+                            }));
+                          }}
+                          className="py-1.5 px-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-semibold cursor-pointer"
+                        >
+                          Use Sample
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Status Update Quick Bar inside Modal */}
+              <div className="p-3 bg-slate-100 rounded-2xl flex items-center justify-between text-xs">
+                <div>
+                  <span className="text-[11px] font-bold text-slate-700 block">Daily Service Status</span>
+                  <span className="text-[10px] text-slate-500">
+                    Currently: <strong>{photoModalJob.status}</strong>
+                    {photoModalJob.completedAt ? ` (Completed at ${new Date(photoModalJob.completedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})` : ''}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleQuickStatusChange(photoModalJob, 'Completed');
+                      setPhotoModalJob(prev => ({ ...prev, status: 'Completed', completedAt: new Date().toISOString() }));
+                    }}
+                    className={`px-3 py-1.5 rounded-xl font-bold cursor-pointer transition-all ${
+                      photoModalJob.status === 'Completed'
+                        ? 'bg-emerald-600 text-white shadow-xs'
+                        : 'bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-300'
+                    }`}
+                  >
+                    Mark Completed ✓
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleQuickStatusChange(photoModalJob, 'Pending');
+                      setPhotoModalJob(prev => ({ ...prev, status: 'Pending', completedAt: null }));
+                    }}
+                    className={`px-3 py-1.5 rounded-xl font-bold cursor-pointer transition-all ${
+                      photoModalJob.status === 'Pending'
+                        ? 'bg-amber-500 text-white shadow-xs'
+                        : 'bg-white hover:bg-amber-50 text-amber-800 border border-amber-300'
+                    }`}
+                  >
+                    Mark Pending ●
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

@@ -14,12 +14,14 @@ const app = express();
 const PORT = process.env.PORT || 5050;
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 const DATA_DIR = path.join(__dirname, 'server', 'data');
 const ENQUIRIES_FILE = path.join(DATA_DIR, 'enquiries.json');
 const PLANS_FILE = path.join(DATA_DIR, 'plans.json');
 const ADMIN_AUTH_FILE = path.join(DATA_DIR, 'admin_auth.json');
+const CAR_ASSIGNMENTS_FILE = path.join(DATA_DIR, 'car_assignments.json');
 
 // Ensure data directory and files exist
 if (!fs.existsSync(DATA_DIR)) {
@@ -847,6 +849,255 @@ app.post('/api/auth/verify-recovery-otp', (req, res) => {
   }
 
   return res.json({ success: true, message: 'Verification code confirmed.' });
+});
+
+// ==========================================
+// CAR ASSIGNMENTS, DAILY UPDATES & PHOTO TRACKING
+// ==========================================
+
+// Initialize car assignments file if missing
+if (!fs.existsSync(CAR_ASSIGNMENTS_FILE)) {
+  writeJSON(CAR_ASSIGNMENTS_FILE, []);
+}
+
+// 1. Get all car assignments (with optional filters: employeeId, date, status)
+app.get('/api/car-assignments', (req, res) => {
+  const { employeeId, date, status } = req.query;
+  const records = readJSON(CAR_ASSIGNMENTS_FILE, []);
+
+  let filtered = [...records];
+  if (employeeId) {
+    const cleanEmp = employeeId.trim().toLowerCase();
+    filtered = filtered.filter(r =>
+      (r.employeeId || '').toLowerCase() === cleanEmp ||
+      (r.employeeName || '').toLowerCase() === cleanEmp
+    );
+  }
+  if (date) {
+    filtered = filtered.filter(r => r.date === date);
+  }
+  if (status) {
+    filtered = filtered.filter(r => (r.status || '').toLowerCase() === status.toLowerCase());
+  }
+
+  return res.json({
+    success: true,
+    count: filtered.length,
+    data: filtered
+  });
+});
+
+// 2. Assign any number of cars to an employee using their Employee ID
+app.post(['/api/car-assignments/assign', '/api/car-assignments/assign-10'], (req, res) => {
+  const { employeeId, employeeName, date, cars } = req.body;
+
+  if (!employeeId) {
+    return res.status(400).json({
+      success: false,
+      message: 'Employee ID is required to assign cars.'
+    });
+  }
+
+  const targetDate = date || new Date().toISOString().slice(0, 10);
+  const targetEmpName = employeeName || 'Specialist Staff';
+
+  if (!Array.isArray(cars) || cars.length === 0) {
+    return res.status(400).json({
+      success: false,
+      message: 'Please provide at least 1 car to assign.'
+    });
+  }
+
+  const assignedCars = cars.map((c, idx) => ({
+    id: c.id || `ASSIGN-${employeeId}-${(c.regNumber || 'CAR' + (idx + 1)).replace(/[^a-zA-Z0-9]/g, '')}-${targetDate}-${idx + 1}`,
+    carNumber: idx + 1,
+    employeeId,
+    employeeName: targetEmpName,
+    date: targetDate,
+    timeSlot: c.timeSlot || `${String(6 + Math.floor(idx / 2)).padStart(2, '0')}:${idx % 2 === 0 ? '00' : '30'} AM`,
+    customerName: c.customerName || `Customer ${idx + 1}`,
+    phone: c.phone || '',
+    apartment: c.apartment || 'Apartment Complex',
+    block: c.block || '',
+    flat: c.flat || '',
+    parkingBay: c.parkingBay || '',
+    carModel: c.carModel || 'Car',
+    regNumber: (c.regNumber || `CAR-${idx + 1}`).toUpperCase(),
+    planName: c.planName || 'Doorstep Cleaning',
+    status: c.status || 'Pending',
+    completedAt: c.status === 'Completed' ? new Date().toISOString() : null,
+    notes: c.notes || '',
+    missedReason: c.missedReason || null,
+    beforePhoto: c.beforePhoto || null,
+    afterPhoto: c.afterPhoto || null,
+    createdAt: c.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  }));
+
+  // Load existing records and replace records for this employee on this date
+  const allRecords = readJSON(CAR_ASSIGNMENTS_FILE, []);
+  const cleanEmpId = employeeId.trim().toLowerCase();
+  const cleanEmpName = targetEmpName.trim().toLowerCase();
+
+  const remaining = allRecords.filter(r =>
+    !(
+      ((r.employeeId || '').toLowerCase() === cleanEmpId || (r.employeeName || '').toLowerCase() === cleanEmpName) &&
+      r.date === targetDate
+    )
+  );
+
+  const updatedRecords = [...assignedCars, ...remaining];
+  writeJSON(CAR_ASSIGNMENTS_FILE, updatedRecords);
+
+  return res.json({
+    success: true,
+    message: `Successfully assigned ${assignedCars.length} cars to employee ${employeeId} (${targetEmpName}) for ${targetDate}.`,
+    employeeId,
+    employeeName: targetEmpName,
+    date: targetDate,
+    totalAssigned: assignedCars.length,
+    data: assignedCars
+  });
+});
+
+// 3. Employee updates daily status (Completed / Pending)
+app.put('/api/car-assignments/:id/status', (req, res) => {
+  const { id } = req.params;
+  const { status, notes, missedReason, completedAt } = req.body;
+
+  if (!status || !['Completed', 'Pending', 'In Progress', 'Missed', 'Rescheduled'].includes(status)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Valid status is required: Completed, Pending, In Progress, or Missed'
+    });
+  }
+
+  const allRecords = readJSON(CAR_ASSIGNMENTS_FILE, []);
+  const index = allRecords.findIndex(r => r.id === id || r.regNumber === id);
+
+  if (index === -1) {
+    return res.status(404).json({
+      success: false,
+      message: `Car assignment with ID ${id} not found.`
+    });
+  }
+
+  const nowIso = new Date().toISOString();
+  allRecords[index].status = status;
+  if (notes !== undefined) allRecords[index].notes = notes;
+  if (missedReason !== undefined) allRecords[index].missedReason = missedReason;
+  if (status === 'Completed') {
+    allRecords[index].completedAt = completedAt || nowIso;
+  } else if (status === 'Pending') {
+    allRecords[index].completedAt = null;
+  }
+  allRecords[index].updatedAt = nowIso;
+
+  writeJSON(CAR_ASSIGNMENTS_FILE, allRecords);
+
+  return res.json({
+    success: true,
+    message: `Car status updated to ${status}.`,
+    data: allRecords[index]
+  });
+});
+
+// 4. Employee uploads before or after cleaning photos
+app.post('/api/car-assignments/:id/photos', (req, res) => {
+  const { id } = req.params;
+  const { photoType, photoData, caption } = req.body;
+
+  if (!photoType || !['before', 'after'].includes(photoType)) {
+    return res.status(400).json({
+      success: false,
+      message: 'photoType must be "before" or "after".'
+    });
+  }
+
+  if (!photoData) {
+    return res.status(400).json({
+      success: false,
+      message: 'photoData (image URL or base64 data) is required.'
+    });
+  }
+
+  const allRecords = readJSON(CAR_ASSIGNMENTS_FILE, []);
+  const index = allRecords.findIndex(r => r.id === id || r.regNumber === id);
+
+  if (index === -1) {
+    return res.status(404).json({
+      success: false,
+      message: `Car assignment with ID ${id} not found.`
+    });
+  }
+
+  const nowIso = new Date().toISOString();
+  const photoPayload = {
+    url: photoData,
+    uploadedAt: nowIso,
+    caption: caption || `${photoType === 'before' ? 'Before' : 'After'} cleaning photo`
+  };
+
+  if (photoType === 'before') {
+    allRecords[index].beforePhoto = photoPayload;
+  } else {
+    allRecords[index].afterPhoto = photoPayload;
+  }
+
+  allRecords[index].updatedAt = nowIso;
+  writeJSON(CAR_ASSIGNMENTS_FILE, allRecords);
+
+  return res.json({
+    success: true,
+    message: `${photoType === 'before' ? 'Before' : 'After'} cleaning photo uploaded successfully.`,
+    data: allRecords[index]
+  });
+});
+
+// 5. Admin summary of employees, assigned cars, completed/pending status, and photos
+app.get('/api/car-assignments/summary', (req, res) => {
+  const { date } = req.query;
+  const targetDate = date || new Date().toISOString().slice(0, 10);
+  const allRecords = readJSON(CAR_ASSIGNMENTS_FILE, []);
+
+  const dateRecords = allRecords.filter(r => r.date === targetDate);
+
+  // Group by employee
+  const employeeMap = {};
+  dateRecords.forEach(r => {
+    const empKey = r.employeeId || 'unassigned';
+    if (!employeeMap[empKey]) {
+      employeeMap[empKey] = {
+        employeeId: r.employeeId,
+        employeeName: r.employeeName,
+        date: targetDate,
+        totalAssigned: 0,
+        completedCount: 0,
+        pendingCount: 0,
+        beforePhotosUploaded: 0,
+        afterPhotosUploaded: 0,
+        cars: []
+      };
+    }
+
+    employeeMap[empKey].totalAssigned += 1;
+    if (r.status === 'Completed') {
+      employeeMap[empKey].completedCount += 1;
+    } else {
+      employeeMap[empKey].pendingCount += 1;
+    }
+
+    if (r.beforePhoto?.url) employeeMap[empKey].beforePhotosUploaded += 1;
+    if (r.afterPhoto?.url) employeeMap[empKey].afterPhotosUploaded += 1;
+
+    employeeMap[empKey].cars.push(r);
+  });
+
+  return res.json({
+    success: true,
+    date: targetDate,
+    employees: Object.values(employeeMap)
+  });
 });
 
 if (!process.env.VERCEL) {

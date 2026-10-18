@@ -16,7 +16,10 @@ import {
   Building,
   X,
   Check,
-  Trash2
+  Trash2,
+  Camera,
+  Eye,
+  UploadCloud
 } from 'lucide-react';
 import { useAdminData } from '../../../context/AdminDataContext';
 import { SERVICE_TIME_SLOTS } from '../../../data/websiteData';
@@ -31,13 +34,21 @@ export default function DailyScheduleTab({ onOpenWhatsApp }) {
     deleteScheduleItem,
     employees,
     customers,
-    plans
+    plans,
+    assignCarsToEmployee,
+    assignTenCarsToEmployee,
+    carAssignments
   } = useAdminData();
 
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().slice(0, 10));
   const [slotFilter, setSlotFilter] = useState('ALL');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [employeeFilter, setEmployeeFilter] = useState('ALL');
+  const [inspectedPhoto, setInspectedPhoto] = useState(null);
+  const [isAssignTenCarsModalOpen, setIsAssignTenCarsModalOpen] = useState(false);
+  const [assignFormEmpId, setAssignFormEmpId] = useState('');
+  const [assignCarCount, setAssignCarCount] = useState(5);
+  const [assignSubmitting, setAssignSubmitting] = useState(false);
 
   // Filter only records belonging to existing active customers
   const validCustIds = new Set(customers.map(c => c.id).filter(Boolean));
@@ -120,13 +131,26 @@ export default function DailyScheduleTab({ onOpenWhatsApp }) {
           </p>
         </div>
 
-        <button
-          onClick={() => setIsAddModalOpen(true)}
-          className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm shadow-cyan-600/30"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add Morning Service</span>
-        </button>
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <button
+            onClick={() => {
+              setAssignFormEmpId(employees[0]?.id || 'EMP-01');
+              setIsAssignTenCarsModalOpen(true);
+            }}
+            className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-md shadow-cyan-600/25"
+          >
+            <Car className="w-4 h-4" />
+            <span>Assign Cars to Specialist</span>
+          </button>
+
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer border border-slate-200"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Single Service</span>
+          </button>
+        </div>
       </div>
 
       {/* Progress Cards */}
@@ -215,6 +239,7 @@ export default function DailyScheduleTab({ onOpenWhatsApp }) {
                 <th className="py-3 px-4">Vehicle Model & Reg</th>
                 <th className="py-3 px-4">Plan Name</th>
                 <th className="py-3 px-4">Specialist</th>
+                <th className="py-3 px-4">Photos (Before / After)</th>
                 <th className="py-3 px-4">Status</th>
                 <th className="py-3 px-4 text-right">Update Status & WhatsApp</th>
               </tr>
@@ -273,6 +298,59 @@ export default function DailyScheduleTab({ onOpenWhatsApp }) {
                           <option key={emp.id} value={emp.name}>{emp.name}</option>
                         ))}
                       </select>
+                    </td>
+
+                    {/* Cleaning Photos (Before / After) */}
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-2">
+                        {item.beforePhoto?.url ? (
+                          <div
+                            onClick={() => setInspectedPhoto({
+                              url: item.beforePhoto.url,
+                              title: `Before Clean: ${item.carModel} (${item.regNumber})`,
+                              time: item.beforePhoto.uploadedAt,
+                              type: 'Before Cleaning Photo'
+                            })}
+                            className="relative group w-9 h-9 rounded-lg overflow-hidden border border-slate-200 bg-slate-100 cursor-pointer shrink-0"
+                            title="Click to view Before Cleaning photo"
+                          >
+                            <img
+                              src={item.beforePhoto.url}
+                              alt="Before"
+                              className="w-full h-full object-cover group-hover:scale-110 transition-transform"
+                            />
+                            <span className="absolute bottom-0 inset-x-0 bg-slate-900/80 text-[7px] font-black text-cyan-300 text-center leading-none py-0.5 uppercase">
+                              Before
+                            </span>
+                          </div>
+                        ) : null}
+
+                        {item.afterPhoto?.url ? (
+                          <div
+                            onClick={() => setInspectedPhoto({
+                              url: item.afterPhoto.url,
+                              title: `After Clean: ${item.carModel} (${item.regNumber})`,
+                              time: item.afterPhoto.uploadedAt,
+                              type: 'After Cleaning Photo'
+                            })}
+                            className="relative group w-9 h-9 rounded-lg overflow-hidden border border-slate-200 bg-slate-100 cursor-pointer shrink-0"
+                            title="Click to view After Cleaning photo"
+                          >
+                            <img
+                              src={item.afterPhoto.url}
+                              alt="After"
+                              className="w-full h-full object-cover group-hover:scale-110 transition-transform"
+                            />
+                            <span className="absolute bottom-0 inset-x-0 bg-emerald-950/85 text-[7px] font-black text-emerald-300 text-center leading-none py-0.5 uppercase">
+                              After
+                            </span>
+                          </div>
+                        ) : null}
+
+                        {!item.beforePhoto?.url && !item.afterPhoto?.url && (
+                          <span className="text-[10px] text-slate-400 italic">No photos</span>
+                        )}
+                      </div>
                     </td>
 
                     {/* Status Chip & Work Notes */}
@@ -475,6 +553,202 @@ export default function DailyScheduleTab({ onOpenWhatsApp }) {
                   className="px-5 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-semibold shadow-md cursor-pointer"
                 >
                   Add to Schedule
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* PHOTO LIGHTBOX MODAL */}
+      {inspectedPhoto && (
+        <div
+          onClick={() => setInspectedPhoto(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fadeIn cursor-pointer"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl text-white cursor-default"
+          >
+            <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+              <div>
+                <h4 className="font-bold text-sm text-cyan-300">{inspectedPhoto.title}</h4>
+                <p className="text-[11px] text-slate-400">
+                  {inspectedPhoto.type} • Uploaded at {inspectedPhoto.time ? new Date(inspectedPhoto.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Today'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setInspectedPhoto(null)}
+                className="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="p-4 flex-1 flex items-center justify-center bg-black overflow-hidden">
+              <img
+                src={inspectedPhoto.url}
+                alt="Car Cleaning Inspection"
+                className="max-h-[65vh] w-auto max-w-full object-contain rounded-xl"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ASSIGN CARS MODAL */}
+      {isAssignTenCarsModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl border border-slate-200 overflow-hidden">
+            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-900 text-white">
+              <div className="flex items-center gap-2.5">
+                <Car className="w-5 h-5 text-cyan-400" />
+                <h3 className="font-black text-base">Assign Cars to Specialist</h3>
+              </div>
+              <button
+                onClick={() => setIsAssignTenCarsModalOpen(false)}
+                className="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setAssignSubmitting(true);
+                const targetEmp = employees.find(emp => emp.id === assignFormEmpId);
+                const empName = targetEmp?.name || 'Specialist Staff';
+
+                const pool = [
+                  { carModel: "Hyundai Creta SX(O)", regNumber: "TS09FA4821", customerName: "Vikram Reddy", phone: "9848022331", apartment: "Prestige High Fields", block: "Tower 2", flat: "405", parkingBay: "B1-405", timeSlot: "06:00 AM - 06:30 AM", planName: "Monthly Premium Plan" },
+                  { carModel: "Kia Seltos GTX+", regNumber: "TS07HX9912", customerName: "Pooja Sharma", phone: "9876543210", apartment: "Prestige High Fields", block: "Tower 3", flat: "712", parkingBay: "B1-712", timeSlot: "06:30 AM - 07:00 AM", planName: "Monthly Premium Plan" },
+                  { carModel: "Hyundai i20 Asta", regNumber: "TS09AB1234", customerName: "Santhosh Kumar", phone: "9642734252", apartment: "Skyline Heights", block: "Tower A", flat: "402", parkingBay: "B2-108", timeSlot: "07:00 AM - 07:30 AM", planName: "Monthly Premium Plan" },
+                  { carModel: "Tata Nexon Fearless", regNumber: "TS08EJ3344", customerName: "Rajesh Varma", phone: "9123456780", apartment: "Skyline Heights", block: "Tower B", flat: "201", parkingBay: "B2-201", timeSlot: "07:30 AM - 08:00 AM", planName: "Monthly Normal Plan" },
+                  { carModel: "Honda City ZX", regNumber: "TS09GL5566", customerName: "Ananya Iyer", phone: "9988776655", apartment: "My Home Bhooja", block: "Tower 5", flat: "1104", parkingBay: "B1-504", timeSlot: "08:00 AM - 08:30 AM", planName: "Quarterly Premium Plan" },
+                  { carModel: "Toyota Fortuner Legender", regNumber: "TS07KP7788", customerName: "Kiran Goud", phone: "9849011223", apartment: "My Home Bhooja", block: "Tower 6", flat: "809", parkingBay: "B1-609", timeSlot: "08:30 AM - 09:00 AM", planName: "Monthly Premium Plan" },
+                  { carModel: "Mahindra XUV700 AX7L", regNumber: "TS08MN2211", customerName: "Deepak Rao", phone: "9700112233", apartment: "Aparna Sarovar", block: "Block C", flat: "302", parkingBay: "B1-302", timeSlot: "09:00 AM - 09:30 AM", planName: "Monthly Normal Plan" },
+                  { carModel: "Maruti Swift ZXi+", regNumber: "TS09RQ4455", customerName: "Sneha Patel", phone: "9655443322", apartment: "Rainbow Vistas", block: "Tower 4", flat: "601", parkingBay: "B2-401", timeSlot: "09:30 AM - 10:00 AM", planName: "15-Day Normal Plan" },
+                  { carModel: "Volkswagen Virtus GT", regNumber: "TS07WT8899", customerName: "Arun Nair", phone: "9822334455", apartment: "Jayabheri Silicon County", block: "Tower 1", flat: "904", parkingBay: "B1-904", timeSlot: "10:00 AM - 10:45 AM", planName: "Monthly Premium Plan" },
+                  { carModel: "BMW 3 Series Gran Limousine", regNumber: "TS09ZZ1001", customerName: "Dr. Suresh Chandra", phone: "9848099887", apartment: "Lodha Bellezza", block: "Tower Eden", flat: "502", parkingBay: "B2-502", timeSlot: "10:45 AM - 11:30 AM", planName: "Half-Yearly Premium Plan" }
+                ];
+
+                const carsToAssign = pool.slice(0, assignCarCount).map((c, i) => ({
+                  ...c,
+                  carNumber: i + 1,
+                  status: 'Pending',
+                  beforePhoto: null,
+                  afterPhoto: null
+                }));
+
+                const assignFn = assignCarsToEmployee || assignTenCarsToEmployee;
+                const res = await assignFn(
+                  assignFormEmpId,
+                  empName,
+                  carsToAssign,
+                  selectedDate
+                );
+                setAssignSubmitting(false);
+                if (res?.success) {
+                  setIsAssignTenCarsModalOpen(false);
+                  alert(`✅ ${carsToAssign.length} Cars successfully assigned to ${targetEmp?.name || assignFormEmpId} for ${selectedDate}!`);
+                } else {
+                  alert(res?.message || 'Failed to assign cars.');
+                }
+              }}
+              className="p-5 space-y-4 text-xs"
+            >
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Select Specialist by Employee ID</label>
+                <select
+                  value={assignFormEmpId}
+                  onChange={(e) => setAssignFormEmpId(e.target.value)}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-bold text-slate-900"
+                >
+                  {employees.map(emp => (
+                    <option key={emp.id} value={emp.id}>
+                      {emp.id} — {emp.name} ({emp.zone || 'Specialist'})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Service Date</label>
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-bold text-slate-900"
+                />
+              </div>
+
+              {/* Number of cars to assign */}
+              <div className="p-3 bg-cyan-50/70 border border-cyan-200/90 rounded-2xl space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="font-black text-slate-900 text-xs">
+                    Select How Many Cars to Assign
+                  </label>
+                  <span className="font-mono text-cyan-800 font-bold bg-white px-2 py-0.5 rounded-full border border-cyan-200 text-[11px]">
+                    {assignCarCount} Cars
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setAssignCarCount(prev => Math.max(1, prev - 1))}
+                    className="w-8 h-8 rounded-xl bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 font-black text-base flex items-center justify-center transition-colors cursor-pointer shadow-2xs"
+                  >
+                    -
+                  </button>
+
+                  <div className="flex items-center bg-white border-2 border-cyan-500 rounded-xl px-2.5 py-1 shadow-xs">
+                    <input
+                      type="number"
+                      min="1"
+                      max="50"
+                      value={assignCarCount}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value, 10);
+                        if (!isNaN(val) && val >= 1) {
+                          setAssignCarCount(Math.min(50, val));
+                        }
+                      }}
+                      className="w-12 text-center font-mono font-black text-slate-900 text-sm focus:outline-none"
+                    />
+                    <span className="text-[11px] font-black text-cyan-800 uppercase ml-1 tracking-wider">
+                      CARS
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setAssignCarCount(prev => Math.min(50, prev + 1))}
+                    className="w-8 h-8 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-black text-base flex items-center justify-center transition-colors cursor-pointer shadow-2xs"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-3 bg-cyan-50 border border-cyan-200 rounded-xl text-cyan-900 text-xs">
+                Allocates {assignCarCount} doorstep apartment cars across Hyderabad for this specialist's morning shift. Status will start as Pending until the employee uploads photos and marks completed.
+              </div>
+
+              <div className="pt-2 border-t border-slate-100 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAssignTenCarsModalOpen(false)}
+                  className="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-xl cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={assignSubmitting}
+                  className="px-5 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-xl shadow-md cursor-pointer disabled:opacity-50"
+                >
+                  {assignSubmitting ? 'Assigning...' : `Confirm & Assign ${assignCarCount} Cars`}
                 </button>
               </div>
             </form>
