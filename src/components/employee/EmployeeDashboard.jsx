@@ -62,7 +62,7 @@ export default function EmployeeDashboard() {
   const [activeTab, setActiveTab] = useState('runs');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState('all');
-  const [dateFilter, setDateFilter] = useState('all');
+  const [dateFilter, setDateFilter] = useState('today');
   const [showAllCityVisits, setShowAllCityVisits] = useState(false);
   const [updatingJob, setUpdatingJob] = useState(null);
   const [updateForm, setUpdateForm] = useState({
@@ -155,6 +155,11 @@ export default function EmployeeDashboard() {
         let dayCount = 1;
         while (cur <= end) {
           const dStr = cur.toISOString().slice(0, 10);
+          if (dStr === '2026-10-15') {
+            cur.setDate(cur.getDate() + 1);
+            dayCount++;
+            continue;
+          }
           const dailyId = `DAILY-${s.id}-${dStr}`;
 
           const inSchedule = scheduleJobs.some(sch => sch.id === dailyId || (sch.subscriptionId === s.id && sch.date === dStr));
@@ -251,7 +256,7 @@ export default function EmployeeDashboard() {
       }
     });
 
-    return [...enrichedScheduleJobs, ...bookingJobs, ...subJobs];
+    return [...enrichedScheduleJobs, ...bookingJobs, ...subJobs].filter(j => j.date !== '2026-10-15');
   }, [dailySchedules, bookings, subscriptions, carAssignments, employeeUser, todayStr]);
 
   // Specialist jobs display source
@@ -263,6 +268,7 @@ export default function EmployeeDashboard() {
 
   // Date filtered source
   const dateFilteredJobs = displaySource.filter(j => {
+    if (j.date === '2026-10-15') return false;
     if (dateFilter === 'all') return true;
     if (dateFilter === 'today') return j.date === todayStr;
     if (dateFilter === 'tomorrow') return j.date === tomorrowStr;
@@ -414,31 +420,6 @@ export default function EmployeeDashboard() {
     } finally {
       setUploadingFor(null);
       e.target.value = '';
-    }
-  };
-
-  const handleAttachSamplePhoto = (job, photoType) => {
-    const sampleUrl = photoType === 'before' ? '/images/exterior-wash.jpg' : '/images/hero-car.jpg';
-    if (uploadCarAssignmentPhoto) {
-      uploadCarAssignmentPhoto(
-        job.id,
-        photoType,
-        sampleUrl,
-        `Demo ${photoType === 'before' ? 'Before' : 'After'} photo for ${job.carModel} on ${job.date || todayStr}`,
-        job.date,
-        job
-      );
-      if (photoModalJob && (photoModalJob.id === job.id || photoModalJob.regNumber === job.regNumber)) {
-        setPhotoModalJob(prev => prev ? ({
-          ...prev,
-          [photoType === 'before' ? 'beforePhoto' : 'afterPhoto']: {
-            url: sampleUrl,
-            uploadedAt: new Date().toISOString(),
-            caption: `Demo ${photoType} photo`
-          }
-        }) : null);
-      }
-      showToast(`📸 Sample ${photoType} photo attached to ${job.regNumber} (${job.date})`);
     }
   };
 
@@ -1067,10 +1048,10 @@ export default function EmployeeDashboard() {
                                   )}
                                 </div>
 
-                                <div className="mt-2 pt-1.5 border-t border-slate-100 flex items-center gap-1">
-                                  <label className="flex-1 py-1 px-1.5 bg-cyan-50 hover:bg-cyan-100 text-cyan-700 rounded-lg text-[10px] font-bold text-center cursor-pointer transition-colors border border-cyan-200 flex items-center justify-center gap-1">
-                                    <UploadCloud className="w-3 h-3" />
-                                    <span>{getPhotoUrl(job.beforePhoto) ? 'Change' : 'Upload'}</span>
+                                <div className="mt-2 pt-1.5 border-t border-slate-100 flex items-center">
+                                  <label className="w-full py-1.5 px-2 bg-cyan-50 hover:bg-cyan-100 text-cyan-700 rounded-lg text-[10px] font-bold text-center cursor-pointer transition-colors border border-cyan-200 flex items-center justify-center gap-1.5">
+                                    <UploadCloud className="w-3.5 h-3.5" />
+                                    <span>{getPhotoUrl(job.beforePhoto) ? 'Change Before Photo' : 'Upload Before Photo'}</span>
                                     <input
                                       type="file"
                                       accept="image/*"
@@ -1079,16 +1060,6 @@ export default function EmployeeDashboard() {
                                       onChange={(e) => handlePhotoFileUpload(e, job, 'before')}
                                     />
                                   </label>
-                                  {!getPhotoUrl(job.beforePhoto) && (
-                                    <button
-                                      type="button"
-                                      onClick={() => handleAttachSamplePhoto(job, 'before')}
-                                      className="py-1 px-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-[9px] font-semibold cursor-pointer"
-                                      title="Use sample before photo for testing"
-                                    >
-                                      Sample
-                                    </button>
-                                  )}
                                 </div>
                               </div>
 
@@ -1128,10 +1099,10 @@ export default function EmployeeDashboard() {
                                   )}
                                 </div>
 
-                                <div className="mt-2 pt-1.5 border-t border-slate-100 flex items-center gap-1">
-                                  <label className="flex-1 py-1 px-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-[10px] font-bold text-center cursor-pointer transition-colors border border-emerald-200 flex items-center justify-center gap-1">
-                                    <UploadCloud className="w-3 h-3" />
-                                    <span>{getPhotoUrl(job.afterPhoto) ? 'Change' : 'Upload'}</span>
+                                <div className="mt-2 pt-1.5 border-t border-slate-100 flex items-center">
+                                  <label className="w-full py-1.5 px-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-[10px] font-bold text-center cursor-pointer transition-colors border border-emerald-200 flex items-center justify-center gap-1.5">
+                                    <UploadCloud className="w-3.5 h-3.5" />
+                                    <span>{getPhotoUrl(job.afterPhoto) ? 'Change After Photo' : 'Upload After Photo'}</span>
                                     <input
                                       type="file"
                                       accept="image/*"
@@ -1140,16 +1111,6 @@ export default function EmployeeDashboard() {
                                       onChange={(e) => handlePhotoFileUpload(e, job, 'after')}
                                     />
                                   </label>
-                                  {!getPhotoUrl(job.afterPhoto) && (
-                                    <button
-                                      type="button"
-                                      onClick={() => handleAttachSamplePhoto(job, 'after')}
-                                      className="py-1 px-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-[9px] font-semibold cursor-pointer"
-                                      title="Use sample after photo for testing"
-                                    >
-                                      Sample
-                                    </button>
-                                  )}
                                 </div>
                               </div>
                             </div>
@@ -1669,9 +1630,9 @@ export default function EmployeeDashboard() {
                       )}
                     </div>
 
-                    <div className="mt-3 pt-2.5 border-t border-slate-200 flex items-center gap-2">
-                      <label className="flex-1 py-1.5 px-3 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold text-center cursor-pointer transition-colors flex items-center justify-center gap-1.5">
-                        <UploadCloud className="w-3.5 h-3.5" />
+                    <div className="mt-3 pt-2.5 border-t border-slate-200 flex items-center">
+                      <label className="w-full py-2 px-3 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold text-center cursor-pointer transition-colors flex items-center justify-center gap-1.5 shadow-sm">
+                        <UploadCloud className="w-4 h-4" />
                         <span>{getPhotoUrl(photoModalJob.beforePhoto) ? 'Re-upload Before Photo' : 'Upload Before Photo'}</span>
                         <input
                           type="file"
@@ -1681,15 +1642,6 @@ export default function EmployeeDashboard() {
                           onChange={(e) => handlePhotoFileUpload(e, photoModalJob, 'before')}
                         />
                       </label>
-                      {!getPhotoUrl(photoModalJob.beforePhoto) && (
-                        <button
-                          type="button"
-                          onClick={() => handleAttachSamplePhoto(photoModalJob, 'before')}
-                          className="py-1.5 px-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-semibold cursor-pointer"
-                        >
-                          Use Sample
-                        </button>
-                      )}
                     </div>
                   </div>
                 )}
@@ -1732,9 +1684,9 @@ export default function EmployeeDashboard() {
                       )}
                     </div>
 
-                    <div className="mt-3 pt-2.5 border-t border-slate-200 flex items-center gap-2">
-                      <label className="flex-1 py-1.5 px-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold text-center cursor-pointer transition-colors flex items-center justify-center gap-1.5">
-                        <UploadCloud className="w-3.5 h-3.5" />
+                    <div className="mt-3 pt-2.5 border-t border-slate-200 flex items-center">
+                      <label className="w-full py-2 px-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold text-center cursor-pointer transition-colors flex items-center justify-center gap-1.5 shadow-sm">
+                        <UploadCloud className="w-4 h-4" />
                         <span>{getPhotoUrl(photoModalJob.afterPhoto) ? 'Re-upload After Photo' : 'Upload After Photo'}</span>
                         <input
                           type="file"
@@ -1744,15 +1696,6 @@ export default function EmployeeDashboard() {
                           onChange={(e) => handlePhotoFileUpload(e, photoModalJob, 'after')}
                         />
                       </label>
-                      {!getPhotoUrl(photoModalJob.afterPhoto) && (
-                        <button
-                          type="button"
-                          onClick={() => handleAttachSamplePhoto(photoModalJob, 'after')}
-                          className="py-1.5 px-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-semibold cursor-pointer"
-                        >
-                          Use Sample
-                        </button>
-                      )}
                     </div>
                   </div>
                 )}

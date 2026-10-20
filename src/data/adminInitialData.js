@@ -209,29 +209,7 @@ export const INITIAL_SUBSCRIPTIONS = [
   }
 ];
 
-export const INITIAL_BOOKINGS = [
-  {
-    id: "ENQ-MV4ZO6OW-7072",
-    customerId: "CUST-01",
-    customer_name: "Santhosh Kumar",
-    phone_number: "9642734252",
-    apartment: "Skyline Heights",
-    block: "Tower A",
-    flat_number: "402",
-    car_model: "Hyundai i20",
-    vehicle_registration_number: "TS09AB1234",
-    preferred_plan: "Monthly Premium Plan",
-    preferred_start_date: "2026-10-15",
-    preferred_time: "07:00 AM - 08:00 AM",
-    selected_addons: [
-      "interior-vacuuming"
-    ],
-    additional_message: "Please focus on morning dust clearing before 8 AM.",
-    status: "Confirmed",
-    assigned_employee: "harish",
-    createdAt: "2026-10-12T08:27:22.208Z"
-  }
-];
+export const INITIAL_BOOKINGS = [];
 
 export const INITIAL_DAILY_SCHEDULE = [
   {

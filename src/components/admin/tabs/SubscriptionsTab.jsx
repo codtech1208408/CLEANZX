@@ -138,6 +138,10 @@ export default function SubscriptionsTab({ onOpenWhatsApp }) {
 
     while (cur <= end) {
       const dStr = toYMD(cur);
+      if (dStr === '2026-10-15') {
+        cur.setDate(cur.getDate() + 1);
+        continue;
+      }
       const dailyId = `DAILY-${sub.id}-${dStr}`;
 
       // 1. Look in carAssignments
