@@ -96,7 +96,13 @@ export const AdminDataProvider = ({ children }) => {
   });
 
   // 10-Car Daily Assignments State
-  const [carAssignments, setCarAssignments] = useState([]);
+  const [carAssignments, setCarAssignments] = useState(() => {
+    try {
+      const saved = localStorage.getItem('cleanzx_car_assignments');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [];
+  });
 
   // Load persistent store or defaults
   const loadInitialState = () => {
@@ -342,6 +348,15 @@ export const AdminDataProvider = ({ children }) => {
           setState(parsed);
         } catch {}
       }
+      if (e.key === 'cleanzx_car_assignments' && e.newValue) {
+        try {
+          const parsedAssignments = JSON.parse(e.newValue);
+          setCarAssignments(parsedAssignments);
+        } catch {}
+      }
+      if (e.key === 'cleanzx_sync_trigger') {
+        fetchCarAssignments();
+      }
     };
 
     const handleCustomLiveUpdate = () => {
@@ -352,13 +367,33 @@ export const AdminDataProvider = ({ children }) => {
           setState(parsed);
         }
       } catch {}
+      try {
+        const savedCars = localStorage.getItem('cleanzx_car_assignments');
+        if (savedCars) {
+          setCarAssignments(JSON.parse(savedCars));
+        }
+      } catch {}
+      fetchCarAssignments();
+    };
+
+    const handleFocus = () => {
+      fetchCarAssignments();
     };
 
     window.addEventListener('storage', handleStorage);
     window.addEventListener('cleanzx_live_update', handleCustomLiveUpdate);
+    window.addEventListener('focus', handleFocus);
+
+    // Periodic background sync (every 5 seconds) to ensure real-time photo & status updates across all tabs
+    const syncInterval = setInterval(() => {
+      fetchCarAssignments();
+    }, 5000);
+
     return () => {
       window.removeEventListener('storage', handleStorage);
       window.removeEventListener('cleanzx_live_update', handleCustomLiveUpdate);
+      window.removeEventListener('focus', handleFocus);
+      clearInterval(syncInterval);
     };
   }, []);
 
@@ -386,56 +421,95 @@ export const AdminDataProvider = ({ children }) => {
       })
       .catch(() => {});
 
-    // Sync 10-car assignments from backend on mount
+    // Sync car assignments from backend on mount and ensure active subscriptions have daily records
     fetch('/api/car-assignments')
       .then(res => res.json())
       .then(data => {
-        if (data && data.success && Array.isArray(data.data) && data.data.length > 0) {
-          setCarAssignments(data.data);
-          // Mirror into dailySchedules for consistent view across all existing tabs
-          setState(prev => {
-            const currentSchedules = [...(prev.dailySchedules || [])];
-            data.data.forEach(car => {
-              const idx = currentSchedules.findIndex(s => s.id === car.id || (s.regNumber === car.regNumber && s.date === car.date));
-              const scheduleItem = {
-                id: car.id,
-                carNumber: car.carNumber,
-                bookingId: car.id,
-                customerId: car.customerId || `CUST-${car.regNumber}`,
-                timeSlot: car.timeSlot,
-                customerName: car.customerName,
-                phone: car.phone,
-                apartment: car.apartment,
-                block: car.block,
-                flat: car.flat,
-                parkingBay: car.parkingBay,
-                carModel: car.carModel,
-                regNumber: car.regNumber,
-                planName: car.planName,
-                employeeId: car.employeeId,
-                employeeName: car.employeeName,
-                date: car.date,
-                status: car.status,
-                completedAt: car.completedAt,
-                notes: car.notes,
-                missedReason: car.missedReason,
-                beforePhoto: car.beforePhoto,
-                afterPhoto: car.afterPhoto,
-                updatedAt: car.updatedAt || new Date().toISOString(),
-                source: 'car_assignment'
-              };
+        let loadedAssignments = (data && data.success && Array.isArray(data.data)) ? data.data : [];
 
-              if (idx >= 0) {
-                currentSchedules[idx] = { ...currentSchedules[idx], ...scheduleItem };
-              } else {
-                currentSchedules.unshift(scheduleItem);
+        // Ensure every active subscription assigned to an employee has its full period records
+        const activeSubs = (state.subscriptions || []).filter(s => (s.status === 'Active' || s.status === 'Renewed') && s.assignedEmployee);
+        const newDailyRecords = [];
+
+        activeSubs.forEach(sub => {
+          const start = new Date(sub.startDate || new Date().toISOString().slice(0, 10));
+          const end = new Date(sub.expiryDate || new Date(start.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10));
+          const carModel = sub.carModel || (sub.car ? sub.car.split('(')[0]?.trim() : 'Car');
+          const regNumber = sub.regNumber || (sub.car ? (sub.car.match(/\(([^)]+)\)/)?.[1] || 'TS-REG') : 'TS-REG');
+          const emp = (state.employees || []).find(e => e.name === sub.assignedEmployee || e.id === sub.assignedEmployeeId);
+          const empId = sub.assignedEmployeeId || emp?.id || 'EMP-01';
+
+          const cur = new Date(start);
+          let dayCount = 1;
+          while (cur <= end) {
+            const dStr = cur.toISOString().slice(0, 10);
+            const dailyId = `DAILY-${sub.id}-${dStr}`;
+            const exists = loadedAssignments.some(a => a.id === dailyId || (a.subscriptionId === sub.id && a.date === dStr));
+            if (!exists) {
+              const rec = {
+                id: dailyId,
+                subscriptionId: sub.id,
+                dayNumber: dayCount,
+                carNumber: 1,
+                employeeId: empId,
+                employeeName: sub.assignedEmployee,
+                date: dStr,
+                timeSlot: sub.timeSlot || '07:00 AM - 08:00 AM',
+                customerName: sub.customerName,
+                phone: sub.phone || '',
+                apartment: sub.apartment || '',
+                block: sub.block || '',
+                flat: sub.flat || '',
+                car: sub.car || `${carModel} (${regNumber})`,
+                carModel,
+                regNumber,
+                planName: sub.planName || 'Doorstep Subscription Care',
+                status: 'Pending',
+                completedAt: null,
+                notes: '',
+                missedReason: null,
+                beforePhoto: null,
+                afterPhoto: null,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+              };
+              newDailyRecords.push(rec);
+              loadedAssignments.push(rec);
+            }
+            cur.setDate(cur.getDate() + 1);
+            dayCount++;
+          }
+        });
+
+        if (loadedAssignments.length > 0) {
+          setCarAssignments(prev => {
+            const cleanStr = (s) => (s || '').replace(/[\s\-\_]/g, '').toUpperCase();
+            const merged = loadedAssignments.map(inc => {
+              const incReg = cleanStr(inc.regNumber);
+              const matchLocal = prev.find(p => p.id === inc.id || (incReg && cleanStr(p.regNumber) === incReg && p.date === inc.date));
+              if (matchLocal) {
+                return {
+                  ...matchLocal,
+                  ...inc,
+                  beforePhoto: inc.beforePhoto || matchLocal.beforePhoto || null,
+                  afterPhoto: inc.afterPhoto || matchLocal.afterPhoto || null,
+                  status: inc.status === 'Completed' ? 'Completed' : (matchLocal.status === 'Completed' ? 'Completed' : inc.status)
+                };
+              }
+              return inc;
+            });
+            prev.forEach(p => {
+              const pReg = cleanStr(p.regNumber);
+              if (!merged.some(m => m.id === p.id || (pReg && cleanStr(m.regNumber) === pReg && m.date === p.date))) {
+                merged.push(p);
               }
             });
-            return {
-              ...prev,
-              dailySchedules: currentSchedules
-            };
+            try {
+              localStorage.setItem('cleanzx_car_assignments', JSON.stringify(merged));
+            } catch {}
+            return merged;
           });
+          syncCarAssignmentsToSchedules(loadedAssignments);
         }
       })
       .catch(err => console.warn('Car assignments fetch warning:', err));
@@ -1799,7 +1873,174 @@ export const AdminDataProvider = ({ children }) => {
         return c;
       })
     }));
+
+    if (newSub.assignedEmployee) {
+      setTimeout(() => {
+        const emp = (state.employees || []).find(e => e.name === newSub.assignedEmployee || e.id === newSub.assignedEmployeeId);
+        assignSubscriptionEmployee(newSub.id, emp?.id || newSub.assignedEmployeeId || 'EMP-01', newSub.assignedEmployee);
+      }, 50);
+    }
+
     return newSub;
+  };
+
+  const assignSubscriptionEmployee = async (subscriptionId, employeeId, employeeName) => {
+    const sub = state.subscriptions.find(s => s.id === subscriptionId);
+    if (!sub) return { success: false, message: 'Subscription not found.' };
+
+    const emp = state.employees.find(e => e.id === employeeId || e.name === employeeName);
+    const targetEmpName = employeeName || emp?.name || 'Specialist Staff';
+    const targetEmpId = employeeId || emp?.id || 'EMP-01';
+
+    // 1. Update subscription in state
+    setState(prev => ({
+      ...prev,
+      subscriptions: prev.subscriptions.map(s =>
+        s.id === subscriptionId
+          ? {
+              ...s,
+              assignedEmployee: targetEmpName,
+              assignedEmployeeId: targetEmpId,
+              authorizedChanges: [
+                {
+                  date: new Date().toISOString().slice(0, 10),
+                  type: 'Employee Assignment',
+                  note: `Assigned car to ${targetEmpName} for full subscription period`,
+                  by: 'Admin'
+                },
+                ...(s.authorizedChanges || [])
+              ]
+            }
+          : s
+      )
+    }));
+
+    // 2. Generate daily records for full subscription period
+    const parseToNoon = (dStr) => {
+      if (!dStr) return new Date();
+      const parts = String(dStr).slice(0, 10).split('-');
+      if (parts.length === 3) {
+        return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10), 12, 0, 0);
+      }
+      return new Date(dStr);
+    };
+
+    const toYMD = (d) => {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    };
+
+    const start = parseToNoon(sub.startDate || new Date().toISOString().slice(0, 10));
+    const defaultEnd = new Date(start.getTime() + 30 * 24 * 60 * 60 * 1000);
+    const end = parseToNoon(sub.expiryDate || toYMD(defaultEnd));
+
+    const carModel = sub.carModel || (sub.car ? sub.car.split('(')[0]?.trim() : 'Car');
+    const regNumber = sub.regNumber || (sub.car ? (sub.car.match(/\(([^)]+)\)/)?.[1] || 'TS-REG') : 'TS-REG');
+
+    const generatedDays = [];
+    const cur = new Date(start);
+    let dayCount = 1;
+
+    while (cur <= end) {
+      const dStr = toYMD(cur);
+      const dailyId = `DAILY-${subscriptionId}-${dStr}`;
+
+      generatedDays.push({
+        id: dailyId,
+        subscriptionId,
+        dayNumber: dayCount,
+        carNumber: 1,
+        employeeId: targetEmpId,
+        employeeName: targetEmpName,
+        date: dStr,
+        timeSlot: sub.timeSlot || '07:00 AM - 08:00 AM',
+        customerName: sub.customerName,
+        phone: sub.phone || '',
+        apartment: sub.apartment || '',
+        block: sub.block || '',
+        flat: sub.flat || '',
+        car: sub.car || `${carModel} (${regNumber})`,
+        carModel,
+        regNumber,
+        planName: sub.planName || 'Doorstep Subscription Care',
+        status: 'Pending',
+        completedAt: null,
+        notes: '',
+        missedReason: null,
+        beforePhoto: null,
+        afterPhoto: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
+
+      cur.setDate(cur.getDate() + 1);
+      dayCount++;
+    }
+
+    // Merge into carAssignments (preserving any existing photos or status for already completed days)
+    setCarAssignments(prev => {
+      const updated = [...prev];
+      generatedDays.forEach(newDay => {
+        const idx = updated.findIndex(existing =>
+          existing.id === newDay.id ||
+          (existing.subscriptionId === subscriptionId && existing.date === newDay.date)
+        );
+        if (idx >= 0) {
+          updated[idx] = {
+            ...updated[idx],
+            employeeId: targetEmpId,
+            employeeName: targetEmpName,
+            updatedAt: new Date().toISOString()
+          };
+        } else {
+          updated.push(newDay);
+        }
+      });
+      return updated;
+    });
+
+    syncCarAssignmentsToSchedules(generatedDays);
+
+    // Call backend API
+    try {
+      const res = await fetch('/api/car-assignments/assign-subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subscriptionId,
+          employeeId: targetEmpId,
+          employeeName: targetEmpName,
+          startDate: sub.startDate || toYMD(start),
+          expiryDate: sub.expiryDate || toYMD(end),
+          customerName: sub.customerName,
+          phone: sub.phone,
+          apartment: sub.apartment,
+          block: sub.block,
+          flat: sub.flat,
+          car: sub.car,
+          carModel,
+          regNumber,
+          timeSlot: sub.timeSlot,
+          planName: sub.planName
+        })
+      });
+      const data = await res.json();
+      if (data && data.success) {
+        window.dispatchEvent(new CustomEvent('cleanzx_live_update', {
+          detail: { type: 'subscription_assigned', subscriptionId, employeeId: targetEmpId }
+        }));
+        return { success: true, message: data.message, data: data.data };
+      }
+    } catch (err) {
+      console.warn('Backend assign-subscription call error:', err);
+    }
+
+    return {
+      success: true,
+      message: `Assigned ${sub.car || 'car'} to ${targetEmpName} for ${generatedDays.length} days.`
+    };
   };
 
   const renewSubscription = (subId, additionalDays = 30) => {
@@ -2422,40 +2663,50 @@ export const AdminDataProvider = ({ children }) => {
   // ==========================================
   const syncCarAssignmentsToSchedules = (assignments) => {
     if (!Array.isArray(assignments) || assignments.length === 0) return;
+    const cleanStr = (s) => (s || '').replace(/[\s\-\_]/g, '').toUpperCase();
+
     setState(prev => {
       const existingSchedules = [...(prev.dailySchedules || [])];
       assignments.forEach(car => {
-        const idx = existingSchedules.findIndex(s => s.id === car.id || (s.regNumber === car.regNumber && s.date === car.date));
+        const carReg = cleanStr(car.regNumber);
+        const idx = existingSchedules.findIndex(s => 
+          s.id === car.id || 
+          (car.subscriptionId && s.subscriptionId === car.subscriptionId && s.date === car.date) ||
+          (carReg && cleanStr(s.regNumber) === carReg && s.date === car.date)
+        );
+        const old = idx >= 0 ? existingSchedules[idx] : {};
         const scheduleItem = {
+          ...old,
           id: car.id,
-          carNumber: car.carNumber,
-          bookingId: car.id,
-          customerId: car.customerId || `CUST-${car.regNumber}`,
-          timeSlot: car.timeSlot,
-          customerName: car.customerName,
-          phone: car.phone,
-          apartment: car.apartment,
-          block: car.block,
-          flat: car.flat,
-          parkingBay: car.parkingBay,
-          carModel: car.carModel,
-          regNumber: car.regNumber,
-          planName: car.planName,
-          employeeId: car.employeeId,
-          employeeName: car.employeeName,
-          date: car.date,
-          status: car.status,
-          completedAt: car.completedAt,
-          notes: car.notes,
-          missedReason: car.missedReason,
-          beforePhoto: car.beforePhoto,
-          afterPhoto: car.afterPhoto,
-          updatedAt: car.updatedAt || new Date().toISOString(),
-          source: 'car_assignment'
+          subscriptionId: car.subscriptionId || old.subscriptionId,
+          carNumber: car.carNumber || old.carNumber,
+          bookingId: car.bookingId || car.id,
+          customerId: car.customerId || old.customerId || `CUST-${car.regNumber}`,
+          timeSlot: car.timeSlot || old.timeSlot,
+          customerName: car.customerName || old.customerName,
+          phone: car.phone || old.phone,
+          apartment: car.apartment || old.apartment,
+          block: car.block || old.block,
+          flat: car.flat || old.flat,
+          parkingBay: car.parkingBay || old.parkingBay,
+          carModel: car.carModel || old.carModel,
+          regNumber: car.regNumber || old.regNumber,
+          planName: car.planName || old.planName,
+          employeeId: car.employeeId || old.employeeId,
+          employeeName: car.employeeName || old.employeeName,
+          date: car.date || old.date,
+          status: car.status === 'Completed' ? 'Completed' : (old.status === 'Completed' ? 'Completed' : (car.status || old.status || 'Pending')),
+          completedAt: car.completedAt || old.completedAt,
+          notes: car.notes !== undefined ? car.notes : old.notes,
+          missedReason: car.missedReason !== undefined ? car.missedReason : old.missedReason,
+          beforePhoto: car.beforePhoto || old.beforePhoto || null,
+          afterPhoto: car.afterPhoto || old.afterPhoto || null,
+          updatedAt: car.updatedAt || old.updatedAt || new Date().toISOString(),
+          source: car.subscriptionId ? 'subscription_daily' : 'car_assignment'
         };
 
         if (idx >= 0) {
-          existingSchedules[idx] = { ...existingSchedules[idx], ...scheduleItem };
+          existingSchedules[idx] = scheduleItem;
         } else {
           existingSchedules.unshift(scheduleItem);
         }
@@ -2479,7 +2730,38 @@ export const AdminDataProvider = ({ children }) => {
       const res = await fetch(url);
       const data = await res.json();
       if (data && data.success && Array.isArray(data.data)) {
-        setCarAssignments(data.data);
+        setCarAssignments(prev => {
+          const cleanStr = (s) => (s || '').replace(/[\s\-\_]/g, '').toUpperCase();
+          const incoming = [...data.data];
+          // Preserve local in-memory photos or status if incoming server item is empty
+          const merged = incoming.map(inc => {
+            const incReg = cleanStr(inc.regNumber);
+            const matchLocal = prev.find(p => p.id === inc.id || (incReg && cleanStr(p.regNumber) === incReg && p.date === inc.date));
+            if (matchLocal) {
+              return {
+                ...matchLocal,
+                ...inc,
+                beforePhoto: inc.beforePhoto || matchLocal.beforePhoto || null,
+                afterPhoto: inc.afterPhoto || matchLocal.afterPhoto || null,
+                status: inc.status === 'Completed' ? 'Completed' : (matchLocal.status === 'Completed' ? 'Completed' : inc.status)
+              };
+            }
+            return inc;
+          });
+
+          // Also keep any local-only records not yet on server
+          prev.forEach(p => {
+            const pReg = cleanStr(p.regNumber);
+            if (!merged.some(m => m.id === p.id || (pReg && cleanStr(m.regNumber) === pReg && m.date === p.date))) {
+              merged.push(p);
+            }
+          });
+
+          try {
+            localStorage.setItem('cleanzx_car_assignments', JSON.stringify(merged));
+          } catch {}
+          return merged;
+        });
         syncCarAssignmentsToSchedules(data.data);
         return data.data;
       }
@@ -2538,24 +2820,99 @@ export const AdminDataProvider = ({ children }) => {
 
   const assignTenCarsToEmployee = assignCarsToEmployee;
 
-  const updateCarAssignmentStatus = async (id, status, notes = '', missedReason = null) => {
-    const nowIso = new Date().toISOString();
-    setCarAssignments(prev =>
-      prev.map(c =>
-        c.id === id || c.regNumber === id
-          ? {
-              ...c,
-              status,
-              notes: notes !== undefined ? notes : c.notes,
-              missedReason: missedReason !== undefined ? missedReason : c.missedReason,
-              completedAt: status === 'Completed' ? (c.completedAt || nowIso) : null,
-              updatedAt: nowIso
-            }
-          : c
-      )
-    );
+  const cleanRegStr = (s) => (s || '').replace(/[\s\-\_]/g, '').toUpperCase();
 
-    updateScheduleStatus(id, status, notes, missedReason);
+  const updateCarAssignmentStatus = async (id, status, notes = '', missedReason = null, targetDate = null, jobData = null) => {
+    const nowIso = new Date().toISOString();
+    const effectiveDate = targetDate || jobData?.date || nowIso.slice(0, 10);
+    const subId = jobData?.subscriptionId || (id && id.startsWith('DAILY-') ? id.replace(/^DAILY-/, '').replace(/-[0-9]{4}-[0-9]{2}-[0-9]{2}$/, '') : null);
+    const targetReg = cleanRegStr(jobData?.regNumber || (id && !id.startsWith('SCH-') && !id.startsWith('DAILY-') && !id.startsWith('ASSIGN-') ? id : ''));
+
+    setCarAssignments(prev => {
+      const idx = prev.findIndex(c => 
+        c.id === id || 
+        (subId && c.subscriptionId === subId && c.date === effectiveDate) ||
+        (targetReg && cleanRegStr(c.regNumber) === targetReg && c.date === effectiveDate) ||
+        (subId && c.id === `DAILY-${subId}-${effectiveDate}`)
+      );
+      let updated;
+      if (idx >= 0) {
+        updated = [...prev];
+        updated[idx] = {
+          ...updated[idx],
+          status,
+          notes: notes !== undefined ? notes : updated[idx].notes,
+          missedReason: missedReason !== undefined ? missedReason : updated[idx].missedReason,
+          completedAt: status === 'Completed' ? (updated[idx].completedAt || nowIso) : null,
+          subscriptionId: subId || updated[idx].subscriptionId,
+          regNumber: jobData?.regNumber || updated[idx].regNumber,
+          updatedAt: nowIso
+        };
+      } else {
+        const newRecord = {
+          id: id || (subId ? `DAILY-${subId}-${effectiveDate}` : `DAILY-SUB-${effectiveDate}`),
+          subscriptionId: subId || null,
+          dayNumber: jobData?.dayNumber || 1,
+          carNumber: jobData?.carNumber || 1,
+          employeeId: jobData?.employeeId || 'EMP-01',
+          employeeName: jobData?.employeeName || 'Specialist Staff',
+          date: effectiveDate,
+          timeSlot: jobData?.timeSlot || '07:00 AM - 08:00 AM',
+          customerName: jobData?.customerName || 'Customer',
+          phone: jobData?.phone || '',
+          apartment: jobData?.apartment || '',
+          block: jobData?.block || '',
+          flat: jobData?.flat || '',
+          car: jobData?.car || `${jobData?.carModel || 'Car'} (${jobData?.regNumber || ''})`,
+          carModel: jobData?.carModel || 'Car',
+          regNumber: (jobData?.regNumber || 'CAR').toUpperCase(),
+          planName: jobData?.planName || 'Doorstep Subscription Care',
+          status,
+          notes: notes || '',
+          missedReason: missedReason || null,
+          completedAt: status === 'Completed' ? nowIso : null,
+          beforePhoto: null,
+          afterPhoto: null,
+          createdAt: nowIso,
+          updatedAt: nowIso
+        };
+        updated = [...prev, newRecord];
+      }
+      try {
+        localStorage.setItem('cleanzx_car_assignments', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    // Mirror status update into dailySchedules for cross-view integrity
+    setState(prev => {
+      const nextSchedules = (prev.dailySchedules || []).map(s => {
+        const sMatch = s.id === id || s.bookingId === id ||
+          (subId && s.subscriptionId === subId && s.date === effectiveDate) ||
+          (targetReg && cleanRegStr(s.regNumber) === targetReg && s.date === effectiveDate);
+        if (sMatch) {
+          return {
+            ...s,
+            status,
+            completedAt: status === 'Completed' ? (s.completedAt || nowIso) : null,
+            notes: notes !== undefined ? notes : s.notes,
+            missedReason: missedReason !== undefined ? missedReason : s.missedReason,
+            subscriptionId: subId || s.subscriptionId,
+            updatedAt: nowIso
+          };
+        }
+        return s;
+      });
+      const nextState = { ...prev, dailySchedules: nextSchedules };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(nextState));
+      } catch {}
+      return nextState;
+    });
+
+    try {
+      localStorage.setItem('cleanzx_sync_trigger', Date.now().toString());
+    } catch {}
 
     try {
       const res = await fetch(`/api/car-assignments/${encodeURIComponent(id)}/status`, {
@@ -2565,7 +2922,18 @@ export const AdminDataProvider = ({ children }) => {
           status,
           notes,
           missedReason,
-          completedAt: status === 'Completed' ? nowIso : null
+          completedAt: status === 'Completed' ? nowIso : null,
+          date: effectiveDate,
+          subscriptionId: subId,
+          employeeId: jobData?.employeeId,
+          employeeName: jobData?.employeeName,
+          customerName: jobData?.customerName,
+          carModel: jobData?.carModel,
+          regNumber: jobData?.regNumber,
+          car: jobData?.car,
+          timeSlot: jobData?.timeSlot,
+          planName: jobData?.planName,
+          dayNumber: jobData?.dayNumber
         })
       });
       const data = await res.json();
@@ -2581,40 +2949,96 @@ export const AdminDataProvider = ({ children }) => {
     return { success: true };
   };
 
-  const uploadCarAssignmentPhoto = async (id, photoType, photoData, caption = '') => {
+  const uploadCarAssignmentPhoto = async (id, photoType, photoData, caption = '', targetDate = null, jobData = null) => {
     const nowIso = new Date().toISOString();
+    const effectiveDate = targetDate || jobData?.date || nowIso.slice(0, 10);
+    const subId = jobData?.subscriptionId || (id && id.startsWith('DAILY-') ? id.replace(/^DAILY-/, '').replace(/-[0-9]{4}-[0-9]{2}-[0-9]{2}$/, '') : null);
+    const targetReg = cleanRegStr(jobData?.regNumber || (id && !id.startsWith('SCH-') && !id.startsWith('DAILY-') && !id.startsWith('ASSIGN-') ? id : ''));
+
     const photoPayload = {
       url: photoData,
       uploadedAt: nowIso,
       caption: caption || `${photoType === 'before' ? 'Before' : 'After'} cleaning photo`
     };
 
-    setCarAssignments(prev =>
-      prev.map(c => {
-        if (c.id === id || c.regNumber === id) {
-          return {
-            ...c,
-            [photoType === 'before' ? 'beforePhoto' : 'afterPhoto']: photoPayload,
-            updatedAt: nowIso
-          };
-        }
-        return c;
-      })
-    );
+    setCarAssignments(prev => {
+      const idx = prev.findIndex(c => 
+        c.id === id || 
+        (subId && c.subscriptionId === subId && c.date === effectiveDate) ||
+        (targetReg && cleanRegStr(c.regNumber) === targetReg && c.date === effectiveDate) ||
+        (subId && c.id === `DAILY-${subId}-${effectiveDate}`)
+      );
+      let updated;
+      if (idx >= 0) {
+        updated = [...prev];
+        updated[idx] = {
+          ...updated[idx],
+          [photoType === 'before' ? 'beforePhoto' : 'afterPhoto']: photoPayload,
+          subscriptionId: subId || updated[idx].subscriptionId,
+          regNumber: jobData?.regNumber || updated[idx].regNumber,
+          updatedAt: nowIso
+        };
+      } else {
+        const newRecord = {
+          id: id || (subId ? `DAILY-${subId}-${effectiveDate}` : `DAILY-SUB-${effectiveDate}`),
+          subscriptionId: subId || null,
+          dayNumber: jobData?.dayNumber || 1,
+          carNumber: jobData?.carNumber || 1,
+          employeeId: jobData?.employeeId || 'EMP-01',
+          employeeName: jobData?.employeeName || 'Specialist Staff',
+          date: effectiveDate,
+          timeSlot: jobData?.timeSlot || '07:00 AM - 08:00 AM',
+          customerName: jobData?.customerName || 'Customer',
+          phone: jobData?.phone || '',
+          apartment: jobData?.apartment || '',
+          block: jobData?.block || '',
+          flat: jobData?.flat || '',
+          car: jobData?.car || `${jobData?.carModel || 'Car'} (${jobData?.regNumber || ''})`,
+          carModel: jobData?.carModel || 'Car',
+          regNumber: (jobData?.regNumber || 'CAR').toUpperCase(),
+          planName: jobData?.planName || 'Doorstep Subscription Care',
+          status: 'Pending',
+          notes: '',
+          missedReason: null,
+          completedAt: null,
+          beforePhoto: photoType === 'before' ? photoPayload : null,
+          afterPhoto: photoType === 'after' ? photoPayload : null,
+          createdAt: nowIso,
+          updatedAt: nowIso
+        };
+        updated = [...prev, newRecord];
+      }
+      try {
+        localStorage.setItem('cleanzx_car_assignments', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
 
-    setState(prev => ({
-      ...prev,
-      dailySchedules: (prev.dailySchedules || []).map(s => {
-        if (s.id === id || s.regNumber === id || s.bookingId === id) {
+    setState(prev => {
+      const nextSchedules = (prev.dailySchedules || []).map(s => {
+        const sMatch = s.id === id || s.bookingId === id ||
+          (subId && s.subscriptionId === subId && s.date === effectiveDate) ||
+          (targetReg && cleanRegStr(s.regNumber) === targetReg && s.date === effectiveDate);
+        if (sMatch) {
           return {
             ...s,
             [photoType === 'before' ? 'beforePhoto' : 'afterPhoto']: photoPayload,
+            subscriptionId: subId || s.subscriptionId,
             updatedAt: nowIso
           };
         }
         return s;
-      })
-    }));
+      });
+      const nextState = { ...prev, dailySchedules: nextSchedules };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(nextState));
+      } catch {}
+      return nextState;
+    });
+
+    try {
+      localStorage.setItem('cleanzx_sync_trigger', Date.now().toString());
+    } catch {}
 
     try {
       const res = await fetch(`/api/car-assignments/${encodeURIComponent(id)}/photos`, {
@@ -2623,7 +3047,18 @@ export const AdminDataProvider = ({ children }) => {
         body: JSON.stringify({
           photoType,
           photoData,
-          caption
+          caption,
+          date: effectiveDate,
+          subscriptionId: subId,
+          employeeId: jobData?.employeeId,
+          employeeName: jobData?.employeeName,
+          customerName: jobData?.customerName,
+          carModel: jobData?.carModel,
+          regNumber: jobData?.regNumber,
+          car: jobData?.car,
+          timeSlot: jobData?.timeSlot,
+          planName: jobData?.planName,
+          dayNumber: jobData?.dayNumber
         })
       });
       const data = await res.json();
@@ -3146,6 +3581,7 @@ export const AdminDataProvider = ({ children }) => {
 
         // Subscriptions Actions
         assignSubscription,
+        assignSubscriptionEmployee,
         renewSubscription,
         extendSubscription,
         cancelSubscription,

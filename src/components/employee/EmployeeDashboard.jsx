@@ -36,6 +36,13 @@ import {
 } from 'lucide-react';
 import { useAdminData } from '../../context/AdminDataContext';
 
+const getPhotoUrl = (photo) => {
+  if (!photo) return null;
+  if (typeof photo === 'string') return photo;
+  if (typeof photo === 'object' && photo.url) return photo.url;
+  return null;
+};
+
 export default function EmployeeDashboard() {
   const {
     employeeUser,
@@ -48,6 +55,7 @@ export default function EmployeeDashboard() {
     reassignScheduleEmployee,
     uploadCarAssignmentPhoto,
     updateCarAssignmentStatus,
+    fetchCarAssignments,
     carAssignments
   } = useAdminData();
 
@@ -76,6 +84,22 @@ export default function EmployeeDashboard() {
   const tomorrowObj = new Date();
   tomorrowObj.setDate(tomorrowObj.getDate() + 1);
   const tomorrowStr = tomorrowObj.toISOString().slice(0, 10);
+
+  // Sync latest car assignments and photos on mount and on live updates
+  React.useEffect(() => {
+    if (fetchCarAssignments) {
+      fetchCarAssignments();
+    }
+    const handleLiveSync = () => {
+      if (fetchCarAssignments) fetchCarAssignments();
+    };
+    window.addEventListener('cleanzx_live_update', handleLiveSync);
+    window.addEventListener('storage', handleLiveSync);
+    return () => {
+      window.removeEventListener('cleanzx_live_update', handleLiveSync);
+      window.removeEventListener('storage', handleLiveSync);
+    };
+  }, [fetchCarAssignments]);
 
   // Filter jobs strictly assigned to this logged-in employee (from dailySchedules, bookings, and subscriptions)
   const myAssignedJobs = React.useMemo(() => {
@@ -117,41 +141,80 @@ export default function EmployeeDashboard() {
         source: 'booking'
       }));
 
-    // 3. From active subscriptions assigned to this employee
-    const subJobs = (subscriptions || [])
+    // 3. From active subscriptions assigned to this employee - generate daily records for each day of subscription period
+    const subJobs = [];
+    (subscriptions || [])
       .filter(s => (s.status === 'Active' || s.status === 'Renewed') && matchesEmp(s.assignedEmployee || s.employeeName, null))
-      .filter(s => !scheduleJobs.some(sch => sch.subscriptionId === s.id || sch.id === 'SCH-SUB-' + s.id || (sch.phone && s.phone && sch.phone.replace(/\D/g, '') === s.phone.replace(/\D/g, ''))))
-      .map(s => ({
-        id: 'SCH-SUB-' + s.id,
-        subscriptionId: s.id,
-        customerId: s.customerId || null,
-        timeSlot: s.timeSlot || '07:00 AM - 08:00 AM',
-        customerName: s.customerName || 'Subscriber',
-        phone: s.phone || '',
-        apartment: s.apartment || 'Prestige High Fields',
-        block: s.block || 'Tower 1',
-        flat: s.flat || '',
-        carModel: s.car?.split('(')[0]?.trim() || 'Car',
-        regNumber: s.car?.match(/\(([^)]+)\)/)?.[1] || 'TS-REG',
-        planName: s.planName || 'Doorstep Plan',
-        employeeId: employeeUser.id,
-        employeeName: s.assignedEmployee || employeeUser.name,
-        date: todayStr,
-        status: 'Assigned',
-        notes: 'Doorstep Subscription Care',
-        source: 'subscription'
-      }));
+      .forEach(s => {
+        const start = new Date(s.startDate || todayStr);
+        const end = new Date(s.expiryDate || todayStr);
+        const carModel = s.carModel || (s.car ? s.car.split('(')[0]?.trim() : 'Car');
+        const regNumber = s.regNumber || (s.car ? (s.car.match(/\(([^)]+)\)/)?.[1] || 'TS-REG') : 'TS-REG');
+
+        const cur = new Date(start);
+        let dayCount = 1;
+        while (cur <= end) {
+          const dStr = cur.toISOString().slice(0, 10);
+          const dailyId = `DAILY-${s.id}-${dStr}`;
+
+          const inSchedule = scheduleJobs.some(sch => sch.id === dailyId || (sch.subscriptionId === s.id && sch.date === dStr));
+          const inAssignments = (carAssignments || []).some(ca => ca.id === dailyId || (ca.subscriptionId === s.id && ca.date === dStr));
+
+          if (!inSchedule && !inAssignments) {
+            subJobs.push({
+              id: dailyId,
+              subscriptionId: s.id,
+              dayNumber: dayCount,
+              customerId: s.customerId || null,
+              timeSlot: s.timeSlot || '07:00 AM - 08:00 AM',
+              customerName: s.customerName || 'Subscriber',
+              phone: s.phone || '',
+              apartment: s.apartment || 'Prestige High Fields',
+              block: s.block || 'Tower 1',
+              flat: s.flat || '',
+              carModel,
+              regNumber,
+              planName: s.planName || 'Doorstep Subscription Care',
+              employeeId: employeeUser.id,
+              employeeName: s.assignedEmployee || employeeUser.name,
+              date: dStr,
+              status: 'Pending',
+              notes: 'Doorstep Subscription Care',
+              beforePhoto: null,
+              afterPhoto: null,
+              source: 'subscription_daily'
+            });
+          }
+          cur.setDate(cur.getDate() + 1);
+          dayCount++;
+        }
+      });
 
     // 4. Merge with carAssignments from backend
+    const cleanStr = (s) => (s || '').replace(/[\s\-\_]/g, '').toUpperCase();
     const enrichedScheduleJobs = scheduleJobs.map(job => {
-      const match = (carAssignments || []).find(ca => ca.id === job.id || (ca.regNumber === job.regNumber && ca.date === job.date));
+      const jobReg = cleanStr(job.regNumber);
+      const match = (carAssignments || []).find(ca => 
+        ca.id === job.id || 
+        (job.subscriptionId && ca.subscriptionId === job.subscriptionId && ca.date === job.date) ||
+        (jobReg && cleanStr(ca.regNumber) === jobReg && ca.date === job.date)
+      );
+
+      const matchSub = (subscriptions || []).find(s => 
+        (s.id && (s.id === job.subscriptionId || s.id === match?.subscriptionId)) ||
+        (jobReg && cleanStr(s.regNumber || (s.car ? (s.car.match(/\(([^)]+)\)/)?.[1] || '') : '')) === jobReg)
+      );
+
       return {
         ...job,
+        subscriptionId: job.subscriptionId || match?.subscriptionId || matchSub?.id || null,
+        status: match?.status || job.status || 'Pending',
         carNumber: job.carNumber || match?.carNumber || null,
         parkingBay: job.parkingBay || match?.parkingBay || null,
-        beforePhoto: job.beforePhoto || match?.beforePhoto || null,
-        afterPhoto: job.afterPhoto || match?.afterPhoto || null,
-        completedAt: job.completedAt || match?.completedAt || null
+        beforePhoto: match?.beforePhoto || job.beforePhoto || null,
+        afterPhoto: match?.afterPhoto || job.afterPhoto || null,
+        completedAt: match?.completedAt || job.completedAt || null,
+        notes: match?.notes || job.notes || ''
       };
     });
 
@@ -159,6 +222,8 @@ export default function EmployeeDashboard() {
       if (!enrichedScheduleJobs.some(j => j.id === ca.id || (j.regNumber === ca.regNumber && j.date === ca.date))) {
         enrichedScheduleJobs.push({
           id: ca.id,
+          subscriptionId: ca.subscriptionId || null,
+          dayNumber: ca.dayNumber || null,
           carNumber: ca.carNumber,
           bookingId: ca.id,
           customerId: ca.customerId || null,
@@ -181,7 +246,7 @@ export default function EmployeeDashboard() {
           missedReason: ca.missedReason,
           beforePhoto: ca.beforePhoto,
           afterPhoto: ca.afterPhoto,
-          source: 'car_assignment'
+          source: ca.subscriptionId ? 'subscription_daily' : 'car_assignment'
         });
       }
     });
@@ -240,15 +305,26 @@ export default function EmployeeDashboard() {
       ? `Missed: ${updateForm.reason}${updateForm.notes ? ` - ${updateForm.notes}` : ''}`
       : updateForm.notes;
 
-    updateScheduleStatus(
-      updatingJob.id,
-      updateForm.status,
-      notesToSave,
-      updateForm.status === 'Missed' ? updateForm.reason : null,
-      updatingJob
-    );
+    if (updateCarAssignmentStatus) {
+      updateCarAssignmentStatus(
+        updatingJob.id,
+        updateForm.status,
+        notesToSave,
+        updateForm.status === 'Missed' ? updateForm.reason : null,
+        updatingJob.date,
+        updatingJob
+      );
+    } else {
+      updateScheduleStatus(
+        updatingJob.id,
+        updateForm.status,
+        notesToSave,
+        updateForm.status === 'Missed' ? updateForm.reason : null,
+        updatingJob
+      );
+    }
 
-    showToast(`Visit marked as ${updateForm.status} • Live in Admin & Customer Dashboards`);
+    showToast(`Visit marked as ${updateForm.status} • Saved separately in Admin Dashboard`);
     setUpdatingJob(null);
   };
 
@@ -256,14 +332,51 @@ export default function EmployeeDashboard() {
     const jobObj = typeof jobOrId === 'object' ? jobOrId : myAssignedJobs.find(j => j.id === jobOrId);
     const jobId = jobObj ? jobObj.id : jobOrId;
     if (updateCarAssignmentStatus) {
-      updateCarAssignmentStatus(jobId, newStatus, jobObj?.notes || '');
-    } else {
+      updateCarAssignmentStatus(jobId, newStatus, jobObj?.notes || '', undefined, jobObj?.date, jobObj);
+    }
+    if (updateScheduleStatus) {
       updateScheduleStatus(jobId, newStatus, undefined, undefined, jobObj);
     }
-    showToast(`Status updated to ${newStatus} • Live in Admin & Specialist portals`);
+    showToast(`Status updated to ${newStatus} (${jobObj?.date || 'today'}) • Saved separately in Admin Dashboard`);
   };
 
-  const handlePhotoFileUpload = (e, job, photoType) => {
+  const compressImage = (file, maxWidth = 1200, maxHeight = 900, quality = 0.75) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > maxWidth) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = () => resolve(event.target?.result);
+        img.src = event.target?.result;
+      };
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handlePhotoFileUpload = async (e, job, photoType) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -273,17 +386,35 @@ export default function EmployeeDashboard() {
     }
 
     setUploadingFor({ id: job.id, type: photoType });
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const dataUrl = event.target?.result;
+    try {
+      const dataUrl = await compressImage(file, 1200, 900, 0.75);
       if (dataUrl && uploadCarAssignmentPhoto) {
-        uploadCarAssignmentPhoto(job.id, photoType, dataUrl, `${photoType === 'before' ? 'Before' : 'After'} cleaning photo of ${job.carModel} (${job.regNumber})`);
-        showToast(`✅ ${photoType === 'before' ? 'Before' : 'After'} photo uploaded for ${job.regNumber}!`);
+        uploadCarAssignmentPhoto(
+          job.id,
+          photoType,
+          dataUrl,
+          `${photoType === 'before' ? 'Before' : 'After'} cleaning photo of ${job.carModel} (${job.regNumber}) on ${job.date || todayStr}`,
+          job.date,
+          job
+        );
+        if (photoModalJob && (photoModalJob.id === job.id || photoModalJob.regNumber === job.regNumber)) {
+          setPhotoModalJob(prev => prev ? ({
+            ...prev,
+            [photoType === 'before' ? 'beforePhoto' : 'afterPhoto']: {
+              url: dataUrl,
+              uploadedAt: new Date().toISOString(),
+              caption: `${photoType === 'before' ? 'Before' : 'After'} cleaning photo`
+            }
+          }) : null);
+        }
+        showToast(`✅ ${photoType === 'before' ? 'Before' : 'After'} photo uploaded for ${job.regNumber} (${job.date})!`);
       }
+    } catch (err) {
+      console.error('Error uploading photo:', err);
+    } finally {
       setUploadingFor(null);
-    };
-    reader.readAsDataURL(file);
-    e.target.value = '';
+      e.target.value = '';
+    }
   };
 
   const handleAttachSamplePhoto = (job, photoType) => {
@@ -293,9 +424,21 @@ export default function EmployeeDashboard() {
         job.id,
         photoType,
         sampleUrl,
-        `Demo ${photoType === 'before' ? 'Before' : 'After'} photo for ${job.carModel}`
+        `Demo ${photoType === 'before' ? 'Before' : 'After'} photo for ${job.carModel} on ${job.date || todayStr}`,
+        job.date,
+        job
       );
-      showToast(`📸 Sample ${photoType} photo attached to ${job.regNumber}`);
+      if (photoModalJob && (photoModalJob.id === job.id || photoModalJob.regNumber === job.regNumber)) {
+        setPhotoModalJob(prev => prev ? ({
+          ...prev,
+          [photoType === 'before' ? 'beforePhoto' : 'afterPhoto']: {
+            url: sampleUrl,
+            uploadedAt: new Date().toISOString(),
+            caption: `Demo ${photoType} photo`
+          }
+        }) : null);
+      }
+      showToast(`📸 Sample ${photoType} photo attached to ${job.regNumber} (${job.date})`);
     }
   };
 
@@ -642,18 +785,15 @@ export default function EmployeeDashboard() {
 
               {/* Date & Status Filter Bars */}
               <div className="space-y-2.5 pt-1">
-                {/* Date Selection Pills */}
-                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs">
+                {/* Date Selection Pills & Calendar Date Picker */}
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs flex-wrap">
                   <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mr-1 shrink-0">
                     Filter Date:
                   </span>
                   {[
-                    { id: 'all', label: `All Assigned (${myAssignedJobs.length})` },
-                    { id: 'today', label: `Today • ${todayStr.slice(5)} (${myAssignedJobs.filter(j => j.date === todayStr).length})` },
-                    { id: 'tomorrow', label: `Tomorrow • ${tomorrowStr.slice(5)} (${myAssignedJobs.filter(j => j.date === tomorrowStr).length})` },
-                    ...(upcomingJobs.length > 0 && !tomorrowJobs.length
-                      ? [{ id: 'upcoming', label: `Upcoming (${upcomingJobs.length})` }]
-                      : [])
+                    { id: 'all', label: `All (${myAssignedJobs.length})` },
+                    { id: 'today', label: `Today (${myAssignedJobs.filter(j => j.date === todayStr).length})` },
+                    { id: 'tomorrow', label: `Tomorrow (${myAssignedJobs.filter(j => j.date === tomorrowStr).length})` }
                   ].map(dt => (
                     <button
                       key={dt.id}
@@ -667,6 +807,17 @@ export default function EmployeeDashboard() {
                       {dt.label}
                     </button>
                   ))}
+
+                  <div className="flex items-center gap-1.5 ml-auto pl-2 border-l border-slate-200">
+                    <span className="text-[10px] font-semibold text-slate-500">Pick Date:</span>
+                    <input
+                      type="date"
+                      value={dateFilter.match(/^\d{4}-\d{2}-\d{2}$/) ? dateFilter : todayStr}
+                      onChange={(e) => setDateFilter(e.target.value)}
+                      className="px-2 py-1 text-xs font-mono font-bold border border-cyan-300 rounded-xl bg-cyan-50/50 text-cyan-950 focus:outline-none focus:ring-2 focus:ring-cyan-500 cursor-pointer"
+                      title="Select date for subscription daily update"
+                    />
+                  </div>
                 </div>
 
                 {/* Status Chips Bar */}
@@ -867,7 +1018,7 @@ export default function EmployeeDashboard() {
                                 <Camera className="w-3.5 h-3.5 text-cyan-600" />
                                 <span>Car Cleaning Photos (Required)</span>
                               </span>
-                              {(job.beforePhoto?.url || job.afterPhoto?.url) && (
+                              {(getPhotoUrl(job.beforePhoto) || getPhotoUrl(job.afterPhoto)) && (
                                 <button
                                   type="button"
                                   onClick={() => setPhotoModalJob(job)}
@@ -887,20 +1038,20 @@ export default function EmployeeDashboard() {
                                     <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
                                       Before Clean
                                     </span>
-                                    {job.beforePhoto?.url && (
+                                    {getPhotoUrl(job.beforePhoto) && (
                                       <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
                                         Uploaded
                                       </span>
                                     )}
                                   </div>
 
-                                  {job.beforePhoto?.url ? (
+                                  {getPhotoUrl(job.beforePhoto) ? (
                                     <div
                                       onClick={() => setPhotoModalJob(job)}
                                       className="relative group rounded-lg overflow-hidden border border-slate-200 aspect-video bg-slate-100 cursor-pointer"
                                     >
                                       <img
-                                        src={job.beforePhoto.url}
+                                        src={getPhotoUrl(job.beforePhoto)}
                                         alt="Before Cleaning"
                                         className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                                       />
@@ -919,7 +1070,7 @@ export default function EmployeeDashboard() {
                                 <div className="mt-2 pt-1.5 border-t border-slate-100 flex items-center gap-1">
                                   <label className="flex-1 py-1 px-1.5 bg-cyan-50 hover:bg-cyan-100 text-cyan-700 rounded-lg text-[10px] font-bold text-center cursor-pointer transition-colors border border-cyan-200 flex items-center justify-center gap-1">
                                     <UploadCloud className="w-3 h-3" />
-                                    <span>{job.beforePhoto?.url ? 'Change' : 'Upload'}</span>
+                                    <span>{getPhotoUrl(job.beforePhoto) ? 'Change' : 'Upload'}</span>
                                     <input
                                       type="file"
                                       accept="image/*"
@@ -928,7 +1079,7 @@ export default function EmployeeDashboard() {
                                       onChange={(e) => handlePhotoFileUpload(e, job, 'before')}
                                     />
                                   </label>
-                                  {!job.beforePhoto?.url && (
+                                  {!getPhotoUrl(job.beforePhoto) && (
                                     <button
                                       type="button"
                                       onClick={() => handleAttachSamplePhoto(job, 'before')}
@@ -948,20 +1099,20 @@ export default function EmployeeDashboard() {
                                     <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
                                       After Clean
                                     </span>
-                                    {job.afterPhoto?.url && (
+                                    {getPhotoUrl(job.afterPhoto) && (
                                       <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
                                         Uploaded
                                       </span>
                                     )}
                                   </div>
 
-                                  {job.afterPhoto?.url ? (
+                                  {getPhotoUrl(job.afterPhoto) ? (
                                     <div
                                       onClick={() => setPhotoModalJob(job)}
                                       className="relative group rounded-lg overflow-hidden border border-slate-200 aspect-video bg-slate-100 cursor-pointer"
                                     >
                                       <img
-                                        src={job.afterPhoto.url}
+                                        src={getPhotoUrl(job.afterPhoto)}
                                         alt="After Cleaning"
                                         className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                                       />
@@ -980,7 +1131,7 @@ export default function EmployeeDashboard() {
                                 <div className="mt-2 pt-1.5 border-t border-slate-100 flex items-center gap-1">
                                   <label className="flex-1 py-1 px-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-[10px] font-bold text-center cursor-pointer transition-colors border border-emerald-200 flex items-center justify-center gap-1">
                                     <UploadCloud className="w-3 h-3" />
-                                    <span>{job.afterPhoto?.url ? 'Change' : 'Upload'}</span>
+                                    <span>{getPhotoUrl(job.afterPhoto) ? 'Change' : 'Upload'}</span>
                                     <input
                                       type="file"
                                       accept="image/*"
@@ -989,7 +1140,7 @@ export default function EmployeeDashboard() {
                                       onChange={(e) => handlePhotoFileUpload(e, job, 'after')}
                                     />
                                   </label>
-                                  {!job.afterPhoto?.url && (
+                                  {!getPhotoUrl(job.afterPhoto) && (
                                     <button
                                       type="button"
                                       onClick={() => handleAttachSamplePhoto(job, 'after')}
@@ -1497,9 +1648,9 @@ export default function EmployeeDashboard() {
                       </div>
 
                       <div className="rounded-xl overflow-hidden border border-slate-200 aspect-video bg-slate-900 relative">
-                        {photoModalJob.beforePhoto?.url ? (
+                        {getPhotoUrl(photoModalJob.beforePhoto) ? (
                           <img
-                            src={photoModalJob.beforePhoto.url}
+                            src={getPhotoUrl(photoModalJob.beforePhoto)}
                             alt="Before Cleaning"
                             className="w-full h-full object-contain"
                           />
@@ -1521,31 +1672,19 @@ export default function EmployeeDashboard() {
                     <div className="mt-3 pt-2.5 border-t border-slate-200 flex items-center gap-2">
                       <label className="flex-1 py-1.5 px-3 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold text-center cursor-pointer transition-colors flex items-center justify-center gap-1.5">
                         <UploadCloud className="w-3.5 h-3.5" />
-                        <span>{photoModalJob.beforePhoto?.url ? 'Re-upload Before Photo' : 'Upload Before Photo'}</span>
+                        <span>{getPhotoUrl(photoModalJob.beforePhoto) ? 'Re-upload Before Photo' : 'Upload Before Photo'}</span>
                         <input
                           type="file"
                           accept="image/*"
                           capture="environment"
                           className="hidden"
-                          onChange={(e) => {
-                            handlePhotoFileUpload(e, photoModalJob, 'before');
-                            setPhotoModalJob(prev => ({
-                              ...prev,
-                              beforePhoto: { url: URL.createObjectURL(e.target.files[0]), uploadedAt: new Date().toISOString() }
-                            }));
-                          }}
+                          onChange={(e) => handlePhotoFileUpload(e, photoModalJob, 'before')}
                         />
                       </label>
-                      {!photoModalJob.beforePhoto?.url && (
+                      {!getPhotoUrl(photoModalJob.beforePhoto) && (
                         <button
                           type="button"
-                          onClick={() => {
-                            handleAttachSamplePhoto(photoModalJob, 'before');
-                            setPhotoModalJob(prev => ({
-                              ...prev,
-                              beforePhoto: { url: '/images/exterior-wash.jpg', uploadedAt: new Date().toISOString() }
-                            }));
-                          }}
+                          onClick={() => handleAttachSamplePhoto(photoModalJob, 'before')}
                           className="py-1.5 px-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-semibold cursor-pointer"
                         >
                           Use Sample
@@ -1572,9 +1711,9 @@ export default function EmployeeDashboard() {
                       </div>
 
                       <div className="rounded-xl overflow-hidden border border-slate-200 aspect-video bg-slate-900 relative">
-                        {photoModalJob.afterPhoto?.url ? (
+                        {getPhotoUrl(photoModalJob.afterPhoto) ? (
                           <img
-                            src={photoModalJob.afterPhoto.url}
+                            src={getPhotoUrl(photoModalJob.afterPhoto)}
                             alt="After Cleaning"
                             className="w-full h-full object-contain"
                           />
@@ -1596,31 +1735,19 @@ export default function EmployeeDashboard() {
                     <div className="mt-3 pt-2.5 border-t border-slate-200 flex items-center gap-2">
                       <label className="flex-1 py-1.5 px-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold text-center cursor-pointer transition-colors flex items-center justify-center gap-1.5">
                         <UploadCloud className="w-3.5 h-3.5" />
-                        <span>{photoModalJob.afterPhoto?.url ? 'Re-upload After Photo' : 'Upload After Photo'}</span>
+                        <span>{getPhotoUrl(photoModalJob.afterPhoto) ? 'Re-upload After Photo' : 'Upload After Photo'}</span>
                         <input
                           type="file"
                           accept="image/*"
                           capture="environment"
                           className="hidden"
-                          onChange={(e) => {
-                            handlePhotoFileUpload(e, photoModalJob, 'after');
-                            setPhotoModalJob(prev => ({
-                              ...prev,
-                              afterPhoto: { url: URL.createObjectURL(e.target.files[0]), uploadedAt: new Date().toISOString() }
-                            }));
-                          }}
+                          onChange={(e) => handlePhotoFileUpload(e, photoModalJob, 'after')}
                         />
                       </label>
-                      {!photoModalJob.afterPhoto?.url && (
+                      {!getPhotoUrl(photoModalJob.afterPhoto) && (
                         <button
                           type="button"
-                          onClick={() => {
-                            handleAttachSamplePhoto(photoModalJob, 'after');
-                            setPhotoModalJob(prev => ({
-                              ...prev,
-                              afterPhoto: { url: '/images/hero-car.jpg', uploadedAt: new Date().toISOString() }
-                            }));
-                          }}
+                          onClick={() => handleAttachSamplePhoto(photoModalJob, 'after')}
                           className="py-1.5 px-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-semibold cursor-pointer"
                         >
                           Use Sample

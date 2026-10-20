@@ -34,7 +34,9 @@ import {
   Zap,
   Info,
   QrCode,
-  Copy
+  Copy,
+  Camera,
+  Eye
 } from 'lucide-react';
 import { useAdminData } from '../../context/AdminDataContext';
 import InvoiceModal from './InvoiceModal';
@@ -54,7 +56,8 @@ export default function CustomerDashboard() {
     invoices,
     plans,
     websiteContent,
-    bookings
+    bookings,
+    carAssignments
   } = useAdminData();
 
   // Active Tab
@@ -64,6 +67,9 @@ export default function CustomerDashboard() {
 
   // Selected Invoice for Modal
   const [selectedInvoice, setSelectedInvoice] = useState(null);
+
+  // Photo Inspection Modal
+  const [customerInspectedPhoto, setCustomerInspectedPhoto] = useState(null);
 
   // Feedback notifications
   const [bannerNotice, setBannerNotice] = useState(null);
@@ -131,7 +137,7 @@ export default function CustomerDashboard() {
     const userVehicleReg = (customerUser.vehicle_registration_number || '').replace(/\s+/g, '').toUpperCase();
     const userId = customerUser.id;
 
-    // 1. Gather all visits from dailySchedules
+    // 1. Gather all visits from dailySchedules enriched with carAssignments
     const fromSchedules = (dailySchedules || []).filter((sch) => {
       const schPhoneDigits = (sch.phone || '').replace(/\D/g, '').slice(-10);
       const schName = (sch.customerName || '').toLowerCase().trim();
@@ -144,6 +150,20 @@ export default function CustomerDashboard() {
         (userVehicleReg && schReg && userVehicleReg === schReg) ||
         (userName && schName && userName === schName)
       );
+    }).map(sch => {
+      const cleanReg = (s) => (s || '').replace(/[\s\-\_]/g, '').toUpperCase();
+      const schRegNorm = cleanReg(sch.regNumber);
+      const match = (carAssignments || []).find(ca => 
+        ca.id === sch.id || 
+        (sch.subscriptionId && ca.subscriptionId === sch.subscriptionId && ca.date === sch.date) ||
+        (schRegNorm && cleanReg(ca.regNumber) === schRegNorm && ca.date === sch.date)
+      );
+      return {
+        ...sch,
+        beforePhoto: match?.beforePhoto || sch.beforePhoto || null,
+        afterPhoto: match?.afterPhoto || sch.afterPhoto || null,
+        status: match?.status || sch.status
+      };
     });
 
     // 2. Also check bookings if not in schedules
@@ -177,8 +197,19 @@ export default function CustomerDashboard() {
         source: 'booking'
       }));
 
-    return [...fromSchedules, ...fromBookings];
-  }, [dailySchedules, bookings, customerUser]);
+    // 3. Also include carAssignments matching this customer directly
+    const fromAssignments = (carAssignments || []).filter(ca => {
+      const caPhoneDigits = (ca.phone || '').replace(/\D/g, '').slice(-10);
+      const caName = (ca.customerName || '').toLowerCase().trim();
+      const caReg = (ca.regNumber || '').replace(/\s+/g, '').toUpperCase();
+      const isMatched = (userVehicleReg && caReg && userVehicleReg === caReg) ||
+                        (userPhoneDigits && caPhoneDigits && userPhoneDigits === caPhoneDigits) ||
+                        (userName && caName && userName === caName);
+      return isMatched && !fromSchedules.some(s => s.id === ca.id || (s.regNumber === ca.regNumber && s.date === ca.date));
+    });
+
+    return [...fromSchedules, ...fromBookings, ...fromAssignments];
+  }, [dailySchedules, bookings, carAssignments, customerUser]);
 
   // Today's or latest visit for the prominent daily work card
   const latestVisit = useMemo(() => {
@@ -775,6 +806,77 @@ export default function CustomerDashboard() {
                       </button>
                     </div>
                   </div>
+
+                  {/* Daily Before & After Cleaning Photos */}
+                  {(latestVisit.beforePhoto?.url || latestVisit.afterPhoto?.url) && (
+                    <div className="mt-4 pt-3 border-t border-slate-200/80">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                          <Camera className="w-3.5 h-3.5 text-cyan-600" />
+                          <span>Today's Car Cleaning Photos (Uploaded by Specialist)</span>
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="bg-white p-2.5 rounded-2xl border border-slate-200 text-center">
+                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
+                            Before Clean
+                          </span>
+                          {latestVisit.beforePhoto?.url ? (
+                            <div
+                              onClick={() => setCustomerInspectedPhoto({
+                                url: latestVisit.beforePhoto.url,
+                                title: `Before Cleaning • ${latestVisit.carModel || 'Your Car'}`,
+                                time: latestVisit.beforePhoto.uploadedAt
+                              })}
+                              className="aspect-video rounded-xl overflow-hidden border border-slate-200 bg-slate-100 cursor-pointer group relative"
+                            >
+                              <img
+                                src={latestVisit.beforePhoto.url}
+                                alt="Before Clean"
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                              />
+                              <div className="absolute inset-0 bg-slate-950/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                                <Eye className="w-5 h-5 drop-shadow" />
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="aspect-video rounded-xl border border-dashed border-slate-200 flex items-center justify-center text-xs text-slate-400">
+                              No before photo
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="bg-white p-2.5 rounded-2xl border border-slate-200 text-center">
+                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
+                            After Clean
+                          </span>
+                          {latestVisit.afterPhoto?.url ? (
+                            <div
+                              onClick={() => setCustomerInspectedPhoto({
+                                url: latestVisit.afterPhoto.url,
+                                title: `After Cleaning • ${latestVisit.carModel || 'Your Car'}`,
+                                time: latestVisit.afterPhoto.uploadedAt
+                              })}
+                              className="aspect-video rounded-xl overflow-hidden border border-slate-200 bg-slate-100 cursor-pointer group relative"
+                            >
+                              <img
+                                src={latestVisit.afterPhoto.url}
+                                alt="After Clean"
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                              />
+                              <div className="absolute inset-0 bg-slate-950/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                                <Eye className="w-5 h-5 drop-shadow" />
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="aspect-video rounded-xl border border-dashed border-slate-200 flex items-center justify-center text-xs text-slate-400">
+                              No after photo
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Specialist Service Notes Box */}
                   <div className="mt-4 pt-3 border-t border-slate-200/80">
@@ -1440,6 +1542,52 @@ export default function CustomerDashboard() {
                             <div className="mt-2.5 p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-700">
                               <span className="text-slate-500 font-semibold">Specialist Note: </span>
                               <span>{visit.notes}</span>
+                            </div>
+                          )}
+
+                          {/* Photos Thumbnail Preview */}
+                          {(visit.beforePhoto?.url || visit.afterPhoto?.url) && (
+                            <div className="flex items-center gap-2 mt-2">
+                              {visit.beforePhoto?.url && (
+                                <div
+                                  onClick={() => setCustomerInspectedPhoto({
+                                    url: visit.beforePhoto.url,
+                                    title: `Before Cleaning • ${visit.carModel || 'Your Car'}`,
+                                    time: visit.beforePhoto.uploadedAt
+                                  })}
+                                  className="w-12 h-12 rounded-lg overflow-hidden border border-slate-200 bg-slate-100 cursor-pointer group relative shrink-0"
+                                  title="Click to view Before Cleaning photo"
+                                >
+                                  <img
+                                    src={visit.beforePhoto.url}
+                                    alt="Before"
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                                  />
+                                  <span className="absolute bottom-0 inset-x-0 bg-slate-900/80 text-[7px] font-black text-cyan-300 text-center leading-none py-0.5 uppercase">
+                                    Before
+                                  </span>
+                                </div>
+                              )}
+                              {visit.afterPhoto?.url && (
+                                <div
+                                  onClick={() => setCustomerInspectedPhoto({
+                                    url: visit.afterPhoto.url,
+                                    title: `After Cleaning • ${visit.carModel || 'Your Car'}`,
+                                    time: visit.afterPhoto.uploadedAt
+                                  })}
+                                  className="w-12 h-12 rounded-lg overflow-hidden border border-slate-200 bg-slate-100 cursor-pointer group relative shrink-0"
+                                  title="Click to view After Cleaning photo"
+                                >
+                                  <img
+                                    src={visit.afterPhoto.url}
+                                    alt="After"
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                                  />
+                                  <span className="absolute bottom-0 inset-x-0 bg-emerald-950/85 text-[7px] font-black text-emerald-300 text-center leading-none py-0.5 uppercase">
+                                    After
+                                  </span>
+                                </div>
+                              )}
                             </div>
                           )}
 
@@ -2284,6 +2432,33 @@ export default function CustomerDashboard() {
             vehicle: `${customerUser?.car_model || ''} ${customerUser?.vehicle_registration_number || ''}`.trim()
           }}
         />
+      )}
+
+      {/* PHOTO INSPECTION MODAL */}
+      {customerInspectedPhoto && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fadeIn">
+          <div className="bg-slate-900 rounded-3xl max-w-2xl w-full border border-slate-800 overflow-hidden shadow-2xl">
+            <div className="p-4 border-b border-slate-800 flex items-center justify-between text-white">
+              <div>
+                <h4 className="font-bold text-sm text-cyan-300">{customerInspectedPhoto.title}</h4>
+                <span className="text-[10px] text-slate-400">{customerInspectedPhoto.time ? new Date(customerInspectedPhoto.time).toLocaleString() : 'Uploaded by specialist'}</span>
+              </div>
+              <button
+                onClick={() => setCustomerInspectedPhoto(null)}
+                className="p-1.5 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-white cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-4 bg-black flex items-center justify-center">
+              <img
+                src={customerInspectedPhoto.url}
+                alt="Inspection"
+                className="max-h-[70vh] w-auto max-w-full rounded-xl object-contain shadow-2xl"
+              />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

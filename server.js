@@ -17,6 +17,13 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
+const UPLOADS_DIR = path.join(__dirname, 'public', 'uploads');
+if (!fs.existsSync(UPLOADS_DIR)) {
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+}
+app.use('/uploads', express.static(UPLOADS_DIR));
+app.use(express.static(path.join(__dirname, 'public')));
+
 const DATA_DIR = path.join(__dirname, 'server', 'data');
 const ENQUIRIES_FILE = path.join(DATA_DIR, 'enquiries.json');
 const PLANS_FILE = path.join(DATA_DIR, 'plans.json');
@@ -860,12 +867,15 @@ if (!fs.existsSync(CAR_ASSIGNMENTS_FILE)) {
   writeJSON(CAR_ASSIGNMENTS_FILE, []);
 }
 
-// 1. Get all car assignments (with optional filters: employeeId, date, status)
+// 1. Get all car assignments (with optional filters: employeeId, date, status, subscriptionId)
 app.get('/api/car-assignments', (req, res) => {
-  const { employeeId, date, status } = req.query;
+  const { employeeId, date, status, subscriptionId } = req.query;
   const records = readJSON(CAR_ASSIGNMENTS_FILE, []);
 
   let filtered = [...records];
+  if (subscriptionId) {
+    filtered = filtered.filter(r => r.subscriptionId === subscriptionId || r.id?.startsWith(`DAILY-${subscriptionId}-`));
+  }
   if (employeeId) {
     const cleanEmp = employeeId.trim().toLowerCase();
     filtered = filtered.filter(r =>
@@ -887,7 +897,7 @@ app.get('/api/car-assignments', (req, res) => {
   });
 });
 
-// 2. Assign any number of cars to an employee using their Employee ID
+// 2a. Assign any number of cars to an employee using their Employee ID
 app.post(['/api/car-assignments/assign', '/api/car-assignments/assign-10'], (req, res) => {
   const { employeeId, employeeName, date, cars } = req.body;
 
@@ -960,10 +970,165 @@ app.post(['/api/car-assignments/assign', '/api/car-assignments/assign-10'], (req
   });
 });
 
+// 2b. Assign a customer's subscribed car to an employee for the full subscription period
+app.post('/api/car-assignments/assign-subscription', (req, res) => {
+  const {
+    subscriptionId,
+    employeeId,
+    employeeName,
+    startDate,
+    expiryDate,
+    customerName,
+    phone,
+    apartment,
+    block,
+    flat,
+    car,
+    carModel,
+    regNumber,
+    timeSlot,
+    planName
+  } = req.body;
+
+  if (!subscriptionId || !employeeId) {
+    return res.status(400).json({
+      success: false,
+      message: 'subscriptionId and employeeId are required.'
+    });
+  }
+
+  const targetEmpName = employeeName || 'Specialist Staff';
+
+  const parseToNoon = (dStr) => {
+    if (!dStr) return new Date();
+    const parts = String(dStr).slice(0, 10).split('-');
+    if (parts.length === 3) {
+      return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10), 12, 0, 0);
+    }
+    return new Date(dStr);
+  };
+
+  const toYMD = (d) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
+
+  const start = parseToNoon(startDate || new Date().toISOString().slice(0, 10));
+  const defaultEnd = new Date(start.getTime() + 30 * 24 * 60 * 60 * 1000);
+  const end = parseToNoon(expiryDate || toYMD(defaultEnd));
+
+  const allRecords = readJSON(CAR_ASSIGNMENTS_FILE, []);
+  const generatedRecords = [];
+
+  const current = new Date(start);
+  let dayCount = 1;
+  while (current <= end) {
+    const dStr = toYMD(current);
+    const dailyId = `DAILY-${subscriptionId}-${dStr}`;
+
+    const existingIndex = allRecords.findIndex(r => r.id === dailyId || (r.subscriptionId === subscriptionId && r.date === dStr));
+
+    if (existingIndex >= 0) {
+      allRecords[existingIndex].employeeId = employeeId;
+      allRecords[existingIndex].employeeName = targetEmpName;
+      if (carModel) allRecords[existingIndex].carModel = carModel;
+      if (regNumber) allRecords[existingIndex].regNumber = regNumber.toUpperCase();
+      if (customerName) allRecords[existingIndex].customerName = customerName;
+      if (apartment) allRecords[existingIndex].apartment = apartment;
+      if (block) allRecords[existingIndex].block = block;
+      if (flat) allRecords[existingIndex].flat = flat;
+      if (phone) allRecords[existingIndex].phone = phone;
+      if (timeSlot) allRecords[existingIndex].timeSlot = timeSlot;
+      if (planName) allRecords[existingIndex].planName = planName;
+      allRecords[existingIndex].updatedAt = new Date().toISOString();
+      generatedRecords.push(allRecords[existingIndex]);
+    } else {
+      const newDailyRecord = {
+        id: dailyId,
+        subscriptionId,
+        dayNumber: dayCount,
+        carNumber: 1,
+        employeeId,
+        employeeName: targetEmpName,
+        date: dStr,
+        timeSlot: timeSlot || '07:00 AM - 08:00 AM',
+        customerName: customerName || 'Subscriber',
+        phone: phone || '',
+        apartment: apartment || '',
+        block: block || '',
+        flat: flat || '',
+        car: car || `${carModel || 'Car'} (${regNumber || ''})`,
+        carModel: carModel || 'Car',
+        regNumber: (regNumber || 'CAR').toUpperCase(),
+        planName: planName || 'Doorstep Subscription Care',
+        status: 'Pending',
+        completedAt: null,
+        notes: '',
+        missedReason: null,
+        beforePhoto: null,
+        afterPhoto: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      allRecords.push(newDailyRecord);
+      generatedRecords.push(newDailyRecord);
+    }
+
+    current.setDate(current.getDate() + 1);
+    dayCount++;
+  }
+
+  writeJSON(CAR_ASSIGNMENTS_FILE, allRecords);
+
+  return res.json({
+    success: true,
+    message: `Subscribed car assigned to ${targetEmpName} for ${generatedRecords.length} days (${startDate || toYMD(start)} to ${expiryDate || toYMD(end)}).`,
+    subscriptionId,
+    employeeId,
+    employeeName: targetEmpName,
+    totalDays: generatedRecords.length,
+    data: generatedRecords
+  });
+});
+
+// 2c. Get all daily cleaning updates for a subscription
+app.get('/api/subscriptions/:id/daily-updates', (req, res) => {
+  const { id } = req.params;
+  const records = readJSON(CAR_ASSIGNMENTS_FILE, []);
+  const subRecords = records
+    .filter(r => r.subscriptionId === id || r.id?.startsWith(`DAILY-${id}-`))
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  return res.json({
+    success: true,
+    subscriptionId: id,
+    count: subRecords.length,
+    data: subRecords
+  });
+});
+
 // 3. Employee updates daily status (Completed / Pending)
 app.put('/api/car-assignments/:id/status', (req, res) => {
   const { id } = req.params;
-  const { status, notes, missedReason, completedAt } = req.body;
+  const {
+    status,
+    notes,
+    missedReason,
+    completedAt,
+    date,
+    subscriptionId,
+    employeeId,
+    employeeName,
+    customerName,
+    carModel,
+    regNumber,
+    car,
+    timeSlot,
+    planName,
+    dayNumber
+  } = req.body;
 
   if (!status || !['Completed', 'Pending', 'In Progress', 'Missed', 'Rescheduled'].includes(status)) {
     return res.status(400).json({
@@ -972,26 +1137,63 @@ app.put('/api/car-assignments/:id/status', (req, res) => {
     });
   }
 
-  const allRecords = readJSON(CAR_ASSIGNMENTS_FILE, []);
-  const index = allRecords.findIndex(r => r.id === id || r.regNumber === id);
+  const clean = (s) => (s || '').replace(/[\s\-\_]/g, '').toUpperCase();
+  const targetReg = clean(regNumber);
+  const targetDate = date || new Date().toISOString().slice(0, 10);
+  const subId = subscriptionId || (id && id.startsWith('DAILY-') ? id.replace(/^DAILY-/, '').replace(/-[0-9]{4}-[0-9]{2}-[0-9]{2}$/, '') : null);
 
-  if (index === -1) {
-    return res.status(404).json({
-      success: false,
-      message: `Car assignment with ID ${id} not found.`
-    });
-  }
+  const allRecords = readJSON(CAR_ASSIGNMENTS_FILE, []);
+  let index = allRecords.findIndex(r => 
+    r.id === id || 
+    (subId && r.subscriptionId === subId && r.date === targetDate) ||
+    (targetReg && clean(r.regNumber) === targetReg && r.date === targetDate) ||
+    (subId && r.id === `DAILY-${subId}-${targetDate}`)
+  );
 
   const nowIso = new Date().toISOString();
-  allRecords[index].status = status;
-  if (notes !== undefined) allRecords[index].notes = notes;
-  if (missedReason !== undefined) allRecords[index].missedReason = missedReason;
-  if (status === 'Completed') {
-    allRecords[index].completedAt = completedAt || nowIso;
-  } else if (status === 'Pending') {
-    allRecords[index].completedAt = null;
+
+  if (index === -1) {
+    // Upsert fallback to prevent 404 for valid subscription daily visits
+    const newRecord = {
+      id: id || (subId ? `DAILY-${subId}-${targetDate}` : `DAILY-SUB-${targetDate}`),
+      subscriptionId: subId || null,
+      dayNumber: dayNumber || 1,
+      carNumber: 1,
+      employeeId: employeeId || 'EMP-01',
+      employeeName: employeeName || 'Specialist Staff',
+      date: targetDate,
+      timeSlot: timeSlot || '07:00 AM - 08:00 AM',
+      customerName: customerName || 'Customer',
+      car: car || `${carModel || 'Car'} (${regNumber || ''})`,
+      carModel: carModel || 'Car',
+      regNumber: (regNumber || 'CAR').toUpperCase(),
+      planName: planName || 'Doorstep Subscription Care',
+      status,
+      notes: notes !== undefined ? notes : '',
+      missedReason: missedReason !== undefined ? missedReason : null,
+      completedAt: status === 'Completed' ? (completedAt || nowIso) : null,
+      beforePhoto: null,
+      afterPhoto: null,
+      createdAt: nowIso,
+      updatedAt: nowIso
+    };
+    allRecords.push(newRecord);
+    index = allRecords.length - 1;
+  } else {
+    allRecords[index].status = status;
+    if (notes !== undefined) allRecords[index].notes = notes;
+    if (missedReason !== undefined) allRecords[index].missedReason = missedReason;
+    if (status === 'Completed') {
+      allRecords[index].completedAt = completedAt || nowIso;
+    } else if (status === 'Pending') {
+      allRecords[index].completedAt = null;
+    }
+    if (subId && !allRecords[index].subscriptionId) allRecords[index].subscriptionId = subId;
+    if (regNumber && !allRecords[index].regNumber) allRecords[index].regNumber = (regNumber || '').toUpperCase();
+    if (employeeId && !allRecords[index].employeeId) allRecords[index].employeeId = employeeId;
+    if (employeeName && !allRecords[index].employeeName) allRecords[index].employeeName = employeeName;
+    allRecords[index].updatedAt = nowIso;
   }
-  allRecords[index].updatedAt = nowIso;
 
   writeJSON(CAR_ASSIGNMENTS_FILE, allRecords);
 
@@ -1005,7 +1207,22 @@ app.put('/api/car-assignments/:id/status', (req, res) => {
 // 4. Employee uploads before or after cleaning photos
 app.post('/api/car-assignments/:id/photos', (req, res) => {
   const { id } = req.params;
-  const { photoType, photoData, caption } = req.body;
+  const {
+    photoType,
+    photoData,
+    caption,
+    date,
+    subscriptionId,
+    employeeId,
+    employeeName,
+    customerName,
+    carModel,
+    regNumber,
+    car,
+    timeSlot,
+    planName,
+    dayNumber
+  } = req.body;
 
   if (!photoType || !['before', 'after'].includes(photoType)) {
     return res.status(400).json({
@@ -1021,30 +1238,81 @@ app.post('/api/car-assignments/:id/photos', (req, res) => {
     });
   }
 
-  const allRecords = readJSON(CAR_ASSIGNMENTS_FILE, []);
-  const index = allRecords.findIndex(r => r.id === id || r.regNumber === id);
+  const clean = (s) => (s || '').replace(/[\s\-\_]/g, '').toUpperCase();
+  const targetReg = clean(regNumber);
+  const targetDate = date || new Date().toISOString().slice(0, 10);
+  const subId = subscriptionId || (id && id.startsWith('DAILY-') ? id.replace(/^DAILY-/, '').replace(/-[0-9]{4}-[0-9]{2}-[0-9]{2}$/, '') : null);
 
-  if (index === -1) {
-    return res.status(404).json({
-      success: false,
-      message: `Car assignment with ID ${id} not found.`
-    });
-  }
+  const allRecords = readJSON(CAR_ASSIGNMENTS_FILE, []);
+  let index = allRecords.findIndex(r => 
+    r.id === id || 
+    (subId && r.subscriptionId === subId && r.date === targetDate) ||
+    (targetReg && clean(r.regNumber) === targetReg && r.date === targetDate) ||
+    (subId && r.id === `DAILY-${subId}-${targetDate}`)
+  );
 
   const nowIso = new Date().toISOString();
+  let photoUrl = photoData;
+  if (typeof photoData === 'string' && photoData.startsWith('data:image')) {
+    try {
+      const extMatch = photoData.match(/^data:image\/(\w+);base64,/);
+      const ext = extMatch ? (extMatch[1] === 'jpeg' ? 'jpg' : extMatch[1]) : 'jpg';
+      const base64Data = photoData.replace(/^data:image\/\w+;base64,/, '');
+      const safeId = (id || 'photo').replace(/[^a-zA-Z0-9_\-]/g, '_');
+      const filename = `${safeId}-${photoType}-${Date.now()}.${ext}`;
+      fs.writeFileSync(path.join(UPLOADS_DIR, filename), Buffer.from(base64Data, 'base64'));
+      photoUrl = `/uploads/${filename}`;
+    } catch (saveErr) {
+      console.warn('Could not save photo to disk, fallback to data url:', saveErr.message);
+    }
+  }
+
   const photoPayload = {
-    url: photoData,
+    url: photoUrl,
     uploadedAt: nowIso,
     caption: caption || `${photoType === 'before' ? 'Before' : 'After'} cleaning photo`
   };
 
-  if (photoType === 'before') {
-    allRecords[index].beforePhoto = photoPayload;
+  if (index === -1) {
+    // Upsert fallback to prevent 404 for valid subscription daily visits
+    const newRecord = {
+      id: id || (subId ? `DAILY-${subId}-${targetDate}` : `DAILY-SUB-${targetDate}`),
+      subscriptionId: subId || null,
+      dayNumber: dayNumber || 1,
+      carNumber: 1,
+      employeeId: employeeId || 'EMP-01',
+      employeeName: employeeName || 'Specialist Staff',
+      date: targetDate,
+      timeSlot: timeSlot || '07:00 AM - 08:00 AM',
+      customerName: customerName || 'Customer',
+      car: car || `${carModel || 'Car'} (${regNumber || ''})`,
+      carModel: carModel || 'Car',
+      regNumber: (regNumber || 'CAR').toUpperCase(),
+      planName: planName || 'Doorstep Subscription Care',
+      status: 'Pending',
+      notes: '',
+      missedReason: null,
+      completedAt: null,
+      beforePhoto: photoType === 'before' ? photoPayload : null,
+      afterPhoto: photoType === 'after' ? photoPayload : null,
+      createdAt: nowIso,
+      updatedAt: nowIso
+    };
+    allRecords.push(newRecord);
+    index = allRecords.length - 1;
   } else {
-    allRecords[index].afterPhoto = photoPayload;
+    if (photoType === 'before') {
+      allRecords[index].beforePhoto = photoPayload;
+    } else {
+      allRecords[index].afterPhoto = photoPayload;
+    }
+    if (subId && !allRecords[index].subscriptionId) allRecords[index].subscriptionId = subId;
+    if (regNumber && !allRecords[index].regNumber) allRecords[index].regNumber = (regNumber || '').toUpperCase();
+    if (employeeId && !allRecords[index].employeeId) allRecords[index].employeeId = employeeId;
+    if (employeeName && !allRecords[index].employeeName) allRecords[index].employeeName = employeeName;
+    allRecords[index].updatedAt = nowIso;
   }
 
-  allRecords[index].updatedAt = nowIso;
   writeJSON(CAR_ASSIGNMENTS_FILE, allRecords);
 
   return res.json({

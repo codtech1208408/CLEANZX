@@ -76,17 +76,60 @@ export default function DailyScheduleTab({ onOpenWhatsApp }) {
     notes: 'Standard morning exterior wipe & glass cleaning'
   });
 
-  const filteredSchedules = activeDailySchedules.filter(s => {
+  // Merge dailySchedules with carAssignments so all daily subscription updates are visible
+  const allDateSchedules = React.useMemo(() => {
+    const combined = [...activeDailySchedules];
+    (carAssignments || []).forEach(ca => {
+      const idx = combined.findIndex(s => s.id === ca.id || (s.regNumber === ca.regNumber && s.date === ca.date));
+      if (idx >= 0) {
+        combined[idx] = {
+          ...combined[idx],
+          status: ca.status || combined[idx].status,
+          beforePhoto: ca.beforePhoto || combined[idx].beforePhoto,
+          afterPhoto: ca.afterPhoto || combined[idx].afterPhoto,
+          employeeName: ca.employeeName || combined[idx].employeeName,
+          notes: ca.notes || combined[idx].notes
+        };
+      } else {
+        combined.push({
+          id: ca.id,
+          subscriptionId: ca.subscriptionId || null,
+          timeSlot: ca.timeSlot || '07:00 AM - 08:00 AM',
+          customerName: ca.customerName,
+          phone: ca.phone,
+          apartment: ca.apartment,
+          block: ca.block,
+          flat: ca.flat,
+          carModel: ca.carModel,
+          regNumber: ca.regNumber,
+          planName: ca.planName,
+          employeeId: ca.employeeId,
+          employeeName: ca.employeeName,
+          date: ca.date,
+          status: ca.status,
+          beforePhoto: ca.beforePhoto,
+          afterPhoto: ca.afterPhoto,
+          notes: ca.notes,
+          source: ca.subscriptionId ? 'subscription_daily' : 'car_assignment'
+        });
+      }
+    });
+    return combined;
+  }, [activeDailySchedules, carAssignments]);
+
+  const filteredSchedules = allDateSchedules.filter(s => {
+    const matchesDate = !selectedDate || s.date === selectedDate;
     const matchesSlot = slotFilter === 'ALL' || s.timeSlot === slotFilter;
     const matchesStatus = statusFilter === 'ALL' || s.status === statusFilter;
     const matchesEmployee = employeeFilter === 'ALL' || s.employeeName === employeeFilter;
-    return matchesSlot && matchesStatus && matchesEmployee;
+    return matchesDate && matchesSlot && matchesStatus && matchesEmployee;
   });
 
-  const completedCount = activeDailySchedules.filter(s => s.status === 'Completed').length;
-  const inProgressCount = activeDailySchedules.filter(s => s.status === 'In Progress').length;
-  const missedCount = activeDailySchedules.filter(s => s.status === 'Missed').length;
-  const assignedCount = activeDailySchedules.filter(s => s.status === 'Assigned').length;
+  const dateSchedules = allDateSchedules.filter(s => !selectedDate || s.date === selectedDate);
+  const completedCount = dateSchedules.filter(s => s.status === 'Completed').length;
+  const inProgressCount = dateSchedules.filter(s => s.status === 'In Progress').length;
+  const missedCount = dateSchedules.filter(s => s.status === 'Missed').length;
+  const assignedCount = dateSchedules.filter(s => s.status === 'Assigned' || s.status === 'Pending').length;
 
   const handleAddScheduleSubmit = (e) => {
     e.preventDefault();
